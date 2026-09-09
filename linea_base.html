@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Perfil del Usuario - Plataforma Estatal de Eficiencia Energética</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Montserrat, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4f4f4;
+        }
+
+        .contenedor {
+            width: 95%;
+            max-width: 1400px;
+            margin: 10px auto;
+            border: 2px solid #000;
+            background: white;
+        }
+
+        /* ENCABEZADO */
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 2px solid #000;
+        }
+
+        .logos img {
+            height: 65px;
+            width: auto;
+        }
+
+        .titulo {
+            flex: 1;
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        /* CONTENIDO */
+
+        .principal {
+            position: relative;
+            padding: 20px;
+            min-height: 500px;
+        }
+
+        .fondo {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .fondo img {
+            width: 60%;
+            opacity: 0.07;
+        }
+
+        /* ETAPAS */
+
+        .etapas {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .etapa {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .etapa:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, .15);
+        }
+
+        .etapa.activa {
+            background: #1565C0;
+            color: white;
+        }
+
+        .etapa.pendiente {
+            background: #e0e0e0;
+            color: #555;
+        }
+
+        .etapa.completada {
+            background: #2E7D32;
+            color: white;
+        }
+
+        /* FORMULARIO */
+
+        .formulario {
+            position: relative;
+            z-index: 2;
+
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #701F2F;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #701F2F;
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .campo label {
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .campo input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .input-select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            background: white;
+        }
+
+        .tabla-censo {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .tabla-censo th {
+            background: #701F2F;
+            color: white;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .tabla-censo td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .tabla-censo tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+
+        .readonly {
+            background: #f0f0f0;
+        }
+
+        .generacion-detalle {
+            display: none;
+        }
+
+        /* BOTONES */
+
+        .acciones {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 14px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: .3s;
+        }
+
+        .btn-guardar {
+            background: #701F2F;
+            color: white;
+        }
+
+        .btn-continuar {
+            background: #2E7D32;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: .90;
+            transform: translateY(-2px);
+        }
+
+        .usuario-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            min-width: 200px;
+        }
+
+        .page-indicator {
+            font-size: 12px;
+            color: #701F2F;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .usuario-nombre {
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .btn-salir {
+            background: #701F2F;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: .30s;
+            font-weight: 600;
+        }
+
+        .btn-salir:hover {
+            background: #8b3042;
+        }
+
+        /* PIE */
+
+        footer {
+            background: #701F2F;
+            padding: 8px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            min-height: 70px;
+        }
+
+        .footer-logo-izq {
+            height: 50px;
+            width: auto;
+        }
+
+        .footer-logo-der {
+            height: 50px;
+            width: auto;
+        }
+
+        /* RESPONSIVO */
+
+        @media(max-width:900px) {
+
+            header {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .acciones {
+                justify-content: center;
+            }
+
+            .btn {
+                flex: 1 1 180px;
+                max-width: 220px;
+            }
+
+            .titulo {
+                font-size: 18px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .etapas {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        #graficaDistribucion {
+            width: 100%;
+            max-width: 420px;
+            margin: auto;
+            aspect-ratio: 1/1;
+        }
+    </style>
+
+</head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<body>
+
+    <div class="contenedor">
+
+        <header>
+
+            <div class="logos">
+                <img src="logos.png" alt="Logos Institucionales">
+            </div>
+
+            <div class="titulo">
+
+                PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA
+
+            </div>
+
+            <div class="usuario-panel">
+
+                <span id="numeroPagina" class="page-indicator">Página 9 de 9</span>
+
+                <span id="nombreUsuario" class="usuario-nombre">
+
+                    👤 Usuario
+
+                </span>
+
+                <button class="btn-salir" onclick="cerrarSesion()">
+
+                    Cerrar sesión
+
+                </button>
+
+            </div>
+
+        </header>
+
+        <div class="principal">
+
+            <div class="fondo">
+                <img src="fondo.png" alt="Fondo">
+            </div>
+
+            <!-- ETAPAS -->
+
+            <div class="etapas">
+
+                <button class="etapa completada" onclick="window.location.href='perfil_usuario.html'">
+                    Perfil del Usuario
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='datos_generales.html'">
+                    Datos Generales
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='geolocalizacion.html'">
+                    Geolocalización
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='informacion_tecnica.html'">
+                    Información Técnica
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='sistema_generacion.html'">
+                    Sistema de Generación
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='evaluacion_sitio.html'">
+                    Evaluación del Sitio
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='censo_carga.html'">
+                    Censo de Carga
+                </button>
+
+                <button class="etapa activa" onclick="window.location.href='linea_base.html'">
+                    Línea Base
+                </button>
+
+            </div>
+            <div class="formulario">
+
+                <!-- INFORMACIÓN GENERAL -->
+
+                <div class="card">
+
+                    <h3>Información General del Inmueble</h3>
+
+                    <div class="grid">
+
+                        <div class="campo">
+                            <label>Dependencia</label>
+                            <input type="text" value="Secretaría de Desarrollo Económico" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Municipio</label>
+                            <input type="text" value="Pachuca de Soto" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Nombre del Inmueble</label>
+                            <input type="text" value="Edificio Administrativo" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Programa</label>
+                            <input type="text" value="Eficiencia Energética en Edificios Públicos" readonly
+                                class="readonly">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- RESUMEN ENERGÉTICO -->
+
+                <div class="card">
+
+                    <h3>Resumen Energético</h3>
+
+                    <div class="grid">
+
+                        <div class="campo">
+                            <label>Consumo Anual (kWh)</label>
+                            <input type="text" value="125,000" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Facturación Anual ($)</label>
+                            <input type="text" value="$452,000" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Demanda Máxima (kW)</label>
+                            <input type="text" value="92.5" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Potencia Instalada (kW)</label>
+                            <input type="text" value="87.0" readonly class="readonly">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- INDICADORES -->
+
+                <div class="card">
+
+                    <h3>Indicadores de Línea Base</h3>
+
+                    <div class="grid">
+
+                        <div class="campo">
+                            <label>Consumo Específico (kWh/m²-año)</label>
+                            <input type="text" value="82.4" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Costo Promedio ($/kWh)</label>
+                            <input type="text" value="3.61" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Factor de Carga (%)</label>
+                            <input type="text" value="68.3" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Potencial de Ahorro Estimado (%)</label>
+                            <input type="text" value="18" readonly class="readonly">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- GRÁFICA -->
+
+                <div class="card">
+
+                    <h3>Comportamiento de Consumo</h3>
+
+                    <canvas id="graficaConsumo"></canvas>
+                </div>
+
+                <!-- DISTRIBUCIÓN -->
+
+                <div class="card">
+
+                    <h3>Distribución de Consumo por Categoría</h3>
+
+                    <canvas id="graficaDistribucion"></canvas>
+
+                </div>
+
+                <!-- DIAGNÓSTICO -->
+
+                <div class="card">
+
+                    <h3>Diagnóstico Inicial</h3>
+
+                    <textarea readonly style="
+            width:100%;
+            min-height:180px;
+            padding:15px;
+            border:1px solid #ccc;
+            border-radius:8px;
+            resize:none;">
+El inmueble presenta oportunidades de mejora en sistemas de alumbrado y climatización. De acuerdo con la información capturada, estos rubros representan una proporción importante del consumo energético total, por lo que se recomienda evaluar proyectos de sustitución tecnológica, automatización y aprovechamiento de sistemas de generación renovable.
+        </textarea>
+
+                </div>
+
+                <!-- ESTADO -->
+
+                <div class="card">
+
+                    <h3>Estado de la Línea Base</h3>
+
+                    <div style="
+            text-align:center;
+            font-size:22px;
+            font-weight:bold;
+            color:#2E7D32;
+        ">
+                        ✓ Línea Base Generada Correctamente
+                    </div>
+
+                </div>
+
+                <!-- BOTONES -->
+
+                <div class="acciones">
+
+                    <button class="btn" style="background:#616161;color:white;" onclick="regresar()">
+                        Regresar
+                    </button>
+
+                    <button class="btn btn-guardar" onclick="guardar()">
+                        Guardar
+                    </button>
+
+                    <button class="btn" style="background:#1565C0;color:white;" onclick="generarDiagnostico()">
+                        Generar Diagnóstico
+                    </button>
+
+                    <button class="btn btn-continuar" onclick="finalizar()">
+                        Finalizar
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <footer>
+
+            <img src="Logo pie.png" alt="Logo Izquierdo" class="footer-logo-izq">
+
+            <img src="Pie_dir.png" alt="Logo Derecho" class="footer-logo-der">
+
+        </footer>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+    <script>
+        Chart.register(ChartDataLabels);
+
+        /* ==========================
+           GRAFICA DE CONSUMO
+        ========================== */
+
+        const ctx1 =
+            document.getElementById('graficaConsumo')
+                .getContext('2d');
+
+        new Chart(ctx1, {
+
+            type: 'bar',
+
+            data: {
+
+                labels: [
+                    'Ene', 'Feb', 'Mar', 'Abr',
+                    'May', 'Jun', 'Jul', 'Ago',
+                    'Sep', 'Oct', 'Nov', 'Dic'
+                ],
+
+                datasets: [{
+
+                    label: 'Consumo (kWh)',
+
+                    data: [
+                        8500, 9200, 9800, 10100,
+                        11000, 12000, 12500, 11800,
+                        10700, 9800, 9100, 8500
+                    ],
+
+                    backgroundColor: '#701F2F'
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                plugins: {
+
+                    datalabels: {
+
+                        display: window.innerWidth > 768,
+
+                        anchor: 'end',
+
+                        align: 'top',
+
+                        color: '#000',
+
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        }
+
+                    }
+
+                }
+
+            },
+
+            plugins: [ChartDataLabels]
+
+        });
+
+        /* ==========================
+           GRAFICA DISTRIBUCION
+        ========================== */
+
+        const ctx2 =
+            document.getElementById('graficaDistribucion')
+                .getContext('2d');
+
+        new Chart(ctx2, {
+
+            type: 'doughnut',
+
+            data: {
+
+                labels: [
+                    'Alumbrado',
+                    'Climatización',
+                    'Cómputo',
+                    'Otros'
+                ],
+
+                datasets: [{
+
+                    data: [40, 25, 20, 15],
+
+                    backgroundColor: [
+                        '#701F2F',
+                        '#1565C0',
+                        '#2E7D32',
+                        '#D4A44A'
+                    ]
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: true,
+
+                cutout: '60%',
+
+                plugins: {
+
+                    legend: {
+                        position: 'bottom'
+                    },
+
+                    datalabels: {
+
+                        color: '#fff',
+
+                        font: {
+                            weight: 'bold',
+                            size: 14
+                        },
+
+                        formatter: (value) => value + '%'
+
+                    }
+
+                }
+
+            },
+
+            plugins: [ChartDataLabels]
+
+        });
+        function regresar() {
+
+            window.location.href = 'censo_carga.html';
+
+        }
+
+        function guardar() {
+
+            alert("Información guardada correctamente.");
+
+        }
+
+        function generarDiagnostico() {
+
+            alert("Diagnóstico generado correctamente.");
+            window.location.href = 'plan_trabajo.html';
+
+        }
+
+        function finalizar() {
+
+            alert("Expediente concluido correctamente.");
+            window.location.href = 'resumen_inmueble.html';
+
+        }
+        plugins: [ChartDataLabels]
+
+        const numeroPagina = document.getElementById("numeroPagina");
+        if (numeroPagina) {
+            numeroPagina.textContent = "Página 9 de 9";
+        }
+
+        const nombre =
+            sessionStorage.getItem("nombre");
+        if (nombre) {
+            document.getElementById("nombreUsuario").textContent =
+                "👤 " + nombre;
+        }
+
+        function cerrarSesion() {
+            if (confirm("¿Desea cerrar la sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+
+</html>

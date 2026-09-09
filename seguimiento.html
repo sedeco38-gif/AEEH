@@ -1,0 +1,5446 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Seguimiento Energético
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* =====================================================
+           RESET
+        ====================================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Montserrat, sans-serif;
+        }
+
+        :root {
+            --vino: #701F2F;
+            --dorado: #D4A44A;
+            --verde: #2E7D32;
+            --azul: #1565C0;
+            --gris: #F4F4F4;
+            --gris-claro: #FAFAFA;
+            --texto: #333333;
+            --sombra: 0 4px 12px rgba(0, 0, 0, .12);
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4f4f4;
+        }
+
+        img,
+        video,
+        canvas,
+        svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .contenedor {
+            width: 100%;
+            max-width: 1400px;
+            margin: 10px auto;
+            border: 2px solid #000;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* =====================================================
+           HEADER
+        ====================================================== */
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 2px solid #000;
+        }
+
+        .logos img {
+            height: 65px;
+            width: auto;
+        }
+
+        .titulo {
+            flex: 1;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--vino);
+        }
+
+        .subtitulo {
+            font-size: 13px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        /* =====================================================
+           CONTENIDO PRINCIPAL
+        ====================================================== */
+
+        .principal {
+            position: relative;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* =====================================================
+           FONDO INSTITUCIONAL
+        ====================================================== */
+
+        .fondo {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .fondo img {
+            width: 60%;
+            opacity: .05;
+        }
+
+        /* =====================================================
+           DASHBOARD BASE
+        ====================================================== */
+
+        .dashboard {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* =====================================================
+           TARJETAS
+        ====================================================== */
+
+        .card {
+            background: rgba(255, 255, 255, .96);
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            padding: 20px;
+        }
+
+        .card h3 {
+            color: var(--vino);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--vino);
+            padding-bottom: 8px;
+        }
+
+        /* =====================================================
+           BOTONES
+        ====================================================== */
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: .25s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-vino {
+            background: var(--vino);
+            color: white;
+        }
+
+        .btn-verde {
+            background: var(--verde);
+            color: white;
+        }
+
+        .btn-azul {
+            background: var(--azul);
+            color: white;
+        }
+
+        .btn-dorado {
+            background: var(--dorado);
+            color: white;
+        }
+
+        /* =====================================================
+        MENÚS LATERALES
+        ===================================================== */
+
+        .panel-menu {
+            background: rgba(255, 255, 255, .95);
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            padding: 18px;
+        }
+
+        .panel-menu h3 {
+            color: var(--vino);
+            font-size: 18px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid var(--vino);
+            padding-bottom: 8px;
+        }
+
+        .menu-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .30s;
+            border: 2px solid transparent;
+            background: #fafafa;
+        }
+
+        .menu-item:hover {
+            transform: translateX(6px);
+            border-color: var(--vino);
+            background: #ffffff;
+        }
+
+        .menu-item.activo {
+            background: var(--vino);
+            color: white;
+        }
+
+        .menu-icono {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, .18);
+            font-size: 20px;
+        }
+
+        .menu-item:not(.activo) .menu-icono {
+            background: var(--vino);
+            color: white;
+        }
+
+        .menu-texto {
+            flex: 1;
+        }
+
+        .menu-texto span {
+            display: block;
+        }
+
+        .menu-titulo {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .menu-descripcion {
+            font-size: 11px;
+            opacity: .75;
+        }
+
+        .badge {
+            min-width: 24px;
+            height: 24px;
+            border-radius: 20px;
+            background: #2E7D32;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /*=========================================
+        DISTRIBUCIÓN GENERAL DEL DASHBOARD
+        =========================================*/
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: minmax(220px, 280px) 1fr minmax(220px, 280px);
+            gap: 25px;
+            align-items: start;
+            margin-bottom: 25px;
+        }
+
+        /*==================================
+        TABLETS
+        ==================================*/
+
+        @media (max-width:1200px) {
+            .dashboard-layout {
+                grid-template-columns: 240px 1fr;
+            }
+
+            .menu-derecho {
+                grid-column: 1/-1;
+            }
+
+        }
+
+        /*==================================
+        CELULAR VERTICAL
+        ==================================*/
+
+        @media (max-width:768px) {
+            .dashboard-layout {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .menu-izquierdo,
+            .menu-derecho,
+            .contenido-central {
+                width: 100%;
+            }
+
+            .panel-menu {
+                width: 100%;
+            }
+        }
+
+        .menu-izquierdo,
+        .menu-derecho {
+            position: relative;
+            top: auto;
+        }
+
+        .contenido-central {
+            min-width: 0;
+        }
+
+        /* PIE */
+
+        footer {
+            background: #701F2F;
+            padding: 8px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            min-height: 70px;
+        }
+
+        .footer-logo-izq {
+            height: 50px;
+            width: auto;
+        }
+
+        .footer-logo-der {
+            height: 50px;
+            width: auto;
+        }
+
+        /* =====================================================
+        VISTA ESTADÍSTICOS
+        ===================================================== */
+
+        .panel-estadisticos {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .fila-indicadores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .indicador-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--sombra);
+            border-left: 6px solid var(--vino);
+        }
+
+        .indicador-card h4 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .indicador-valor {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--vino);
+        }
+
+        .indicador-sub {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .fila-graficas {
+            display: grid;
+            grid-template-columns: minmax(300px, 2fr) minmax(240px, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .grafica-card {
+            background: white;
+            border-radius: 15px;
+            padding: 8px;
+            box-shadow: var(--sombra);
+        }
+
+        .grafica-card canvas {
+            width: 100% !important;
+            display: block;
+            height: auto !important;
+            aspect-ratio: 16 / 9;
+            min-height: 260px;
+            max-height: 420px;
+        }
+
+        #graficaPastel {
+            aspect-ratio: 1 / 1;
+            min-height: 260px;
+            max-height: 420px;
+        }
+
+        #graficaComparativo {
+            width: 100% !important;
+            min-height: 320px;
+            max-height: 450px;
+            height: 360px !important;
+            display: block;
+        }
+
+        .grafica-card h3 {
+            color: var(--vino);
+            margin-bottom: 15px;
+        }
+
+        .canvas-demo {
+            width: 100%;
+            height: 320px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #fafafa, #ececec);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #888;
+            font-size: 18px;
+            border: 2px dashed #ccc;
+        }
+
+        .fila-inferior {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+
+        /* =====================================================
+        INFORMACIÓN DEL INMUEBLE
+        ===================================================== */
+
+        .barra-inmueble {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 18px;
+            box-shadow: var(--sombra);
+            border-top: 5px solid var(--verde);
+        }
+
+        .info-card h5 {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .info-card span {
+            color: var(--vino);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+          ÁREAS DE OPORTUNIDAD
+        ===================================================== */
+
+        .oportunidades {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .fila-oportunidades {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .oportunidad-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            overflow: hidden;
+            transition: .30s;
+        }
+
+        .oportunidad-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .oportunidad-header {
+            background: var(--vino);
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .oportunidad-body {
+            padding: 18px;
+        }
+
+        .oportunidad-body table {
+            width: 100%;
+        }
+
+        .oportunidad-body td {
+            padding: 8px 0;
+            border: none;
+        }
+
+        .prioridad {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .alta {
+            background: #D32F2F;
+        }
+
+        .media {
+            background: #F9A825;
+        }
+
+        .baja {
+            background: #2E7D32;
+        }
+
+        .resumen-oportunidad {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            padding: 20px;
+        }
+
+        /* Tablets */
+        @media (max-width:1200px) {
+            .fila-oportunidades {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Celulares */
+        @media (max-width:768px) {
+            .fila-oportunidades {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .oportunidad-body table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .oportunidad-body td {
+            word-break: break-word;
+            padding: 10px 5px;
+        }
+
+        /*====================================================
+          BARRAS DE IMPACTO
+        ====================================================*/
+
+        .barra-impacto {
+            width: 100%;
+            height: 12px;
+            background: #E5E5E5;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .barra-impacto span {
+            display: block;
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .impacto-alto {
+            width: 95%;
+            background: #2E7D32;
+        }
+
+        .impacto-medio {
+            width: 70%;
+            background: #F9A825;
+        }
+
+        .impacto-bajo {
+            width: 45%;
+            background: #D32F2F;
+        }
+
+        /*====================================================
+           RESUMEN EJECUTIVO
+        ====================================================*/
+
+        .resumen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .resumen-item {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            border-top: 5px solid var(--verde);
+        }
+
+        .resumen-item h4 {
+            color: var(--vino);
+            margin-bottom: 10px;
+        }
+
+        .resumen-item span {
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--verde);
+        }
+
+        @media(max-width:1200px) {
+            .resumen-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width:768px) {
+            .resumen-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /*====================================================
+         ESTRATEGIAS
+        ====================================================*/
+
+        .estrategias {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .estrategia {
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            overflow: hidden;
+        }
+
+        .estrategia-header {
+            background: var(--vino);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .estrategia-header h3 {
+            margin: 0;
+            color: white;
+            border: none;
+        }
+
+        .estrategia-body {
+            padding: 20px;
+        }
+
+        .estrategia-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .dato {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .dato h5 {
+            color: #777;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .dato span {
+            color: var(--vino);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .avance {
+            width: 100%;
+            height: 14px;
+            background: #E0E0E0;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .avance span {
+            display: block;
+            height: 100%;
+            background: #2E7D32;
+            width: 35%;
+        }
+
+        .estado {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 25px;
+            background: #1565C0;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /*====================================================
+        META DE AHORRO
+        ====================================================*/
+
+        .meta-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .meta-superior {
+            display: grid;
+            grid-template-columns: minmax(240px, 320px) 1fr;
+            gap: 20px;
+        }
+
+        .velocimetro-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            padding: 25px;
+            text-align: center;
+        }
+
+        .velocimetro {
+            width: min(220px, 100%);
+            aspect-ratio: 1 / 1;
+            margin: auto;
+            border-radius: 50%;
+            background: conic-gradient(#2E7D32 0deg 270deg, #E5E5E5 270deg 360deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .velocimetro-centro {
+            width: min(155px, 70%);
+            aspect-ratio: 1 / 1;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .velocimetro-centro h1 {
+            font-size: 46px;
+            color: var(--vino);
+        }
+
+        .velocimetro-centro span {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .meta-resumen {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .meta-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            padding: 22px;
+        }
+
+        .meta-card h4 {
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .meta-card span {
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--verde);
+        }
+
+        .meta-inferior {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .indicador-meta {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--sombra);
+            border-top: 6px solid var(--verde);
+        }
+
+        .indicador-meta h5 {
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .indicador-meta span {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--vino);
+        }
+
+        /*====================================================
+        PLAN ANUAL DE TRABAJO
+        ====================================================*/
+
+        .plan-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .plan-superior {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .plan-kpi {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            padding: 18px;
+            text-align: center;
+            border-top: 5px solid var(--azul);
+        }
+
+        .plan-kpi h5 {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .plan-kpi span {
+            font-size: 30px;
+            color: var(--vino);
+            font-weight: bold;
+        }
+
+        .cronograma {
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            padding: 20px;
+        }
+
+        .cronograma table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cronograma th {
+            background: var(--vino);
+            color: white;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .cronograma td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #E5E5E5;
+        }
+
+        .estado-plan {
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .estado-programado {
+            background: #1565C0;
+        }
+
+        .estado-proceso {
+            background: #F9A825;
+        }
+
+        .estado-concluido {
+            background: #2E7D32;
+        }
+
+        .barra-avance {
+            width: 100%;
+            height: 10px;
+            background: #E5E5E5;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .barra-avance span {
+            display: block;
+            height: 100%;
+            background: #2E7D32;
+        }
+
+        .plan-observaciones {
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            padding: 20px;
+        }
+
+        .tabla-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .tabla-responsive table {
+            width: 100%;
+            min-width: 0;
+            border-collapse: collapse;
+        }
+
+        .tabla-responsive th,
+        .tabla-responsive td {
+            white-space: normal;
+        }
+
+        @media (max-width:768px) {
+            .tabla-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /*====================================================
+        AVANCES TRIMESTRALES
+        ====================================================*/
+
+        .avances-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .avances-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .avance-kpi {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--sombra);
+            border-top: 5px solid var(--verde);
+        }
+
+        .avance-kpi h5 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .avance-kpi span {
+            font-size: 30px;
+            color: var(--vino);
+            font-weight: bold;
+        }
+
+        /*====================================================
+        TIMELINE
+        ====================================================*/
+
+        .timeline {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 40px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #D4A44A;
+            border-radius: 10px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-left: 90px;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            padding: 20px;
+        }
+
+        .timeline-punto {
+            position: absolute;
+            left: -66px;
+            top: 30px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #2E7D32;
+            border: 5px solid white;
+            box-shadow: 0 0 0 3px #D4A44A;
+        }
+
+        .timeline-item h3 {
+            color: var(--vino);
+            margin-bottom: 15px;
+        }
+
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .timeline-dato {
+            background: #fafafa;
+            border-radius: 10px;
+            padding: 12px;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .timeline-dato h6 {
+            color: #777;
+            margin-bottom: 6px;
+        }
+
+        .timeline-dato span {
+            color: var(--vino);
+            font-weight: bold;
+            line-height: 1.35;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .validado {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .revision {
+            color: #F9A825;
+            font-weight: bold;
+        }
+
+        .pendiente {
+            color: #D32F2F;
+            font-weight: bold;
+        }
+
+        @media(max-width:768px) {
+            .timeline-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
+        /*====================================================
+        RECURSOS DIGITALES
+        ====================================================*/
+
+        .recursos-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .recursos-superior {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .recurso-kpi {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--sombra);
+            border-top: 5px solid var(--azul);
+        }
+
+        .recurso-kpi h5 {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .recurso-kpi span {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--vino);
+        }
+
+        .biblioteca {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .documento {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--sombra);
+            transition: .30s;
+            cursor: pointer;
+        }
+
+        .documento:hover {
+            transform: translateY(-4px);
+        }
+
+        .documento-icono {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            background: var(--vino);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 34px;
+        }
+
+        .documento-info {
+            flex: 1;
+        }
+
+        .documento-info h4 {
+            color: var(--vino);
+            margin-bottom: 6px;
+        }
+
+        .documento-info p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .documento button {
+            margin-top: 12px;
+        }
+
+        .usuario-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            min-width: 180px;
+        }
+
+        .usuario-nombre {
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .btn-salir {
+            background: #701F2F;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: .30s;
+            font-weight: 600;
+        }
+
+        .btn-salir:hover {
+            background: #8b3042;
+        }
+
+        @media(max-width:1200px) {
+            .biblioteca {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width:768px) {
+            .documento {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .documento-info {
+                width: 100%;
+            }
+
+            .documento button {
+                width: 100%;
+            }
+        }
+
+        /*====================================================
+        CENTRO DE ATENCIÓN
+        ====================================================*/
+
+        .buzon-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .buzon-superior {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .ticket-kpi {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            padding: 20px;
+            text-align: center;
+            border-top: 5px solid var(--vino);
+        }
+
+        .ticket-kpi h5 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .ticket-kpi span {
+            font-size: 30px;
+            color: var(--vino);
+            font-weight: bold;
+        }
+
+        /*==============================================*/
+
+        .ticket {
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            overflow: hidden;
+        }
+
+        .ticket-header {
+            background: var(--vino);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-body {
+            padding: 20px;
+        }
+
+        .ticket-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .ticket-item {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .ticket-item h6 {
+            color: #777;
+            margin-bottom: 6px;
+        }
+
+        .ticket-item span {
+            color: var(--vino);
+            font-weight: bold;
+        }
+
+        .estado-ticket {
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .abierto {
+            background: #1565C0;
+        }
+
+        .revision {
+            background: #F9A825;
+        }
+
+        .cerrado {
+            background: #2E7D32;
+        }
+
+        .nuevo-ticket {
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            padding: 25px;
+        }
+
+        .nuevo-ticket textarea {
+            width: 100%;
+            height: 160px;
+            resize: none;
+            border: 1px solid #CCC;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: Montserrat;
+        }
+
+        .nuevo-ticket select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        /*====================================================
+            TRANSICIONES DEL DASHBOARD
+        ====================================================*/
+
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity .35s ease, transform .35s ease;
+        }
+
+        .fade-exit {
+            opacity: 1;
+        }
+
+        .fade-exit-active {
+            opacity: 0;
+            transition: .25s;
+        }
+
+        /*====================================================
+        LOADER
+        ====================================================*/
+
+        .loader-dashboard {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, .75);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .loader-dashboard.visible {
+            display: flex;
+        }
+
+        .loader {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 7px solid #DDD;
+            border-top: 7px solid var(--vino);
+            animation: girar .9s linear infinite;
+        }
+
+        @keyframes girar {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /*====================================================
+        DASHBOARD INTELIGENTE
+        ====================================================*/
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--sombra);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: .30s;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dashboard-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--vino);
+        }
+
+        .dashboard-card h5 {
+            color: #777;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .dashboard-card h2 {
+            color: var(--vino);
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-card small {
+            color: #888;
+        }
+
+        /*====================================================
+        PANEL EJECUTIVO
+        ====================================================*/
+
+        .panel-expediente {
+            background: white;
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .encabezado-expediente {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        .datos-expediente {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .dato-exp {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 14px;
+            border-left: 5px solid var(--vino);
+        }
+
+        .dato-exp h6 {
+            color: #666;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .dato-exp span {
+            color: var(--vino);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .estado-expediente {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--vino), #91263d);
+            color: white;
+            border-radius: 18px;
+            padding: 20px;
+        }
+
+        .estado-expediente h2 {
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .estado-expediente p {
+            opacity: .90;
+        }
+
+        .avance-general {
+            margin-top: 25px;
+        }
+
+        .barra-general {
+            width: 100%;
+            height: 18px;
+            background: #DDD;
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .barra-general span {
+            display: block;
+            height: 100%;
+            width: 85%;
+            background: linear-gradient(90deg, var(--verde), #63B55F);
+        }
+
+        @media(max-width:1100px) {
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .kpis {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        /* RESPONSIVO */
+
+        @media(max-width:900px) {
+
+            header {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .titulo {
+                font-size: 18px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .etapas {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width:900px) and (orientation:portrait) {
+            .dashboard-layout {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /*=========================================
+        TABLETS
+        =========================================*/
+
+        @media (max-width:1200px) {
+
+            .fila-indicadores,
+            .barra-inmueble,
+            .avances-kpis,
+            .plan-superior,
+            .meta-inferior,
+            .dashboard-grid,
+            .recursos-superior,
+            .buzon-superior {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /*=========================================
+        CELULARES
+        =========================================*/
+
+        @media (max-width:768px) {
+
+            .fila-indicadores,
+            .barra-inmueble,
+            .avances-kpis,
+            .plan-superior,
+            .meta-inferior,
+            .dashboard-grid,
+            .recursos-superior,
+            .buzon-superior {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width:992px) {
+            .fila-graficas {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="contenedor">
+        <!-- =====================================================
+         HEADER INSTITUCIONAL
+        ====================================================== -->
+
+        <header>
+
+            <div class="logos">
+                <img src="logos.png" alt="Logos Institucionales">
+            </div>
+
+            <div class="titulo">
+
+                PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA
+
+            </div>
+
+            <div class="usuario-panel">
+
+                <span id="nombreUsuario" class="usuario-nombre">
+
+                    👤 Usuario
+
+                </span>
+
+                <button class="btn-salir" onclick="cerrarSesion()">
+
+                    Cerrar sesión
+
+                </button>
+
+            </div>
+
+        </header>
+
+        <!-- =====================================================
+         CONTENIDO PRINCIPAL
+    ====================================================== -->
+
+        <div class="principal">
+
+            <!-- Fondo -->
+
+            <div class="fondo">
+                <img src="logo_fondo.png" alt="Fondo">
+            </div>
+
+            <!-- =====================================================
+             DASHBOARD
+            ====================================================== -->
+            <div class="dashboard">
+
+                <div class="dashboard-layout">
+
+                    <!-- MENÚ IZQUIERDO -->
+
+                    <aside class="menu-izquierdo">
+
+                        <div class="panel-menu">
+
+                            <h3>
+
+                                Proceso Energético
+
+                            </h3>
+
+                            <div class="menu-dashboard">
+
+                                <div class="menu-item" onclick="mostrarVista('estadisticos',this)">
+
+                                    <div class="menu-icono">📊</div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Estadísticos
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Indicadores del inmueble
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="menu-item" onclick="mostrarVista('areas',this)">
+
+                                    <div class="menu-icono">💡</div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Áreas de Oportunidad
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Hallazgos detectados
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="menu-item" onclick="mostrarVista('estrategias',this)">
+
+                                    <div class="menu-icono">🎯</div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Estrategias
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Acciones propuestas
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="menu-item" onclick="mostrarVista('meta',this)">
+
+                                    <div class="menu-icono">📈</div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Meta de Ahorro
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Objetivos energéticos
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="menu-item" onclick="mostrarVista('plan',this)">
+
+                                    <div class="menu-icono">🗓️</div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Plan Anual
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Programa de actividades
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </aside>
+
+                    <!-- CONTENIDO CENTRAL -->
+
+                    <main class="contenido-central">
+                        <div id="loaderDashboard" class="loader-dashboard">
+
+                            <div class="loader"></div>
+
+                        </div>
+                        <div id="contenedor-vistas">
+
+                            <!-- La vista se cargará aquí -->
+
+                        </div>
+
+                    </main>
+
+                    <!-- MENÚ DERECHO -->
+
+                    <aside class="menu-derecho">
+
+                        <div class="panel-menu">
+
+                            <h3>
+
+                                Seguimiento
+
+                            </h3>
+
+                            <div class="menu-dashboard">
+
+                                <div class="menu-item" onclick="mostrarVista('avances',this)">
+
+                                    <div class="menu-icono">
+
+                                        📅
+
+                                    </div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Avances
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Seguimiento trimestral
+
+                                        </span>
+
+                                    </div>
+
+                                    <div class="badge">
+
+                                        2
+
+                                    </div>
+
+                                </div>
+
+                                <div class="menu-item" onclick="mostrarVista('comparativo',this)">
+
+                                    <div class="menu-icono">
+
+                                        📉
+
+                                    </div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Comparativo
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Línea Base vs Actual
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="menu-item" onclick="mostrarVista('recursos',this)">
+
+                                    <div class="menu-icono">
+
+                                        📚
+
+                                    </div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Recursos
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Biblioteca digital
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="menu-item" onclick="mostrarVista('buzon',this)">
+
+                                    <div class="menu-icono">
+
+                                        ✉️
+
+                                    </div>
+
+                                    <div class="menu-texto">
+
+                                        <span class="menu-titulo">
+
+                                            Buzón
+
+                                        </span>
+
+                                        <span class="menu-descripcion">
+
+                                            Mensajes AEEH
+
+                                        </span>
+
+                                    </div>
+
+                                    <div class="badge">
+
+                                        5
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </aside>
+                </div>
+
+            </div>
+
+        </div>
+
+        <footer>
+
+            <img src="Logo pie.png" alt="Logo Izquierdo" class="footer-logo-izq">
+
+            <img src="Pie_dir.png" alt="Logo Derecho" class="footer-logo-der">
+
+        </footer>
+
+    </div>
+    <!-- ===========================================
+         VISTAS DEL DASHBOARD
+        ============================================ -->
+
+    <template id="vista-estadisticos">
+
+        <div class="panel-estadisticos">
+
+            <div class="barra-inmueble">
+
+                <div class="info-card">
+
+                    <h5>
+
+                        Dependencia
+
+                    </h5>
+
+                    <span>
+
+                        Secretaría de Desarrollo Económico
+
+                    </span>
+
+                </div>
+
+                <div class="info-card">
+
+                    <h5>
+
+                        Municipio
+
+                    </h5>
+
+                    <span>
+
+                        Pachuca de Soto
+
+                    </span>
+
+                </div>
+
+                <div class="info-card">
+
+                    <h5>
+
+                        Inmueble
+
+                    </h5>
+
+                    <span>
+
+                        Edificio Administrativo
+
+                    </span>
+
+                </div>
+
+                <div class="info-card">
+
+                    <h5>
+
+                        Estado
+
+                    </h5>
+
+                    <span>
+
+                        Validado
+
+                    </span>
+
+                </div>
+
+            </div>
+            <div class="fila-indicadores">
+
+                <div class="indicador-card">
+
+                    <h4>
+
+                        Demanda Máxima
+
+                    </h4>
+
+                    <div class="indicador-valor">
+
+                        87 kW
+
+                    </div>
+
+                    <div class="indicador-sub">
+
+                        Último ejercicio
+
+                    </div>
+
+                </div>
+
+                <div class="indicador-card">
+
+                    <h4>
+
+                        Consumo Promedio
+
+                    </h4>
+
+                    <div class="indicador-valor">
+
+                        10,420
+
+                    </div>
+
+                    <div class="indicador-sub">
+
+                        kWh / mes
+
+                    </div>
+
+                </div>
+
+                <div class="indicador-card">
+
+                    <h4>
+
+                        Costo Promedio
+
+                    </h4>
+
+                    <div class="indicador-valor">
+
+                        $37,600
+
+                    </div>
+
+                    <div class="indicador-sub">
+
+                        MXN / mes
+
+                    </div>
+
+                </div>
+
+                <div class="indicador-card">
+
+                    <h4>
+
+                        Emisiones
+
+                    </h4>
+
+                    <div class="indicador-valor">
+
+                        42 t
+
+                    </div>
+
+                    <div class="indicador-sub">
+
+                        CO₂ equivalente
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="fila-graficas">
+
+                <div class="grafica-card">
+
+                    <h3>
+
+                        Consumo Histórico Mensual
+
+                    </h3>
+
+                    <canvas id="graficaConsumo"></canvas>
+
+                </div>
+
+                <div class="grafica-card">
+
+                    <h3>
+
+                        Distribución del Consumo
+
+                    </h3>
+
+                    <canvas id="graficaPastel"></canvas>
+
+                </div>
+
+            </div>
+
+            <div class="fila-inferior">
+
+                <div class="grafica-card">
+
+                    <h3>
+
+                        Indicadores Relevantes
+
+                    </h3>
+
+                    <table>
+
+                        <tr>
+
+                            <th>Concepto</th>
+
+                            <th>Valor</th>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Factor de Carga</td>
+
+                            <td>0.84</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Horas Pico</td>
+
+                            <td>18:00 - 21:00</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Tarifa</td>
+
+                            <td>PDBT</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Eficiencia</td>
+
+                            <td>82%</td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+                <div class="grafica-card">
+
+                    <h3>
+
+                        Diagnóstico General
+
+                    </h3>
+
+                    <p>
+
+                        Con base en la información capturada, el inmueble presenta oportunidades de mejora
+                        principalmente en los sistemas de iluminación y climatización. Se recomienda
+                        priorizar acciones de sustitución tecnológica y optimización de horarios de
+                        operación para incrementar la eficiencia energética.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </template>
+
+    <template id="vista-areas">
+
+        <div class="oportunidades">
+
+            <div class="fila-oportunidades">
+
+                <div class="oportunidad-card">
+
+                    <div class="oportunidad-header">
+
+                        💡 Iluminación
+
+                    </div>
+
+                    <div class="oportunidad-body">
+
+                        <table>
+
+                            <tr>
+
+                                <td>Prioridad</td>
+
+                                <td>
+
+                                    <span class="prioridad alta">
+
+                                        ALTA
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Ahorro estimado</td>
+
+                                <td>
+
+                                    18 %
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Retorno</td>
+
+                                <td>
+
+                                    1.8 años
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Inversión</td>
+
+                                <td>
+
+                                    $180,000
+
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>
+
+                                    Estado
+
+                                </td>
+
+                                <td>
+
+                                    🟢 Viable
+
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="oportunidad-card">
+
+                    <div class="oportunidad-header">
+
+                        ❄️ Climatización
+
+                    </div>
+
+                    <div class="oportunidad-body">
+
+                        <table>
+
+                            <tr>
+
+                                <td>Prioridad</td>
+
+                                <td>
+
+                                    <span class="prioridad media">
+
+                                        MEDIA
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Ahorro estimado</td>
+
+                                <td>
+
+                                    12 %
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Retorno</td>
+
+                                <td>
+
+                                    3 años
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Inversión</td>
+
+                                <td>
+
+                                    $350,000
+
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>
+
+                                    Estado
+
+                                </td>
+
+                                <td>
+
+                                    🟡 En análisis
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <div class="oportunidad-card">
+
+                    <div class="oportunidad-header">
+
+                        ⚙ Equipos
+
+                    </div>
+
+                    <div class="oportunidad-body">
+
+                        <table>
+
+                            <tr>
+
+                                <td>Prioridad</td>
+
+                                <td>
+
+                                    <span class="prioridad baja">
+
+                                        BAJA
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Ahorro estimado</td>
+
+                                <td>
+
+                                    6 %
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Retorno</td>
+
+                                <td>
+
+                                    4 años
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Inversión</td>
+
+                                <td>
+
+                                    $95,000
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+                                <td>
+
+                                    Estado
+
+                                </td>
+
+                                <td>
+
+                                    🔵 Programado
+
+                                </td>
+
+                            </tr>
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="resumen-oportunidad">
+
+                <h3>
+
+                    Resumen Ejecutivo
+
+                </h3>
+
+                <p>
+
+                    Con base en la Línea Base Energética del inmueble, se identifican tres áreas prioritarias
+                    para
+                    la implementación de medidas de eficiencia energética. La sustitución del sistema de
+                    iluminación
+                    representa la mayor oportunidad de ahorro, seguida por la optimización de los sistemas de
+                    climatización y la modernización de equipos eléctricos.
+
+                </p>
+
+                <br>
+
+                <div class="resumen-grid">
+
+                    <div class="resumen-item">
+
+                        <h4>
+
+                            Impacto Energético
+
+                        </h4>
+
+                        <span>
+
+                            89%
+
+                        </span>
+
+                        <div class="barra-impacto">
+
+                            <span class="impacto-alto"></span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="resumen-item">
+
+                        <h4>
+
+                            Impacto Económico
+
+                        </h4>
+
+                        <span>
+
+                            82%
+
+                        </span>
+
+                        <div class="barra-impacto">
+
+                            <span class="impacto-medio"></span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="resumen-item">
+
+                        <h4>
+
+                            Prioridad Global
+
+                        </h4>
+
+                        <span>
+
+                            Alta
+
+                        </span>
+
+                        <div class="barra-impacto">
+
+                            <span class="impacto-alto"></span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <br>
+
+            <div class="card">
+
+                <h3>
+
+                    Conclusión del Diagnóstico
+
+                </h3>
+
+                <p>
+                    Las oportunidades detectadas permitirían reducir aproximadamente un
+
+                    <b>
+
+                        18 %
+
+                    </b>
+
+                    del consumo anual del inmueble.
+
+                    La intervención recomendada consiste en iniciar con el sistema de iluminación, continuar con la
+                    optimización de los equipos de climatización y finalmente implementar acciones de modernización
+                    tecnológica para equipos eléctricos.
+
+                </p>
+
+            </div>
+    </template>
+
+    <template id="vista-estrategias">
+
+        <div class="estrategias">
+
+            <div class="estrategia">
+
+                <div class="estrategia-header">
+
+                    <h3>
+
+                        💡 Sustitución de Luminarias LED
+
+                    </h3>
+
+                    <div class="estado">
+
+                        Planeación
+
+                    </div>
+
+                </div>
+
+                <div class="estrategia-body">
+
+                    <div class="estrategia-grid">
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Ahorro esperado
+
+                            </h5>
+
+                            <span>
+
+                                18 %
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Inversión
+
+                            </h5>
+
+                            <span>
+
+                                $180,000
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Retorno
+
+                            </h5>
+
+                            <span>
+
+                                1.8 años
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Responsable
+
+                            </h5>
+
+                            <span>
+
+                                Servicios Generales
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <b>
+
+                        Avance del Proyecto
+
+                    </b>
+
+                    <div class="avance">
+
+                        <span></span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SEGUNDA -->
+
+            <div class="estrategia">
+
+                <div class="estrategia-header">
+
+                    <h3>
+
+                        ❄ Optimización del Sistema de Climatización
+
+                    </h3>
+
+                    <div class="estado">
+
+                        Análisis
+
+                    </div>
+
+                </div>
+
+                <div class="estrategia-body">
+
+                    <div class="estrategia-grid">
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Ahorro esperado
+
+                            </h5>
+
+                            <span>
+
+                                12 %
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Inversión
+
+                            </h5>
+
+                            <span>
+
+                                $350,000
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Retorno
+
+                            </h5>
+
+                            <span>
+
+                                3 años
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Responsable
+
+                            </h5>
+
+                            <span>
+
+                                Infraestructura
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <b>
+
+                        Avance del Proyecto
+
+                    </b>
+
+                    <div class="avance">
+
+                        <span style="width:18%"></span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- TERCERA -->
+
+            <div class="estrategia">
+
+                <div class="estrategia-header">
+
+                    <h3>
+
+                        ⚙ Automatización Eléctrica
+
+                    </h3>
+
+                    <div class="estado">
+
+                        Programado
+
+                    </div>
+
+                </div>
+
+                <div class="estrategia-body">
+
+                    <div class="estrategia-grid">
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Ahorro esperado
+
+                            </h5>
+
+                            <span>
+
+                                7 %
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Inversión
+
+                            </h5>
+
+                            <span>
+
+                                $95,000
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Retorno
+
+                            </h5>
+
+                            <span>
+
+                                4 años
+
+                            </span>
+
+                        </div>
+
+                        <div class="dato">
+
+                            <h5>
+
+                                Responsable
+
+                            </h5>
+
+                            <span>
+
+                                Mantenimiento
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <b>
+
+                        Avance del Proyecto
+
+                    </b>
+
+                    <div class="avance">
+
+                        <span style="width:5%"></span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <h3>
+
+                    Resumen Estratégico
+
+                </h3>
+
+                <p>
+
+                    Las estrategias propuestas fueron priorizadas considerando el impacto energético, el retorno
+                    de
+                    inversión y la viabilidad técnica del inmueble. Se recomienda iniciar con la modernización
+                    del
+                    sistema de iluminación, seguida de la optimización del sistema de climatización y,
+                    finalmente,
+                    la automatización de procesos eléctricos.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </template>
+
+    <template id="vista-meta">
+
+        <div class="meta-dashboard">
+
+            <div class="meta-superior">
+
+                <div class="velocimetro-card">
+
+                    <h3>
+
+                        Cumplimiento de Meta
+
+                    </h3>
+
+                    <br>
+
+                    <div class="velocimetro">
+
+                        <div class="velocimetro-centro">
+
+                            <h1>
+
+                                75%
+
+                            </h1>
+
+                            <span>
+
+                                Avance
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <p>
+
+                        El inmueble presenta un avance favorable respecto a la meta establecida.
+
+                    </p>
+
+                </div>
+
+                <div class="meta-resumen">
+
+                    <div class="meta-card">
+
+                        <h4>
+
+                            Meta de Ahorro Energético
+
+                        </h4>
+
+                        <span>
+
+                            15 %
+
+                        </span>
+
+                    </div>
+
+                    <div class="meta-card">
+
+                        <h4>
+
+                            Ahorro Económico
+
+                        </h4>
+
+                        <span>
+
+                            $520,000
+
+                        </span>
+
+                    </div>
+
+                    <div class="meta-card">
+
+                        <h4>
+
+                            Consumo Evitado
+
+                        </h4>
+
+                        <span>
+
+                            18,500 kWh
+
+                        </span>
+
+                    </div>
+
+                    <div class="meta-card">
+
+                        <h4>
+
+                            Reducción CO₂
+
+                        </h4>
+
+                        <span>
+
+                            14 t
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="meta-inferior">
+
+                <div class="indicador-meta">
+
+                    <h5>
+
+                        Periodo
+
+                    </h5>
+
+                    <span>
+
+                        2026
+
+                    </span>
+
+                </div>
+
+                <div class="indicador-meta">
+
+                    <h5>
+
+                        Prioridad
+
+                    </h5>
+
+                    <span>
+
+                        Alta
+
+                    </span>
+
+                </div>
+
+                <div class="indicador-meta">
+
+                    <h5>
+
+                        Inversión
+
+                    </h5>
+
+                    <span>
+
+                        $625,000
+
+                    </span>
+
+                </div>
+
+                <div class="indicador-meta">
+
+                    <h5>
+
+                        Retorno
+
+                    </h5>
+
+                    <span>
+
+                        2.4 años
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <h3>
+
+                    Análisis de la Meta
+
+                </h3>
+
+                <p>
+
+                    Con la implementación de las estrategias priorizadas, se estima alcanzar una reducción del
+                    15%
+                    en el consumo energético anual del inmueble. Esta meta representa un ahorro económico
+                    importante
+                    y contribuye a disminuir las emisiones de gases de efecto invernadero, fortaleciendo la
+                    eficiencia energética del edificio.
+
+                </p>
+
+            </div>
+
+        </div>
+    </template>
+    <template id="vista-plan">
+
+        <div class="plan-dashboard">
+
+            <div class="plan-superior">
+
+                <div class="plan-kpi">
+
+                    <h5>
+
+                        Actividades
+
+                    </h5>
+
+                    <span>
+
+                        12
+
+                    </span>
+
+                </div>
+
+                <div class="plan-kpi">
+
+                    <h5>
+
+                        Concluidas
+
+                    </h5>
+
+                    <span>
+
+                        4
+
+                    </span>
+
+                </div>
+
+                <div class="plan-kpi">
+
+                    <h5>
+
+                        En Proceso
+
+                    </h5>
+
+                    <span>
+
+                        3
+
+                    </span>
+
+                </div>
+
+                <div class="plan-kpi">
+
+                    <h5>
+
+                        Avance General
+
+                    </h5>
+
+                    <span>
+
+                        58%
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="cronograma">
+
+                <h3>
+
+                    Cronograma Anual de Actividades
+
+                </h3>
+
+                <br>
+                <div class="tabla-responsive">
+
+                    <table>
+
+                        <tr>
+
+                            <th>Actividad</th>
+
+                            <th>Responsable</th>
+
+                            <th>Periodo</th>
+
+                            <th>Estado</th>
+
+                            <th>Avance</th>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Sustitución de luminarias</td>
+
+                            <td>Servicios Generales</td>
+
+                            <td>Enero - Marzo</td>
+
+                            <td>
+
+                                <span class="estado-plan estado-concluido">
+
+                                    Concluido
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <div class="barra-avance">
+
+                                    <span style="width:100%"></span>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Mantenimiento HVAC</td>
+
+                            <td>Infraestructura</td>
+
+                            <td>Abril - Junio</td>
+
+                            <td>
+
+                                <span class="estado-plan estado-proceso">
+
+                                    En proceso
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <div class="barra-avance">
+
+                                    <span style="width:65%"></span>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Automatización</td>
+
+                            <td>Mantenimiento</td>
+
+                            <td>Julio - Septiembre</td>
+
+                            <td>
+
+                                <span class="estado-plan estado-programado">
+
+                                    Programado
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <div class="barra-avance">
+
+                                    <span style="width:15%"></span>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Instalación Fotovoltaica</td>
+
+                            <td>AEEH</td>
+
+                            <td>Octubre - Diciembre</td>
+
+                            <td>
+
+                                <span class="estado-plan estado-programado">
+
+                                    Programado
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <div class="barra-avance">
+
+                                    <span style="width:0%"></span>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+
+            <div class="plan-observaciones">
+
+                <h3>
+
+                    Observaciones del Plan
+
+                </h3>
+
+                <p>
+
+                    El Plan Anual de Trabajo integra las acciones priorizadas derivadas del análisis energético
+                    del inmueble. Su objetivo es facilitar el seguimiento de las actividades comprometidas por
+                    la dependencia y verificar el cumplimiento de las metas establecidas en materia de
+                    eficiencia energética.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </template>
+
+    <template id="vista-avances">
+
+        <div class="avances-dashboard">
+
+            <div class="avances-kpis">
+
+                <div class="avance-kpi">
+
+                    <h5>
+
+                        Trimestres Concluidos
+
+                    </h5>
+
+                    <span>
+
+                        2
+
+                    </span>
+
+                </div>
+
+                <div class="avance-kpi">
+
+                    <h5>
+
+                        Evidencias Cargadas
+
+                    </h5>
+
+                    <span>
+
+                        18
+
+                    </span>
+
+                </div>
+
+                <div class="avance-kpi">
+
+                    <h5>
+
+                        Cumplimiento
+
+                    </h5>
+
+                    <span>
+
+                        72%
+
+                    </span>
+
+                </div>
+
+                <div class="avance-kpi">
+
+                    <h5>
+
+                        Observaciones
+
+                    </h5>
+
+                    <span>
+
+                        3
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="timeline">
+
+                <!-- PRIMER TRIMESTRE -->
+
+                <div class="timeline-item">
+
+                    <div class="timeline-punto"></div>
+
+                    <h3>
+
+                        Primer Trimestre
+
+                    </h3>
+
+                    <div class="timeline-grid">
+
+                        <div class="timeline-dato">
+
+                            <h6>Periodo</h6>
+
+                            <span>Enero - Marzo</span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Estado</h6>
+
+                            <span class="validado">
+
+                                Validado por la AEEH
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Evidencias</h6>
+
+                            <span>
+
+                                6 archivos
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Avance</h6>
+
+                            <span>
+
+                                100 %
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- SEGUNDO -->
+
+                <div class="timeline-item">
+
+                    <div class="timeline-punto"></div>
+
+                    <h3>
+
+                        Segundo Trimestre
+
+                    </h3>
+
+                    <div class="timeline-grid">
+
+                        <div class="timeline-dato">
+
+                            <h6>Periodo</h6>
+
+                            <span>
+
+                                Abril - Junio
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Estado</h6>
+
+                            <span class="revision">
+
+                                En revisión
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Evidencias</h6>
+
+                            <span>
+
+                                5 archivos
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Avance</h6>
+
+                            <span>
+
+                                68 %
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- TERCERO -->
+
+                <div class="timeline-item">
+
+                    <div class="timeline-punto"></div>
+
+                    <h3>
+
+                        Tercer Trimestre
+
+                    </h3>
+
+                    <div class="timeline-grid">
+
+                        <div class="timeline-dato">
+
+                            <h6>Periodo</h6>
+
+                            <span>
+
+                                Julio - Septiembre
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Estado</h6>
+
+                            <span class="pendiente">
+
+                                Pendiente
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Evidencias</h6>
+
+                            <span>
+
+                                0 archivos
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Avance</h6>
+
+                            <span>
+
+                                0 %
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- CUARTO -->
+
+                <div class="timeline-item">
+
+                    <div class="timeline-punto"></div>
+
+                    <h3>
+
+                        Cuarto Trimestre
+
+                    </h3>
+
+                    <div class="timeline-grid">
+
+                        <div class="timeline-dato">
+
+                            <h6>Periodo</h6>
+
+                            <span>
+
+                                Octubre - Diciembre
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Estado</h6>
+
+                            <span class="pendiente">
+
+                                Pendiente
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Evidencias</h6>
+
+                            <span>
+
+                                0 archivos
+
+                            </span>
+
+                        </div>
+
+                        <div class="timeline-dato">
+
+                            <h6>Avance</h6>
+
+                            <span>
+
+                                0 %
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <h3>
+
+                    Observaciones de la Agencia Estatal de Energía
+
+                </h3>
+
+                <p>
+
+                    Durante el primer trimestre se validó correctamente la documentación presentada por la
+                    dependencia. Para el segundo trimestre se recomienda complementar las evidencias
+                    fotográficas y anexar el reporte de consumo actualizado antes de concluir el proceso de
+                    validación.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </template>
+    <template id="vista-recursos">
+
+        <div class="recursos-dashboard">
+
+            <div class="recursos-superior">
+
+                <div class="recurso-kpi">
+
+                    <h5>
+
+                        Documentos
+
+                    </h5>
+
+                    <span>
+
+                        18
+
+                    </span>
+
+                </div>
+
+                <div class="recurso-kpi">
+
+                    <h5>
+
+                        Manuales
+
+                    </h5>
+
+                    <span>
+
+                        6
+
+                    </span>
+
+                </div>
+
+                <div class="recurso-kpi">
+
+                    <h5>
+
+                        Formatos
+
+                    </h5>
+
+                    <span>
+
+                        9
+
+                    </span>
+
+                </div>
+
+                <div class="recurso-kpi">
+
+                    <h5>
+
+                        Videos
+
+                    </h5>
+
+                    <span>
+
+                        12
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="biblioteca">
+
+                <div class="documento">
+
+                    <div class="documento-icono">
+
+                        📘
+
+                    </div>
+
+                    <div class="documento-info">
+
+                        <h4>
+
+                            Manual del Usuario
+
+                        </h4>
+
+                        <p>
+
+                            Guía completa para el uso de la Plataforma Estatal de Eficiencia Energética.
+
+                        </p>
+
+                        <button class="btn btn-verde">
+
+                            Descargar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="documento">
+
+                    <div class="documento-icono">
+
+                        📄
+
+                    </div>
+
+                    <div class="documento-info">
+
+                        <h4>
+
+                            Formato del Plan Anual
+
+                        </h4>
+
+                        <p>
+
+                            Documento oficial para integrar el Programa Anual de Trabajo.
+
+                        </p>
+
+                        <button class="btn btn-azul">
+
+                            Descargar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="documento">
+
+                    <div class="documento-icono">
+
+                        🎥
+
+                    </div>
+
+                    <div class="documento-info">
+
+                        <h4>
+
+                            Capacitación
+
+                        </h4>
+
+                        <p>
+
+                            Videos de apoyo para la captura y seguimiento de información.
+
+                        </p>
+
+                        <button class="btn btn-vino">
+
+                            Ver
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="documento">
+
+                    <div class="documento-icono">
+
+                        ⚖️
+
+                    </div>
+
+                    <div class="documento-info">
+
+                        <h4>
+
+                            Normatividad
+
+                        </h4>
+
+                        <p>
+
+                            Ley, lineamientos y criterios aplicables en materia de eficiencia energética.
+
+                        </p>
+
+                        <button class="btn btn-dorado">
+
+                            Consultar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <h3>
+
+                    Repositorio Institucional
+
+                </h3>
+
+                <p>
+
+                    En esta sección la dependencia podrá consultar la documentación oficial emitida por la
+                    Agencia Estatal de Energía de Hidalgo, incluyendo manuales, formatos, lineamientos, videos
+                    de capacitación y material técnico necesario para la correcta implementación de los
+                    proyectos de eficiencia energética.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </template><template id="vista-buzon">
+
+        <div class="buzon-dashboard">
+
+            <div class="buzon-superior">
+
+                <div class="ticket-kpi">
+
+                    <h5>
+
+                        Tickets Abiertos
+
+                    </h5>
+
+                    <span>
+
+                        3
+
+                    </span>
+
+                </div>
+
+                <div class="ticket-kpi">
+
+                    <h5>
+
+                        En Revisión
+
+                    </h5>
+
+                    <span>
+
+                        2
+
+                    </span>
+
+                </div>
+
+                <div class="ticket-kpi">
+
+                    <h5>
+
+                        Resueltos
+
+                    </h5>
+
+                    <span>
+
+                        18
+
+                    </span>
+
+                </div>
+
+                <div class="ticket-kpi">
+
+                    <h5>
+
+                        Tiempo Promedio
+
+                    </h5>
+
+                    <span>
+
+                        4 días
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- ================================= -->
+
+            <div class="ticket">
+
+                <div class="ticket-header">
+
+                    <div>
+
+                        Ticket #2026-0015
+
+                    </div>
+
+                    <div class="estado-ticket abierto">
+
+                        Abierto
+
+                    </div>
+
+                </div>
+
+                <div class="ticket-body">
+
+                    <div class="ticket-grid">
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Asunto
+
+                            </h6>
+
+                            <span>
+
+                                Corrección de Línea Base
+
+                            </span>
+
+                        </div>
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Fecha
+
+                            </h6>
+
+                            <span>
+
+                                15/07/2026
+
+                            </span>
+
+                        </div>
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Área
+
+                            </h6>
+
+                            <span>
+
+                                Línea Base
+
+                            </span>
+
+                        </div>
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Responsable
+
+                            </h6>
+
+                            <span>
+
+                                Agencia Estatal de Energía
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <p>
+
+                        Se solicita revisar la información correspondiente al consumo anual debido a una
+                        inconsistencia detectada entre los recibos de CFE y la captura realizada en la
+                        plataforma.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- ================================= -->
+
+            <div class="ticket">
+
+                <div class="ticket-header">
+
+                    <div>
+
+                        Ticket #2026-0012
+
+                    </div>
+
+                    <div class="estado-ticket revision">
+
+                        En revisión
+
+                    </div>
+
+                </div>
+
+                <div class="ticket-body">
+
+                    <div class="ticket-grid">
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Asunto
+
+                            </h6>
+
+                            <span>
+
+                                Validación de Evidencias
+
+                            </span>
+
+                        </div>
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Fecha
+
+                            </h6>
+
+                            <span>
+
+                                09/07/2026
+
+                            </span>
+
+                        </div>
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Área
+
+                            </h6>
+
+                            <span>
+
+                                Seguimiento
+
+                            </span>
+
+                        </div>
+
+                        <div class="ticket-item">
+
+                            <h6>
+
+                                Responsable
+
+                            </h6>
+
+                            <span>
+
+                                Dirección Técnica
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ================================= -->
+
+            <div class="nuevo-ticket">
+
+                <h3>
+
+                    Generar Nuevo Ticket
+
+                </h3>
+
+                <br>
+
+                <select>
+
+                    <option>
+
+                        Seleccione el módulo
+
+                    </option>
+
+                    <option>
+
+                        Datos Generales
+
+                    </option>
+
+                    <option>
+
+                        Línea Base
+
+                    </option>
+
+                    <option>
+
+                        Seguimiento
+
+                    </option>
+
+                    <option>
+
+                        Plan Anual
+
+                    </option>
+
+                    <option>
+
+                        Geolocalización
+
+                    </option>
+
+                </select>
+
+                <textarea placeholder="Describa la solicitud o problema detectado..."></textarea>
+
+                <br><br>
+
+                <button class="btn btn-verde">
+
+                    Enviar Solicitud
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </template>
+    <template id="vista-comparativo">
+
+        <div class="card">
+
+            <h2>Comparativo Línea Base vs Actual</h2>
+
+            <br>
+
+            <canvas id="graficaComparativo" height="360"></canvas>
+
+        </div>
+
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        let graficaConsumo = null;
+        let graficaPastel = null;
+        let graficaComparativo = null;
+        /* ===========================================
+           CAMBIO DE VISTAS
+        =========================================== */
+
+        function mostrarVista(nombre, elemento) {
+
+            document
+                .querySelectorAll(".menu-item")
+                .forEach(x => x.classList.remove("activo"));
+
+            elemento.classList.add("activo");
+
+            const plantilla = document.getElementById("vista-" + nombre);
+
+            if (!plantilla) {
+
+                console.error("No existe la vista:", nombre);
+
+                return;
+
+            }
+
+            document
+                .getElementById("contenedor-vistas")
+                .innerHTML = plantilla.innerHTML;
+
+            if (nombre == "estadisticos") {
+
+                cargarGraficas();
+
+            }
+
+            if (nombre == "comparativo") {
+
+                cargarGraficaComparativo();
+
+            }
+
+        }
+
+        /*====================================================
+        MODELO DE DATOS
+        ====================================================*/
+
+        const DashboardData = {
+
+            inmueble: {
+
+                dependencia:
+                    "Secretaría de Desarrollo Económico",
+
+                municipio:
+                    "Pachuca de Soto",
+
+                inmueble:
+                    "Edificio Administrativo",
+
+                estatus:
+                    "Validado"
+
+            },
+
+            lineaBase: {
+
+                consumo: 125000,
+
+                demanda: 87,
+
+                costo: 452000,
+
+                emisiones: 42
+
+            },
+
+            actual: {
+
+                consumo: 109000,
+
+                demanda: 74,
+
+                costo: 386500,
+
+                emisiones: 34
+
+            },
+
+            ahorro: {
+
+                energia: 12.8,
+
+                economico: 14.5,
+
+                emisiones: 18.9
+
+            },
+
+            planAnual: {
+
+                actividades: 12,
+
+                concluidas: 4,
+
+                proceso: 3,
+
+                avance: 58
+
+            },
+
+            seguimiento: {
+
+                trimestre: 2,
+
+                cumplimiento: 72,
+
+                evidencias: 18,
+
+                observaciones: 3
+
+            },
+
+            tickets: {
+
+                abiertos: 3,
+
+                revision: 2,
+
+                cerrados: 18
+
+            }
+
+        };
+        /*====================================================
+        KPIs DEL DASHBOARD
+        ====================================================*/
+
+        DashboardData.kpis = {
+
+            consumo: {
+
+                titulo: "Consumo Anual",
+
+                valor: "125,000",
+
+                unidad: "kWh"
+
+            },
+
+            demanda: {
+
+                titulo: "Demanda Máxima",
+
+                valor: "87",
+
+                unidad: "kW"
+
+            },
+
+            costo: {
+
+                titulo: "Costo Anual",
+
+                valor: "$452,000",
+
+                unidad: "MXN"
+
+            },
+
+            ahorro: {
+
+                titulo: "Meta de Ahorro",
+
+                valor: "15",
+
+                unidad: "%"
+
+            }
+
+        };
+        /*====================================================
+        COMPONENTES
+        ====================================================*/
+
+        const Componentes = {
+            renderExpediente() {
+
+                const e = DashboardData.expediente;
+
+                return `
+
+<div class="panel-expediente">
+
+<div class="encabezado-expediente">
+
+<div class="datos-expediente">
+
+<div class="dato-exp">
+
+<h6>Dependencia</h6>
+
+<span>${e.dependencia}</span>
+
+</div>
+
+<div class="dato-exp">
+
+<h6>Folio</h6>
+
+<span>${e.folio}</span>
+
+</div>
+
+<div class="dato-exp">
+
+<h6>Municipio</h6>
+
+<span>${e.municipio}</span>
+
+</div>
+
+<div class="dato-exp">
+
+<h6>Responsable</h6>
+
+<span>${e.responsable}</span>
+
+</div>
+
+<div class="dato-exp">
+
+<h6>Inmueble</h6>
+
+<span>${e.inmueble}</span>
+
+</div>
+
+<div class="dato-exp">
+
+<h6>Última actualización</h6>
+
+<span>${e.actualizacion}</span>
+
+</div>
+
+</div>
+
+<div class="estado-expediente">
+
+<h2>
+
+${e.estado}
+
+</h2>
+
+<p>
+
+Ejercicio ${e.ejercicio}
+
+</p>
+
+</div>
+
+</div>
+
+<div class="avance-general">
+
+<h4>
+
+Avance General del Expediente
+
+</h4>
+
+<br>
+
+<div class="barra-general">
+
+<span style="width:${e.avance}%"></span>
+
+</div>
+
+<br>
+
+<b>
+
+${e.avance}% completado
+
+</b>
+
+</div>
+
+</div>
+
+`;
+
+            },
+            cargar(id) {
+
+                return document
+
+                    .getElementById(
+
+                        "vista-" + id
+
+                    ).innerHTML;
+
+            },
+
+            estadisticos() {
+
+                return this.cargar(
+
+                    "estadisticos"
+
+                );
+
+            },
+
+            areas() {
+
+                return this.cargar(
+
+                    "areas"
+
+                );
+
+            },
+
+            estrategias() {
+
+                return this.cargar(
+
+                    "estrategias"
+
+                );
+
+            },
+
+            meta() {
+
+                return this.cargar(
+
+                    "meta"
+
+                );
+
+            },
+
+            plan() {
+
+                return this.cargar(
+
+                    "plan"
+
+                );
+
+            },
+
+            avances() {
+
+                return this.cargar(
+
+                    "avances"
+
+                );
+
+            },
+
+            comparativo() {
+
+                return this.cargar(
+
+                    "comparativo"
+
+                );
+
+            },
+
+            recursos() {
+
+                return this.cargar(
+
+                    "recursos"
+
+                );
+
+            },
+            renderKPIs() {
+
+                let html = "";
+
+                Object.values(
+
+                    DashboardData.kpis
+
+                ).forEach(
+
+                    item => {
+
+                        html += `
+
+<div class="dashboard-card">
+
+<h5>
+
+${item.titulo}
+
+</h5>
+
+<h2>
+
+${item.valor}
+
+</h2>
+
+<small>
+
+${item.unidad}
+
+</small>
+
+</div>
+
+`;
+
+                    });
+
+                return `
+
+<div class="dashboard-grid">
+
+${html}
+
+</div>
+
+`;
+
+            },
+            buzon() {
+
+                return this.cargar(
+
+                    "buzon"
+
+                );
+
+            }
+
+        };
+
+        /*====================================================
+        ROUTER DEL DASHBOARD
+        ====================================================*/
+
+        const Router = {
+
+            estadisticos() {
+
+                return Componentes.estadisticos();
+
+            },
+
+            areas() {
+
+                return Componentes.areas();
+
+            },
+
+            estrategias() {
+
+                return Componentes.estrategias();
+
+            },
+
+            meta() {
+
+                return Componentes.meta();
+
+            },
+
+            plan() {
+
+                return Componentes.plan();
+
+            },
+
+            avances() {
+
+                return Componentes.avances();
+
+            },
+
+            comparativo() {
+
+                return Componentes.comparativo();
+
+            },
+
+            recursos() {
+
+                return Componentes.recursos();
+
+            },
+
+            buzon() {
+
+                return Componentes.buzon();
+
+            }
+
+        };
+        /*====================================================
+        CONSULTAS
+        ====================================================*/
+
+        function obtenerInmueble() {
+
+            return DashboardData.inmueble;
+
+        }
+
+        function obtenerLineaBase() {
+
+            return DashboardData.lineaBase;
+
+        }
+
+        function obtenerActual() {
+
+            return DashboardData.actual;
+
+        }
+
+        function obtenerAhorro() {
+
+            return DashboardData.ahorro;
+
+        }
+
+        function obtenerPlan() {
+
+            return DashboardData.planAnual;
+
+        }
+
+        function obtenerSeguimiento() {
+
+            return DashboardData.seguimiento;
+
+        }
+
+        function obtenerTickets() {
+
+            return DashboardData.tickets;
+
+        }
+        /*====================================================
+            MOTOR DEL DASHBOARD
+        ====================================================*/
+
+        const Dashboard = {
+
+            vistaActual: "estadisticos",
+
+            mostrar(nombre) {
+
+                this.vistaActual = nombre;
+
+                const loader = document
+                    .getElementById(
+                        "loaderDashboard");
+
+                loader.classList.add(
+                    "visible");
+
+                setTimeout(() => {
+
+                    contenedor.innerHTML =
+
+                        Router[nombre]();
+
+                    const contenedor =
+                        document.getElementById(
+                            "contenedor-vistas");
+
+                    contenedor.innerHTML =
+                        plantilla.innerHTML;
+
+                    loader.classList.remove(
+                        "visible");
+
+                    this.animar();
+
+                    this.actualizarKPIs();
+
+                }, 250);
+
+            },
+
+            animar() {
+
+                const panel = document
+                    .getElementById(
+                        "contenedor-vistas");
+
+                panel.classList.remove(
+                    "fade-enter-active");
+
+                panel.classList.add(
+                    "fade-enter");
+
+                requestAnimationFrame(() => {
+
+                    panel.classList.remove(
+                        "fade-enter");
+
+                    panel.classList.add(
+                        "fade-enter-active");
+
+                });
+
+            },
+
+            actualizarKPIs() {
+
+                const inmueble =
+                    obtenerInmueble();
+
+                const linea =
+                    obtenerLineaBase();
+
+                console.log(inmueble);
+
+                console.log(linea);
+
+            }
+
+        };
+        /*====================================================
+        REFRESCAR VISTA
+        ====================================================*/
+
+        function refrescarVista() {
+
+            Dashboard.mostrar(
+
+                Dashboard.vistaActual
+
+            );
+
+        }
+        /*====================================================
+        CAMBIAR DATOS
+        ====================================================*/
+
+        function actualizarDashboard(
+
+            modulo,
+
+            datos
+
+        ) {
+
+            DashboardData
+
+            [modulo] = {
+
+                ...DashboardData
+
+                [modulo],
+
+                ...datos
+
+            };
+
+            refrescarVista();
+
+        }
+        /*====================================================
+        EXPORTAR DATOS
+        ====================================================*/
+
+        function obtenerDashboard() {
+
+            return DashboardData;
+
+        }
+        /*====================================================
+        ACTUALIZAR KPI
+        ====================================================*/
+
+        function actualizarKPI(
+
+            nombre,
+
+            valor
+
+        ) {
+
+            DashboardData
+
+                .kpis
+
+            [nombre]
+
+                .valor
+
+                =
+
+                valor;
+
+            refrescarVista();
+
+        }
+        /*====================================================
+        REFRESCAR KPIs
+        ====================================================*/
+
+        function cargarKPIs() {
+
+            actualizarKPI(
+
+                "consumo",
+
+                formatoNumero(
+
+                    DashboardData
+
+                        .lineaBase
+
+                        .consumo
+
+                )
+
+            );
+
+            actualizarKPI(
+
+                "demanda",
+
+                DashboardData
+
+                    .lineaBase
+
+                    .demanda
+
+            );
+
+            actualizarKPI(
+
+                "costo",
+
+                formatoMoneda(
+
+                    DashboardData
+
+                        .lineaBase
+
+                        .costo
+
+                )
+
+            );
+
+            actualizarKPI(
+
+                "ahorro",
+
+                DashboardData
+
+                    .ahorro
+
+                    .energia
+
+            );
+            DashboardData.expediente = {
+
+                folio: "AEEH-2026-00125",
+
+                dependencia: "Secretaría de Desarrollo Económico",
+
+                municipio: "Pachuca de Soto",
+
+                inmueble: "Edificio Administrativo",
+
+                responsable: "Administrador del Inmueble",
+
+                ejercicio: "2026",
+
+                estado: "VALIDADO",
+
+                avance: 85,
+
+                actualizacion: "28/06/2026"
+
+            };
+        }
+
+        function cargarGraficas() {
+
+            if (graficaConsumo) {
+
+                graficaConsumo.destroy();
+
+            }
+
+            if (graficaPastel) {
+
+                graficaPastel.destroy();
+
+            }
+
+            graficaConsumo = new Chart(
+                document.getElementById("graficaConsumo"),
+                {
+                    type: "line",
+                    data: {
+                        labels: [
+                            "Ene",
+                            "Feb",
+                            "Mar",
+                            "Abr",
+                            "May",
+                            "Jun",
+                            "Jul",
+                            "Ago",
+                            "Sep",
+                            "Oct",
+                            "Nov",
+                            "Dic"
+                        ],
+                        datasets: [{
+                            label: "Consumo (kWh)",
+                            data: [
+                                9800,
+                                10120,
+                                9950,
+                                10230,
+                                10010,
+                                10400,
+                                10600,
+                                10850,
+                                10500,
+                                10300,
+                                10180,
+                                9980
+                            ],
+                            borderWidth: 3,
+                            tension: .35
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: "top"
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: "kWh"
+                                }
+                            }
+                        }
+                    }
+                });
+
+            graficaPastel = new Chart(
+                document.getElementById("graficaPastel"),
+                {
+                    type: "doughnut",
+                    data: {
+                        labels: [
+                            "Iluminación",
+                            "Climatización",
+                            "Equipos",
+                            "Otros"
+                        ],
+                        datasets: [{
+                            data: [
+                                32,
+                                28,
+                                24,
+                                16
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        aspectRatio: 1,
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                });
+
+        }
+        function cargarGraficaComparativo() {
+
+            if (graficaComparativo) {
+
+                graficaComparativo.destroy();
+
+            }
+
+            const meses = [
+                "Ene",
+                "Feb",
+                "Mar",
+                "Abr",
+                "May",
+                "Jun",
+                "Jul",
+                "Ago",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dic"
+            ];
+
+            const lineaBase = meses.map(() => Math.round(Math.random() * 18000 + 90000));
+            const actual = lineaBase.map(valor => Math.round(valor - (Math.random() * 14000 + 4000)));
+
+            graficaComparativo = new Chart(
+                document.getElementById("graficaComparativo"),
+                {
+                    type: "bar",
+                    data: {
+                        labels: meses,
+                        datasets: [
+                            {
+                                label: "Línea Base",
+                                data: lineaBase,
+                                backgroundColor: "rgba(112, 31, 47, 0.85)",
+                                borderRadius: 8,
+                                borderSkipped: false
+                            },
+                            {
+                                label: "Actual",
+                                data: actual,
+                                backgroundColor: "rgba(21, 101, 192, 0.85)",
+                                borderRadius: 8,
+                                borderSkipped: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: "top"
+                            },
+                            title: {
+                                display: true,
+                                text: "Comparativo mensual de consumo"
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return context.dataset.label + ": " + context.formattedValue + " kWh";
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: false,
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "Consumo (kWh)"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            document.getElementById("graficaComparativo").style.minHeight = "320px";
+
+        }
+
+        const nombre =
+            sessionStorage.getItem("nombre");
+        if (nombre) {
+            document.getElementById("nombreUsuario").textContent =
+                "👤 " + nombre;
+        }
+
+        function cerrarSesion() {
+            if (confirm("¿Desea cerrar la sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "index.html";
+            }
+        }
+    </script>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Montserrat, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contenedor {
+            width: 95%;
+            max-width: 1400px;
+            margin: 10px auto;
+            border: 2px solid #000;
+            background: white;
+        }
+
+        /* ENCABEZADO */
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 2px solid #000;
+        }
+
+        .usuario-panel {
+            align-items: center;
+        }
+
+        .logos {
+            display: flex;
+            align-items: center;
+        }
+
+        .logos img {
+            height: 65px;
+            width: auto;
+        }
+
+        .titulo {
+            flex: 1;
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* CONTENIDO */
+
+        .principal {
+            position: relative;
+            min-height: 520px;
+        }
+
+        /* Fondo */
+
+        .fondo {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fondo img {
+            width: 70%;
+            max-width: 900px;
+            opacity: .18;
+        }
+
+        /* TITULO */
+
+        .inicio {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding-top: 10px;
+        }
+
+        .inicio h2 {
+            background: #c49a5a;
+            color: #000;
+            min-width: 230px;
+            max-width: 350px;
+            margin: auto;
+            padding: 12px;
+            border-radius: 50px;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* PROGRAMAS */
+
+        .programas {
+            width: 85%;
+            margin: auto;
+
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 35px;
+
+            justify-items: center;
+        }
+
+        .programa {
+            width: 100%;
+            max-width: 250px;
+            height: 170px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            border-left: 6px solid;
+            border-top: 6px solid;
+            transition:.30s;
+        }
+
+        .programa:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .20);
+        }
+
+        .programa-disponible {
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        .programa-disponible:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .20);
+
+            border-left: 6px solid #b94159;
+            border-top: 6px solid #b94159;
+        }
+
+        .programa-asignado {
+            background: white;
+            border-left: 6px solid #701F2F;
+            border-top: 6px solid #701F2F;
+            cursor: pointer;
+        }
+
+        .programa-bloqueado {
+            background: #ececec;
+            color: #7b7b7b;
+            border-left: 6px solid #c7c7c7;
+            border-top: 6px solid #c7c7c7;
+            opacity: .85;
+            cursor: pointer;
+            transition: .30s;
+        }
+
+        .programa-bloqueado:hover {
+            background: #e4e4e4;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+        }
+
+        /* PIE */
+
+        footer {
+            background: #701F2F;
+            padding: 8px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            height: 70px;
+        }
+
+        .footer-logo-izq {
+            height: 50px;
+            width: auto;
+        }
+
+        .footer-logo-der {
+            height: 50px;
+            width: auto;
+        }
+
+        .usuario-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            min-width: 170px;
+        }
+
+        .usuario-nombre {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .btn-salir {
+            background: #701F2F;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: .30s;
+        }
+
+        .btn-salir:hover {
+            background: #8f2d41;
+        }
+
+        /* RESPONSIVO */
+
+        @media(max-width:900px) {
+            .programa {
+                grid-column: auto !important;
+            }
+
+            .titulo {
+                font-size: 18px;
+            }
+
+            .principal {
+                height: auto;
+                overflow-y: auto;
+            }
+
+            .programas {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding-bottom: 20px;
+            }
+
+            .programa {
+                width: 220px;
+                height: 140px;
+            }
+
+            footer {
+                flex-direction: column;
+                height: auto;
+                gap: 10px;
+                padding: 10px;
+            }
+
+        }
+    </style>
+</head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<body>
+    <div class="contenedor">
+        <header>
+
+            <div class="logos">
+                <img src="logos.png">
+            </div>
+
+            <div class="titulo">PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA</div>
+
+            <div class="usuario-panel">
+                <span id="nombreUsuario">👤 Usuario</span>
+                <button class="btn-salir" onclick="cerrarSesion()">Cerrar sesión</button>
+            </div>
+
+        </header>
+
+        <div class="principal">
+            <div class="fondo">
+                <img src="fondo.png">
+            </div>
+
+            <div class="inicio">
+
+                <h2>SELECCIÓN DE PROGRAMA</h2>
+
+                <div class="programas">
+
+                    <div class="programa" data-programa="edificios" style="grid-column:1/span 2">PROGRAMA DE EFICIENCIA
+                        ENERGÉTICA EN EDIFICIOS PÚBLICOS ESTATALES DE HIDALGO
+                        <div class="estado">
+
+                        </div>
+
+                    </div>
+
+                    <div class="programa" data-programa="bombeo" style="grid-column:3/span 2">PROGRAMA DE EFICIENCIA
+                        ENERGÉTICA PARA SISTEMAS DE BOMBEO<div class="estado">
+
+                        </div>
+
+                    </div>
+
+                    <div class="programa" data-programa="residencial" style="grid-column:5/span 2">EFICIENCIA ENERGÉTICA
+                        EN EL SECTOR RESIDENCIAL<div class="estado">
+
+                        </div>
+
+                    </div>
+
+                    <div class="programa" data-programa="comercial" style="grid-column:2/span 2">EFICIENCIA ENERGÉTICA
+                        EN EL SECTOR COMERCIAL<div class="estado">
+
+                        </div>
+
+                    </div>
+
+                    <div class="programa" data-programa="industrial" style="grid-column:4/span 2">EFICIENCIA ENERGÉTICA
+                        EN EL SECTOR INDUSTRIAL<div class="estado">
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <footer>
+
+            <img src="Logo pie.png" class="footer-logo-izq">
+
+            <img src="Pie_dir.png" class="footer-logo-der">
+
+        </footer>
+    </div>
+    <script>
+        const nombre = sessionStorage.getItem("nombre") || "Usuario";
+        const programa = sessionStorage.getItem("programaAsignado") || "edificios";
+        document.getElementById("nombreUsuario").textContent = "👤 " + nombre;
+        document.querySelectorAll(".programa").forEach(c => { let e = c.querySelector(".estado"); if (c.dataset.programa === programa) { c.classList.add("programa-asignado"); e.textContent = "✔ Programa asignado"; e.className = "estado asignado"; c.onclick = () => location.href = "perfil_usuario.html"; } else { c.classList.add("programa-bloqueado"); e.textContent = "Solicitar inscripción"; e.className = "estado disponible"; c.onclick = () => alert("Se enviará una solicitud de inscripción para este programa."); } });
+        function cerrarSesion() { sessionStorage.clear(); location.href = "index.html"; }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Perfil del Usuario - Plataforma Estatal de Eficiencia Energética</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Montserrat, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4f4f4;
+        }
+
+        .contenedor {
+            width: 95%;
+            max-width: 1400px;
+            margin: 10px auto;
+            border: 2px solid #000;
+            background: white;
+        }
+
+        /* ENCABEZADO */
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 2px solid #000;
+        }
+
+        .logos img {
+            height: 65px;
+            width: auto;
+        }
+
+        .titulo {
+            flex: 1;
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        /* CONTENIDO */
+
+        .principal {
+            position: relative;
+            padding: 20px;
+            min-height: 500px;
+        }
+
+        .fondo {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .fondo img {
+            width: 60%;
+            opacity: 0.07;
+        }
+
+        /* ETAPAS */
+
+        .etapas {
+            position: relative;
+            z-index: 2;
+
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+
+            margin-bottom: 30px;
+        }
+
+        .etapa {
+
+            border: none;
+
+            padding: 10px 18px;
+
+            border-radius: 20px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: .3s;
+        }
+
+        .etapa:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow: 0 3px 8px rgba(0, 0, 0, .15);
+
+        }
+
+        .etapa.activa {
+
+            background: #1565C0;
+            color: white;
+
+        }
+
+        .etapa.pendiente {
+
+            background: #e0e0e0;
+            color: #555;
+
+        }
+
+        .etapa.completada {
+
+            background: #2E7D32;
+            color: white;
+
+        }
+
+        /* FORMULARIO */
+
+        .formulario {
+            position: relative;
+            z-index: 2;
+
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #701F2F;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #701F2F;
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .campo label {
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .campo input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .input-select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            background: white;
+        }
+
+        .tabla-censo {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .tabla-censo th {
+            background: #701F2F;
+            color: white;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .tabla-censo td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .tabla-censo tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+
+        .readonly {
+            background: #f0f0f0;
+        }
+
+        .generacion-detalle {
+            display: none;
+        }
+
+        .usuario-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            min-width: 180px;
+        }
+
+        .usuario-nombre {
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .btn-salir {
+            background: #701F2F;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: .30s;
+            font-weight: 600;
+        }
+
+        .btn-salir:hover {
+            background: #8b3042;
+        }
+
+        /* BOTONES */
+
+        .acciones {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin: 30px auto;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 15px 28px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .30s;
+            min-width: 180px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: .92;
+        }
+
+        .btn-guardar {
+            background: #701F2F;
+        }
+
+        .btn-continuar {
+            background: #2E7D32;
+        }
+
+        /* PIE */
+
+        footer {
+            background: #701F2F;
+            padding: 8px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            min-height: 70px;
+        }
+
+        .footer-logo-izq {
+            height: 50px;
+            width: auto;
+        }
+
+        .footer-logo-der {
+            height: 50px;
+            width: auto;
+        }
+
+        .tabla-plan {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .tabla-plan th {
+            background: #701F2F;
+            color: white;
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .tabla-plan td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .tabla-plan tr:nth-child(even) {
+            background: #f7f7f7;
+        }
+
+        .estado-borrador {
+            color: #F57C00;
+            font-weight: bold;
+        }
+
+        .estado-aprobado {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .estado-revision {
+            color: #1565C0;
+            font-weight: bold;
+        }
+
+        /* RESPONSIVO */
+
+        @media(max-width:900px) {
+            
+            header {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .titulo {
+                font-size: 18px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .acciones {
+                justify-content: center;
+            }
+
+            .btn {
+                flex: 1 1 180px;
+                max-width: 220px;
+            }
+
+            .etapas {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<body>
+
+    <div class="contenedor">
+
+        <header>
+
+            <div class="logos">
+                <img src="logos.png" alt="Logos Institucionales">
+            </div>
+
+            <div class="titulo">
+
+                PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA
+
+            </div>
+
+            <div class="usuario-panel">
+
+                <span id="nombreUsuario" class="usuario-nombre">
+
+                    👤 Usuario
+
+                </span>
+
+                <button class="btn-salir" onclick="cerrarSesion()">
+
+                    Cerrar sesión
+
+                </button>
+
+            </div>
+
+        </header>
+
+        <div class="principal">
+
+            <div class="fondo">
+                <img src="fondo.png" alt="Fondo">
+            </div>
+
+            <div class="formulario">
+
+                <!-- DATOS GENERALES -->
+
+                <div class="card">
+
+                    <h3>Información del Plan Anual de Trabajo</h3>
+
+                    <div class="grid">
+
+                        <div class="campo">
+                            <label>Dependencia</label>
+                            <input type="text" value="Secretaría de Desarrollo Económico" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Ejercicio Fiscal</label>
+                            <input type="text" value="2027" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Inmueble</label>
+                            <input type="text" value="Edificio Administrativo" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Estado del Plan</label>
+                            <input type="text" value="En Revisión" readonly class="readonly">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ACCIONES -->
+
+                <div class="card">
+
+                    <h3>Acciones Programadas</h3>
+
+                    <button class="btn" style="background:#1565C0;color:white;" onclick="agregarAccion()">
+                        + Agregar Acción
+                    </button>
+
+                    <div style="overflow-x:auto;">
+
+                        <table class="tabla-plan">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Acción</th>
+                                    <th>Categoría</th>
+                                    <th>Responsable</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>Sustitución de luminarias LED</td>
+                                    <td>Alumbrado</td>
+                                    <td>AEEH</td>
+                                    <td>Marzo 2027</td>
+                                    <td class="estado-revision">
+                                        En Revisión
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Mantenimiento de equipos de climatización</td>
+                                    <td>Climatización</td>
+                                    <td>Dependencia</td>
+                                    <td>Junio 2027</td>
+                                    <td class="estado-borrador">
+                                        Borrador
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <!-- METAS -->
+
+                <div class="card">
+
+                    <h3>Metas Energéticas</h3>
+
+                    <div class="grid">
+
+                        <div class="campo">
+                            <label>Reducción de Consumo (%)</label>
+                            <input type="text" value="15%" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Reducción de Demanda (%)</label>
+                            <input type="text" value="8%" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Reducción de Emisiones (tCO₂e)</label>
+                            <input type="text" value="12" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Ahorro Económico Estimado</label>
+                            <input type="text" value="$85,000" readonly class="readonly">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- CRONOGRAMA -->
+
+                <div class="card">
+
+                    <h3>Cronograma de Actividades</h3>
+
+                    <div style="overflow-x:auto;">
+
+                        <table class="tabla-plan">
+
+                            <thead>
+                                <tr>
+                                    <th>Actividad</th>
+                                    <th>Ene</th>
+                                    <th>Feb</th>
+                                    <th>Mar</th>
+                                    <th>Abr</th>
+                                    <th>May</th>
+                                    <th>Jun</th>
+                                    <th>Jul</th>
+                                    <th>Ago</th>
+                                    <th>Sep</th>
+                                    <th>Oct</th>
+                                    <th>Nov</th>
+                                    <th>Dic</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>Luminarias LED</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>●</td>
+                                    <td>●</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Mantenimiento A/C</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>●</td>
+                                    <td>●</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <!-- OBSERVACIONES -->
+
+                <div class="card">
+
+                    <h3>Observaciones</h3>
+
+                    <textarea style="
+            width:100%;
+            min-height:150px;
+            border:1px solid #ccc;
+            border-radius:8px;
+            padding:12px;">
+La AEEH recomienda priorizar acciones de sustitución tecnológica y mantenimiento preventivo para alcanzar las metas establecidas.
+        </textarea>
+
+                </div>
+
+                <!-- BOTONES -->
+
+                <div class="acciones">
+
+                    <button class="btn" style="background:#616161;color:white;" onclick="regresar()">
+                        Regresar
+                    </button>
+
+                    <button class="btn btn-guardar" onclick="guardar()">
+                        Guardar
+                    </button>
+
+                    <button class="btn" style="background:#1565C0;color:white;" onclick="aprobarPlan()">
+                        Aprobar Plan
+                    </button>
+
+                    <button class="btn" style="background:#F57C00;color:white;" onclick="solicitarCambios()">
+                        Solicitar Modificación
+                    </button>
+
+                    <button class="btn btn-continuar" onclick="continuar()">
+                        Continuar
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <footer>
+
+            <img src="Logo pie.png" alt="Logo Izquierdo" class="footer-logo-izq">
+
+            <img src="Pie_dir.png" alt="Logo Derecho" class="footer-logo-der">
+
+        </footer>
+
+    </div>
+
+    <script>
+
+        function agregarAccion() {
+
+            alert("Abrir formulario para nueva acción.");
+
+        }
+
+        function aprobarPlan() {
+
+            alert("Plan aprobado correctamente.");
+
+        }
+
+        function solicitarCambios() {
+
+            alert("Solicitud de modificación enviada.");
+
+        }
+
+        function regresar() {
+
+            window.location.href = 'linea_base.html';
+
+        }
+
+        function guardar() {
+
+            alert("Información guardada correctamente.");
+
+        }
+
+        function continuar() {
+
+            window.location.href = 'resumen_inmueble.html';
+
+        }
+
+        const nombre =
+            sessionStorage.getItem("nombre");
+        if (nombre) {
+            document.getElementById("nombreUsuario").textContent =
+                "👤 " + nombre;
+        }
+
+        function cerrarSesion() {
+            if (confirm("¿Desea cerrar la sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+
+</html>

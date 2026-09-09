@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Plataforma Estatal de Eficiencia Energética</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Montserrat, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: Montserrat, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contenedor {
+            width: 95%;
+            max-width: 1400px;
+            margin: 10px auto;
+            border: 2px solid #000;
+            background: white;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ENCABEZADO */
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 2px solid #000;
+            flex-shrink: 0;
+        }
+
+        .logos {
+            display: flex;
+            align-items: center;
+        }
+
+        .logos img {
+            height: 65px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo {
+            font-weight: bold;
+            color: #7a0026;
+        }
+
+        .titulo {
+            flex: 1;
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* CONTENIDO */
+
+        .principal {
+            position: relative;
+            max-height: 520px;
+            overflow: hidden;
+        }
+
+        /* Fondo */
+
+        .fondo {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fondo img {
+            width: 70%;
+            max-width: 900px;
+            opacity: .25;
+        }
+
+        /* Login */
+
+        .login {
+            position: relative;
+            z-index: 10;
+            width: 350px;
+            margin: 60px auto;
+            text-align: center;
+        }
+
+        .login h2 {
+            background: #c49a5a;
+            color: #000;
+            width: 230px;
+            margin: auto;
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 20px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, .70);
+            backdrop-filter: blur(5px);
+            border-radius: 25px;
+            padding: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 30px;
+            background: #fff;
+            text-align: center;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, .10);
+        }
+
+        .boton {
+            background: #8B0000;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: .3s;
+        }
+
+        .boton:hover {
+            background: #6f0000;
+        }
+
+        /* Pie */
+
+        footer {
+            background: #701F2F;
+            padding: 8px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            max-height: 70px;
+        }
+
+        .footer-logo-izq {
+            height: 50px;
+            width: auto;
+        }
+
+        .footer-logo-der {
+            height: 50px;
+            width: auto;
+        }
+
+        @media(max-width:900px) {
+
+            .titulo {
+                font-size: 20px;
+            }
+
+            .login {
+                width: 90%;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+        }
+    </style>
+</head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<body>
+
+    <div class="contenedor">
+
+        <header>
+
+            <div class="logos">
+                <img src="logos.png" alt="Logos Institucionales">
+            </div>
+
+            <div class="titulo">
+                PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA
+            </div>
+
+        </header>
+
+        <div class="principal">
+
+            <div class="fondo">
+
+                <img src="fondo.png">
+
+            </div>
+
+            <div class="login">
+
+                <h2>INGRESO</h2>
+
+                <div class="panel">
+
+                    <div class="input-group">
+                        <input type="text" id="usuario" placeholder="USUARIO">
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" id="password" placeholder="CONTRASEÑA">
+                    </div>
+
+                    <button class="boton" onclick="ingresar()">
+                        SIGUIENTE
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <footer>
+
+            <img src="Logo pie.png" alt="Logo Izquierdo" class="footer-logo-izq">
+
+            <img src="Pie_dir.png" alt="Logo Derecho" class="footer-logo-der">
+
+        </footer>
+
+    </div>
+
+    <script>
+        const datosUsuario = usuariosDemo[usuario];
+
+        function ingresar() {
+
+            const usuario = document.getElementById("usuario").value.trim().toLowerCase();
+            const password = document.getElementById("password").value.trim();
+
+            if (usuario === "" || password === "") {
+
+                alert("Capture usuario y contraseña.");
+                return;
+
+            }
+
+            // Usuarios temporales
+            const usuarios = {
+
+                admin: {
+                    password: "12345",
+                    programa: "edificios",
+                    nombre: "Ejemplo SEDECO"
+                },
+
+                conagua: {
+                    password: "12345",
+                    programa: "bombeo",
+                    nombre: "Comisión Estatal del Agua"
+                },
+
+                hospital: {
+                    password: "12345",
+                    programa: "residencial",
+                    nombre: "Hospital General"
+                }
+
+            };
+
+            // Buscar usuario
+            const datosUsuario = usuarios[usuario];
+
+            if (!datosUsuario) {
+
+                alert("El usuario no existe.");
+                return;
+
+            }
+
+            // Validar contraseña
+            if (password !== datosUsuario.password) {
+
+                alert("Contraseña incorrecta.");
+
+                document.getElementById("password").value = "";
+                document.getElementById("password").focus();
+
+                return;
+
+            }
+
+            // Guardar sesión
+            sessionStorage.setItem("usuario", usuario);
+            sessionStorage.setItem("nombre", datosUsuario.nombre);
+            sessionStorage.setItem("programaAsignado", datosUsuario.programa);
+
+            // Abrir menú de programas
+            window.location.href = "menu_prog.html";
+
+        }
+
+    </script>
+
+</body>
+
+</html>

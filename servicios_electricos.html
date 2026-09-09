@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Perfil del Usuario - Plataforma Estatal de Eficiencia Energética</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Montserrat, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4f4f4;
+        }
+
+        .contenedor {
+            width: 95%;
+            max-width: 1400px;
+            margin: 10px auto;
+            border: 2px solid #000;
+            background: white;
+        }
+
+        /* ENCABEZADO */
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 2px solid #000;
+        }
+
+        .logos img {
+            height: 65px;
+            width: auto;
+        }
+
+        .titulo {
+            flex: 1;
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        /* CONTENIDO */
+
+        .principal {
+            position: relative;
+            padding: 20px;
+        }
+
+        .fondo {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .fondo img {
+            width: 60%;
+            opacity: 0.07;
+        }
+
+        /* ETAPAS */
+
+        .etapas {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .etapa {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .etapa:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, .15);
+        }
+
+        .etapa.activa {
+            background: #1565C0;
+            color: white;
+        }
+
+        .etapa.pendiente {
+            background: #e0e0e0;
+            color: #555;
+        }
+
+        .etapa.completada {
+            background: #2E7D32;
+            color: white;
+        }
+
+        /* FORMULARIO */
+
+        .formulario {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #701F2F;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #701F2F;
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .campo label {
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .campo input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .input-select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            background: white;
+        }
+
+        .readonly {
+            background: #f0f0f0;
+        }
+
+        /* BOTONES */
+
+        .acciones {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 14px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: .3s;
+        }
+
+        .btn-guardar {
+            background: #701F2F;
+            color: white;
+        }
+
+        .btn-continuar {
+            background: #2E7D32;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: .90;
+            transform: translateY(-2px);
+        }
+
+        .usuario-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            min-width: 200px;
+        }
+
+        .page-indicator {
+            font-size: 12px;
+            color: #701F2F;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .usuario-nombre {
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .btn-salir {
+            background: #701F2F;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: .30s;
+            font-weight: 600;
+        }
+
+        .btn-salir:hover {
+            background: #8b3042;
+        }
+
+        /* ACORDEONES DE SERVICIOS */
+
+        .acordeon {
+            border: 1px solid #d8d8d8;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        }
+
+        .acordeon-header {
+            background: #701F2F;
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .acordeon-header:hover {
+            background: #8A273A;
+        }
+
+        .acordeon-body {
+            display: none;
+            padding: 25px;
+            background: white;
+        }
+
+        .acordeon.activo .acordeon-body {
+            display: block;
+        }
+
+        .badge-servicio {
+            background: #D4A44A;
+            color: #000;
+            border-radius: 15px;
+            padding: 4px 12px;
+            font-size: 12px;
+        }
+
+        /* ESTADOS DE LOS SERVICIOS */
+
+        .badge-servicio {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: .30s;
+        }
+
+        .badge-pendiente {
+            background: #e53935;
+            color: white;
+        }
+
+        .badge-captura {
+            background: #F9A825;
+            color: white;
+        }
+
+        .badge-completo {
+            background: #2E7D32;
+            color: white;
+        }
+
+        /* PIE */
+
+        footer {
+            background: #701F2F;
+            padding: 8px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            min-height: 70px;
+        }
+
+        .footer-logo-izq {
+            height: 50px;
+            width: auto;
+        }
+
+        .footer-logo-der {
+            height: 50px;
+            width: auto;
+        }
+
+        /* RESPONSIVO */
+
+        @media(max-width:900px) {
+
+            header {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .titulo {
+                font-size: 18px;
+            }
+
+            .acciones {
+                justify-content: center;
+            }
+
+            .btn {
+                flex: 1 1 180px;
+                max-width: 220px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .etapas {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<body>
+
+    <div class="contenedor">
+
+        <header>
+
+            <div class="logos">
+                <img src="logos.png" alt="Logos Institucionales">
+            </div>
+
+            <div class="titulo">
+
+                PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA
+
+            </div>
+
+            <div class="usuario-panel">
+
+                <span id="numeroPagina" class="page-indicator">Página 5 de 9</span>
+
+                <span id="nombreUsuario" class="usuario-nombre">
+
+                    👤 Usuario
+
+                </span>
+
+                <button class="btn-salir" onclick="cerrarSesion()">
+
+                    Cerrar sesión
+
+                </button>
+
+            </div>
+
+        </header>
+
+        <div class="principal">
+
+            <div class="fondo">
+                <img src="fondo.png" alt="Fondo">
+            </div>
+
+            <!-- ETAPAS -->
+
+            <div class="etapas">
+
+                <button class="etapa completada" onclick="window.location.href='perfil_usuario.html'">
+                    Perfil del Usuario
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='datos_generales.html'">
+                    Datos Generales
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='geolocalizacion.html'">
+                    Geolocalización
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='informacion_tecnica.html'">
+                    Información Técnica
+                </button>
+
+                <button class="etapa activa" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
+                </button>
+
+                <button class="etapa pendiente" onclick="window.location.href='sistema_generacion.html'">
+                    Sistema de Generación
+                </button>
+
+                <button class="etapa pendiente" onclick="window.location.href='evaluacion_sitio.html'">
+                    Evaluación del Sitio
+                </button>
+
+                <button class="etapa pendiente" onclick="window.location.href='censo_carga.html'">
+                    Censo de Carga
+                </button>
+
+                <button class="etapa pendiente" onclick="window.location.href='linea_base.html'">
+                    Línea Base
+                </button>
+
+            </div>
+
+            <!-- CONFIGURACIÓN DE SERVICIOS ELÉCTRICOS -->
+
+            <div class="card">
+
+                <h3>
+
+                    Servicios Eléctricos del Inmueble
+
+                </h3>
+
+                <p style="margin-bottom:20px;color:#555;line-height:1.6;">
+
+                    Indique el número total de medidores eléctricos (servicios de CFE)
+                    con los que cuenta el inmueble.
+
+                    Al generar los formularios se habilitará un apartado independiente
+                    para capturar la información de cada servicio eléctrico.
+
+                </p>
+
+                <div class="grid">
+
+                    <div class="campo">
+
+                        <label>
+
+                            Cantidad de Medidores
+
+                        </label>
+
+                        <input type="number" id="cantidadMedidores" min="1" max="50" value="1">
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label>&nbsp;</label>
+
+                        <button class="btn" style="background:#1565C0;color:white;height:48px;"
+                            onclick="generarServicios()">
+
+                            Generar Formularios
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- FORMULARIOS DINÁMICOS -->
+
+            <div id="contenedorServicios">
+
+            </div>
+
+            <!-- RESUMEN -->
+
+            <div class="card" id="resumenServicios">
+
+                <h3>
+
+                    Resumen del Inmueble
+
+                </h3>
+
+                <div class="grid">
+
+                    <div class="campo">
+
+                        <label>
+
+                            Medidores registrados
+
+                        </label>
+
+                        <input id="totalServicios" class="readonly" readonly value="0">
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label>
+
+                            Estado de captura
+
+                        </label>
+
+                        <input id="estadoServicios" class="readonly" readonly value="Pendiente">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- BOTONES -->
+
+            <div class="acciones">
+
+                <button class="btn" style="background:#616161;color:white;" onclick="regresar()">
+                    Regresar
+                </button>
+
+                <button class="btn btn-guardar" onclick="guardar()">
+                    Guardar
+                </button>
+
+                <button class="btn btn-continuar" onclick="continuar()">
+                    Guardar y Continuar
+                </button>
+
+            </div>
+        </div>
+
+        <footer>
+
+            <img src="Logo pie.png" alt="Logo Izquierdo" class="footer-logo-izq">
+
+            <img src="Pie_dir.png" alt="Logo Derecho" class="footer-logo-der">
+
+        </footer>
+
+    </div>
+
+    <script>
+
+        /* GENERAR FORMULARIOS DINÁMICOS DE SERVICIOS ELÉCTRICOS */
+
+        function generarServicios() {
+
+            const cantidad = parseInt(document.getElementById("cantidadMedidores").value);
+
+            if (isNaN(cantidad) || cantidad < 1) {
+
+                alert("Ingrese una cantidad válida de medidores.");
+
+                return;
+
+            }
+
+            const contenedor = document.getElementById("contenedorServicios");
+
+            contenedor.innerHTML = "";
+
+            for (let i = 1; i <= cantidad; i++) {
+
+                contenedor.innerHTML += `
+
+<div class="acordeon ${i === 1 ? 'activo' : ''}">
+
+    <div class="acordeon-header"
+
+         onclick="abrirAcordeon(this)">
+
+        <span>
+
+            Servicio Eléctrico ${i}
+
+        </span>
+
+<span class="badge-servicio badge-pendiente">
+
+    Pendiente
+
+</span>
+
+    </div>
+
+    <div class="acordeon-body">
+
+        <div class="card">
+
+            <div class="grid">
+
+                <div class="campo">
+
+                    <label>
+
+                        Número de Servicio CFE
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="servicio_${i}">
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+
+                        Tarifa
+
+                    </label>
+
+                    <select class="input-select">
+
+                        <option>Seleccione...</option>
+
+                        <option>1</option>
+
+                        <option>1A</option>
+
+                        <option>1B</option>
+
+                        <option>PDBT</option>
+
+                        <option>GDBT</option>
+
+                        <option>GDMTO</option>
+
+                        <option>DIST</option>
+
+                        <option>DIT</option>
+
+                    </select>
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+
+                        Voltaje de Suministro
+
+                    </label>
+
+                    <input
+                        type="text"
+                        placeholder="Ej. 220 V">
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+
+                        Tipo de Servicio
+
+                    </label>
+
+                    <select class="input-select">
+
+                        <option>Seleccione...</option>
+
+                        <option>Monofásico</option>
+
+                        <option>Bifásico</option>
+
+                        <option>Trifásico</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>
+
+                Información de Demanda
+
+            </h3>
+
+            <div class="grid">
+
+                <div class="campo">
+
+                    <label>
+
+                        Demanda Contratada (kW)
+
+                    </label>
+
+                    <input type="number">
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+
+                        Demanda Máxima Registrada (kW)
+
+                    </label>
+
+                    <input type="number">
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>
+
+                Consumo Histórico
+
+            </h3>
+
+            <div class="grid">
+
+                <div class="campo">
+
+                    <label>
+
+                        Consumo Anual (kWh)
+
+                    </label>
+
+                    <input type="number">
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+
+                        Facturación Anual ($)
+
+                    </label>
+
+                    <input type="number">
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>
+
+                Características
+
+            </h3>
+
+            <div class="grid">
+
+                <div class="campo">
+
+                    <label>
+
+                        ¿Cuenta con Medición Inteligente?
+
+                    </label>
+
+                    <select class="input-select">
+
+                        <option>Seleccione...</option>
+
+                        <option>Sí</option>
+
+                        <option>No</option>
+
+                    </select>
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+
+                        ¿Cuenta con Banco de Capacitores?
+
+                    </label>
+
+                    <select class="input-select">
+
+                        <option>Seleccione...</option>
+
+                        <option>Sí</option>
+
+                        <option>No</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+`;
+
+            }
+
+            document.getElementById("totalServicios").value = cantidad;
+
+            document.getElementById("estadoServicios").value = "En captura";
+
+            contenedor.querySelectorAll("input,select").forEach(campo => {
+
+                campo.addEventListener("input", validarServicios);
+
+                campo.addEventListener("change", validarServicios);
+
+            });
+
+            validarServicios();
+        }
+
+        /* ABRIR / CERRAR ACORDEÓN */
+
+        function abrirAcordeon(elemento) {
+
+            const acordeon = elemento.parentElement;
+
+            acordeon.classList.toggle("activo");
+
+        }
+
+        /* GENERAR AUTOMÁTICAMENTE EL PRIMER FORMULARIO */
+
+        window.addEventListener("DOMContentLoaded", function () {
+
+            generarServicios();
+
+        });
+
+        function regresar() {
+
+            alert("Regresar a Información Técnica");
+
+            window.location.href = 'informacion_tecnica.html';
+
+        }
+
+        /* VALIDAR SERVICIOS */
+
+        function validarServicios() {
+
+            const acordeones = document.querySelectorAll(".acordeon");
+
+            let completos = 0;
+
+            acordeones.forEach(acordeon => {
+
+                const badge = acordeon.querySelector(".badge-servicio");
+
+                const inputs = acordeon.querySelectorAll("input,select");
+
+                let llenos = 0;
+
+                inputs.forEach(campo => {
+
+                    if (campo.value.trim() !== "") {
+
+                        llenos++;
+
+                    }
+
+                });
+
+                if (llenos === 0) {
+
+                    badge.className = "badge-servicio badge-pendiente";
+
+                    badge.innerHTML = "Pendiente";
+
+                }
+
+                else if (llenos < inputs.length) {
+
+                    badge.className = "badge-servicio badge-captura";
+
+                    badge.innerHTML = "En captura";
+
+                }
+
+                else {
+
+                    badge.className = "badge-servicio badge-completo";
+
+                    badge.innerHTML = "Completo";
+
+                    completos++;
+
+                }
+
+            });
+
+            document.getElementById("estadoServicios").value =
+
+                completos + " de " + acordeones.length + " completos";
+
+        }
+
+        function guardar() {
+
+            validarServicios();
+
+            alert("Información guardada correctamente.");
+
+        }
+
+        function continuar() {
+
+            /*  validarServicios();
+  
+              const acordeones = document.querySelectorAll(".acordeon");
+  
+              const completos = document.querySelectorAll(".badge-completo");
+  
+              if (completos.length !== acordeones.length) {
+  
+                  alert(
+  
+                      "Debe completar la información de todos los servicios eléctricos antes de continuar."
+  
+                  );
+  
+                  return;
+  
+              }
+  
+              alert(
+  
+                  "Información guardada correctamente."
+  
+              );*/
+
+            window.location.href = "sistema_generacion.html";
+
+        }
+
+        const numeroPagina = document.getElementById("numeroPagina");
+        if (numeroPagina) {
+            numeroPagina.textContent = "Página 5 de 9";
+        }
+
+        const nombre =
+            sessionStorage.getItem("nombre");
+        if (nombre) {
+            document.getElementById("nombreUsuario").textContent =
+                "👤 " + nombre;
+        }
+
+        function cerrarSesion() {
+            if (confirm("¿Desea cerrar la sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "index.html";
+            }
+
+        }
+    </script>
+</body>
+
+</html>
