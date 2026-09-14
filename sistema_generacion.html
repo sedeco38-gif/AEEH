@@ -197,6 +197,14 @@
             display: none;
         }
 
+        .card-caracteristicas-especificas {
+            display: none;
+        }
+
+        .card-caracteristicas-especificas.activo {
+            display: block;
+        }
+
         .sistema-opcion {
             display: none;
         }
@@ -490,7 +498,7 @@
 
                 <!-- CARACTERÍSTICAS ESPECÍFICAS DEL SISTEMA -->
 
-                <div class="card generacion-detalle">
+                <div class="card generacion-detalle card-caracteristicas-especificas" id="cardCaracteristicasEspecificas">
 
                     <h3 id="tituloCaracteristicas">Características específicas</h3>
 
@@ -634,7 +642,7 @@
                         </div>
 
                         <div class="campo">
-                            <label>Modelo de Operación del Sistema</label>
+                            <label>Esquema de Operación</label>
 
                             <select class="input-select">
                                 <option value="">Seleccione...</option>
@@ -685,8 +693,9 @@
 
         function mostrarGeneracion() {
             const selector = document.getElementById("tieneGeneracion");
-            const bloques = document.querySelectorAll(".generacion-detalle");
             const tieneGeneracion = selector.value === "si";
+            const bloques = document.querySelectorAll(".generacion-detalle:not(.card-caracteristicas-especificas)");
+            const tarjetaEspecifica = document.getElementById("cardCaracteristicasEspecificas");
 
             bloques.forEach(function (bloque) {
                 bloque.style.display = tieneGeneracion ? "block" : "none";
@@ -694,13 +703,25 @@
 
             if (!tieneGeneracion) {
                 document.getElementById("tipoSistema").value = "";
+                tarjetaEspecifica.classList.remove("activo");
+                tarjetaEspecifica.style.display = "none";
                 mostrarCaracteristicasSistema();
+                return;
+            }
+
+            const tipoSistemaActual = document.getElementById("tipoSistema").value;
+            tarjetaEspecifica.style.display = tipoSistemaActual ? "block" : "none";
+            if (tipoSistemaActual) {
+                tarjetaEspecifica.classList.add("activo");
+            } else {
+                tarjetaEspecifica.classList.remove("activo");
             }
         }
 
         function mostrarCaracteristicasSistema() {
             const selector = document.getElementById("tipoSistema");
             const tipoSistema = selector.value;
+            const tarjeta = document.getElementById("cardCaracteristicasEspecificas");
             const titulo = document.getElementById("tituloCaracteristicas");
             const opciones = document.querySelectorAll(".sistema-opcion");
             const nombres = {
@@ -711,6 +732,18 @@
                 otro: "Otro Sistema"
             };
 
+            if (!tipoSistema) {
+                tarjeta.classList.remove("activo");
+                tarjeta.style.display = "none";
+                titulo.textContent = "Características específicas";
+                opciones.forEach(function (opcion) {
+                    opcion.classList.remove("activo");
+                });
+                return;
+            }
+
+            tarjeta.style.display = "block";
+            tarjeta.classList.add("activo");
             opciones.forEach(function (opcion) {
                 opcion.classList.toggle(
                     "activo",

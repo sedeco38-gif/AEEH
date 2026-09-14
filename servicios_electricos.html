@@ -174,6 +174,50 @@
             background: #f0f0f0;
         }
 
+        .tabla-linea-base {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .tabla-linea-base th,
+        .tabla-linea-base td {
+            border: 1px solid #d8d8d8;
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        .tabla-linea-base th {
+            background: #701F2F;
+            color: white;
+            font-weight: 600;
+        }
+
+        .tabla-linea-base td input {
+            width: 100%;
+            min-width: 90px;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .selector-linea-base {
+            width: 100%;
+            max-width: 220px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .texto-ayuda {
+            margin-top: 8px;
+            color: #555;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
         /* BOTONES */
 
         .acciones {
@@ -770,37 +814,44 @@
 
             <h3>
 
-                Consumo Histórico
+                Línea Base de Consumo
 
             </h3>
 
-            <div class="grid">
+            <div class="grid" style="margin-bottom: 15px;">
 
                 <div class="campo">
 
                     <label>
 
-                        Consumo Anual (kWh)
+                        Número de facturaciones
 
                     </label>
 
-                    <input type="number">
-
-                </div>
-
-                <div class="campo">
-
-                    <label>
-
-                        Facturación Anual ($)
-
-                    </label>
-
-                    <input type="number">
+                    <select class="selector-linea-base" data-servicio="${i}">
+                        <option value="12" selected>12</option>
+                        <option value="18">18</option>
+                        <option value="24">24</option>
+                    </select>
 
                 </div>
 
             </div>
+
+            <p class="texto-ayuda">
+                Registre las facturaciones anteriores para establecer la línea base del inmueble.
+            </p>
+
+            <table class="tabla-linea-base">
+                <thead>
+                    <tr>
+                        <th>Período</th>
+                        <th>Consumo (kWh)</th>
+                        <th>Factura ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-linea-base-${i}"></tbody>
+            </table>
 
         </div>
 
@@ -878,7 +929,35 @@
 
             });
 
+            for (let i = 1; i <= cantidad; i++) {
+                const selector = document.querySelector(`.selector-linea-base[data-servicio="${i}"]`);
+                if (selector) {
+                    selector.addEventListener("change", function () {
+                        generarFilasLineaBase(i, parseInt(this.value));
+                    });
+                    generarFilasLineaBase(i, 12);
+                }
+            }
+
             validarServicios();
+        }
+
+        function generarFilasLineaBase(servicioIndex, numeroFacturaciones) {
+            const tbody = document.getElementById(`tabla-linea-base-${servicioIndex}`);
+            if (!tbody) return;
+
+            const filas = Array.from({ length: numeroFacturaciones }, (_, index) => {
+                const numeroPeriodo = index + 1;
+                return `
+                    <tr>
+                        <td>Facturación ${numeroPeriodo}</td>
+                        <td><input type="number" min="0" step="any" placeholder="kWh"></td>
+                        <td><input type="number" min="0" step="any" placeholder="$"></td>
+                    </tr>
+                `;
+            }).join("");
+
+            tbody.innerHTML = filas;
         }
 
         /* ABRIR / CERRAR ACORDEÓN */

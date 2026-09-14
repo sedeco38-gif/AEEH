@@ -124,59 +124,168 @@
         .programa {
             width: 100%;
             max-width: 250px;
-            height: 170px;
-            padding: 15px;
+            min-height: 170px;
+            padding: 20px 18px 18px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             font-size: 13px;
-            font-weight: 600;
-            border-left: 6px solid;
-            border-top: 6px solid;
-            transition:.30s;
+            font-weight: 700;
+            line-height: 1.35;
+            color: #2f2f2f;
+            border-radius: 18px;
+            border: 1px solid rgba(112, 31, 47, 0.18);
+            background: rgba(255, 255, 255, 0.65);
+            box-shadow: 0 8px 18px rgba(48, 48, 48, 0.08);
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+            position: relative;
+            overflow: visible;
+        }
+
+        .programa::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 10px;
+            background: rgba(112, 31, 47, 0.15);
+            border-radius: 18px 0 0 18px;
+        }
+
+        .descripcion-programa {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 12px);
+            transform: translateX(-50%) translateY(8px);
+            width: min(240px, 80vw);
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(34, 34, 34, 0.92);
+            color: #ffffff;
+            font-size: 11px;
+            line-height: 1.45;
+            text-align: left;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+            z-index: 20;
+        }
+
+        .descripcion-programa::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: -8px;
+            transform: translateX(-50%) rotate(45deg);
+            width: 16px;
+            height: 16px;
+            background: rgba(34, 34, 34, 0.92);
+            border-radius: 2px;
+        }
+
+        .descripcion-programa.visible,
+        .programa:hover .descripcion-programa,
+        .programa:focus-within .descripcion-programa {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .programa-seleccionado .descripcion-programa {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%) translateY(8px);
         }
 
         .programa:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, .20);
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 14px 24px rgba(0, 0, 0, 0.12);
         }
 
         .programa-disponible {
-            background: #ffffff;
-            cursor: pointer;
+            background: rgba(255, 255, 255, 0.75);
+            border-color: rgba(185, 65, 89, 0.3);
         }
 
         .programa-disponible:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, .20);
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 14px 24px rgba(185, 65, 89, 0.17);
+            border-color: rgba(185, 65, 89, 0.8);
+        }
 
-            border-left: 6px solid #b94159;
-            border-top: 6px solid #b94159;
+        .programa-disponible::before {
+            background: rgba(185, 65, 89, 0.9);
         }
 
         .programa-asignado {
-            background: white;
-            border-left: 6px solid #701F2F;
-            border-top: 6px solid #701F2F;
-            cursor: pointer;
+            background: linear-gradient(160deg, #ffffff 0%, #fff5f7 100%);
+            border-color: rgba(112, 31, 47, 0.9);
+            box-shadow: 0 0 0 3px rgba(112, 31, 47, 0.12), 0 18px 28px rgba(112, 31, 47, 0.18);
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .programa-asignado::before {
+            background: linear-gradient(180deg, #701F2F 0%, #b94159 100%);
+            width: 12px;
+        }
+
+        .programa-seleccionado {
+            box-shadow: 0 0 0 4px rgba(112, 31, 47, 0.12), 0 18px 28px rgba(112, 31, 47, 0.2);
+            border-color: rgba(112, 31, 47, 0.95);
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        .programa-seleccionado::before {
+            background: linear-gradient(180deg, #701F2F 0%, #b94159 100%);
         }
 
         .programa-bloqueado {
             background: #ececec;
             color: #7b7b7b;
-            border-left: 6px solid #c7c7c7;
-            border-top: 6px solid #c7c7c7;
+            border-color: rgba(125, 125, 125, 0.2);
             opacity: .85;
             cursor: pointer;
             transition: .30s;
+        }
+
+        .programa-bloqueado::before {
+            background: rgba(199, 199, 199, 0.9);
         }
 
         .programa-bloqueado:hover {
             background: #e4e4e4;
             transform: translateY(-4px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+        }
+
+        .estado {
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(112, 31, 47, 0.08);
+            color: #701F2F;
+        }
+
+        .estado.disponible {
+            background: rgba(185, 65, 89, 0.1);
+            color: #7b2d3d;
+        }
+
+        .estado.asignado {
+            background: rgba(112, 31, 47, 0.12);
+            color: #701F2F;
+            box-shadow: inset 0 0 0 1px rgba(112, 31, 47, 0.08);
         }
 
         /* PIE */
@@ -296,43 +405,38 @@
 
             <div class="inicio">
 
-                <h2>SELECCIÓN DE PROGRAMA</h2>
+                <h2>PROGRAMA DE ADSCRIPCIÓN</h2>
 
                 <div class="programas">
 
-                    <div class="programa" data-programa="edificios" style="grid-column:1/span 2">PROGRAMA DE EFICIENCIA
-                        ENERGÉTICA EN EDIFICIOS PÚBLICOS ESTATALES DE HIDALGO
-                        <div class="estado">
-
-                        </div>
-
+                    <div class="programa" data-programa="edificios" data-descripcion="Mejorar el desempeño energético de los edificios públicos, reduciendo el consumo y los costos de electricidad, mediante el uso eficiente de instalaciones, equipos y recursos." tabindex="0" style="grid-column:1/span 2">
+                        PROGRAMA DE EFICIENCIA ENERGÉTICA EN EDIFICIOS PÚBLICOS ESTATALES DE HIDALGO
+                        <div class="descripcion-programa">Mejorar el desempeño energético de los edificios públicos, reduciendo el consumo y los costos de electricidad, mediante el uso eficiente de instalaciones, equipos y recursos.</div>
+                        <div class="estado"></div>
                     </div>
 
-                    <div class="programa" data-programa="bombeo" style="grid-column:3/span 2">PROGRAMA DE EFICIENCIA
-                        ENERGÉTICA PARA SISTEMAS DE BOMBEO<div class="estado">
-
-                        </div>
-
+                    <div class="programa" data-programa="bombeo" data-descripcion="Reducir consumo y costos mediante la optimización de equipos y operación." tabindex="0" style="grid-column:3/span 2">
+                        PROGRAMA DE EFICIENCIA ENERGÉTICA PARA SISTEMAS DE BOMBEO
+                        <div class="descripcion-programa">Reducir consumo y costos mediante la optimización de equipos y operación.</div>
+                        <div class="estado"></div>
                     </div>
 
-                    <div class="programa" data-programa="residencial" style="grid-column:5/span 2">EFICIENCIA ENERGÉTICA
-                        EN EL SECTOR RESIDENCIAL<div class="estado">
-
-                        </div>
-
+                    <div class="programa" data-programa="residencial" data-descripcion="Promover hogares eficientes, ahorro económico y uso responsable de la energía." tabindex="0" style="grid-column:5/span 2">
+                        EFICIENCIA ENERGÉTICA EN EL SECTOR RESIDENCIAL
+                        <div class="descripcion-programa">Promover hogares eficientes, ahorro económico y uso responsable de la energía.</div>
+                        <div class="estado"></div>
                     </div>
 
-                    <div class="programa" data-programa="comercial" style="grid-column:2/span 2">EFICIENCIA ENERGÉTICA
-                        EN EL SECTOR COMERCIAL<div class="estado">
-
-                        </div>
-
+                    <div class="programa" data-programa="comercial" data-descripcion="Reducir costos de operación mediante tecnologías y prácticas eficientes." tabindex="0" style="grid-column:2/span 2">
+                        EFICIENCIA ENERGÉTICA EN EL SECTOR COMERCIAL
+                        <div class="descripcion-programa">Reducir costos de operación mediante tecnologías y prácticas eficientes.</div>
+                        <div class="estado"></div>
                     </div>
 
-                    <div class="programa" data-programa="industrial" style="grid-column:4/span 2">EFICIENCIA ENERGÉTICA
-                        EN EL SECTOR INDUSTRIAL<div class="estado">
-
-                        </div>
+                    <div class="programa" data-programa="industrial" data-descripcion="Mejorar la competitividad mediante procesos y tecnologías de mayor eficiencia." tabindex="0" style="grid-column:4/span 2">
+                        EFICIENCIA ENERGÉTICA EN EL SECTOR INDUSTRIAL
+                        <div class="descripcion-programa">Mejorar la competitividad mediante procesos y tecnologías de mayor eficiencia.</div>
+                        <div class="estado"></div>
                     </div>
 
                 </div>
@@ -353,7 +457,84 @@
         const nombre = sessionStorage.getItem("nombre") || "Usuario";
         const programa = sessionStorage.getItem("programaAsignado") || "edificios";
         document.getElementById("nombreUsuario").textContent = "👤 " + nombre;
-        document.querySelectorAll(".programa").forEach(c => { let e = c.querySelector(".estado"); if (c.dataset.programa === programa) { c.classList.add("programa-asignado"); e.textContent = "✔ Programa asignado"; e.className = "estado asignado"; c.onclick = () => location.href = "perfil_usuario.html"; } else { c.classList.add("programa-bloqueado"); e.textContent = "Solicitar inscripción"; e.className = "estado disponible"; c.onclick = () => alert("Se enviará una solicitud de inscripción para este programa."); } });
+
+        const cards = document.querySelectorAll(".programa");
+        const duracionDescripcion = 3000;
+
+        cards.forEach(c => {
+            const e = c.querySelector(".estado");
+            const descripcion = c.querySelector(".descripcion-programa");
+            let timerDescripcion = null;
+
+            const mostrarDescripcion = () => {
+                descripcion.classList.add("visible");
+                clearTimeout(timerDescripcion);
+                timerDescripcion = setTimeout(() => {
+                    descripcion.classList.remove("visible");
+                }, duracionDescripcion);
+            };
+
+            const ocultarDescripcion = () => {
+                clearTimeout(timerDescripcion);
+                descripcion.classList.remove("visible");
+            };
+
+            c.addEventListener("mouseenter", mostrarDescripcion);
+            c.addEventListener("mouseleave", ocultarDescripcion);
+            c.addEventListener("focus", mostrarDescripcion);
+            c.addEventListener("blur", ocultarDescripcion);
+            c.addEventListener("click", () => {
+                ocultarDescripcion();
+                cards.forEach(card => {
+                    card.classList.remove("programa-seleccionado");
+                    const desc = card.querySelector(".descripcion-programa");
+                    if (desc) desc.classList.remove("visible");
+                });
+                c.classList.add("programa-seleccionado");
+            });
+
+            const esAsignado = c.dataset.programa === programa;
+
+            if (esAsignado) {
+                c.classList.add("programa-asignado");
+                e.textContent = "✔ Programa asignado";
+                e.className = "estado asignado";
+                c.onclick = () => {
+                    cards.forEach(card => {
+                        card.classList.remove("programa-seleccionado");
+                        const desc = card.querySelector(".descripcion-programa");
+                        if (desc) desc.classList.remove("visible");
+                    });
+                    c.classList.add("programa-seleccionado");
+                    location.href = "perfil_usuario.html";
+                };
+            } else {
+                c.classList.add("programa-bloqueado");
+                e.textContent = "Solicitar inscripción";
+                e.className = "estado disponible";
+                c.onclick = () => {
+                    cards.forEach(card => {
+                        card.classList.remove("programa-seleccionado");
+                        const desc = card.querySelector(".descripcion-programa");
+                        if (desc) desc.classList.remove("visible");
+                    });
+                    c.classList.add("programa-seleccionado");
+                    sessionStorage.setItem("programaSeleccionado", c.dataset.programa);
+                    alert("Se enviará una solicitud de inscripción para este programa.");
+                };
+            }
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!event.target.closest(".programa")) {
+                cards.forEach(card => {
+                    card.classList.remove("programa-seleccionado");
+                    const desc = card.querySelector(".descripcion-programa");
+                    if (desc) desc.classList.remove("visible");
+                });
+            }
+        });
+
         function cerrarSesion() { sessionStorage.clear(); location.href = "index.html"; }
     </script>
 </body>

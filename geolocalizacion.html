@@ -221,6 +221,47 @@
             display: none;
         }
 
+        .opciones-ubicacion {
+            display: flex;
+            gap: 18px;
+            margin-top: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .opcion-ubicacion {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #2d2d2d;
+            cursor: pointer;
+        }
+
+        .opcion-ubicacion input[type="radio"] {
+            accent-color: #701F2F;
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
+
+        #contenedorReferenciaUbicacion {
+            display: none;
+            margin-top: 12px;
+        }
+
+        #contenedorReferenciaUbicacion textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 1px solid #cfcfcf;
+            border-radius: 10px;
+            padding: 12px;
+            resize: vertical;
+            background: #fff;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
         /* BOTONES */
 
         .acciones {
@@ -458,17 +499,17 @@
 
                         <div class="campo">
                             <label>Estado</label>
-                            <input type="text" value="Hidalgo">
+                            <input id="estadoInmueble" type="text" value="Hidalgo">
                         </div>
 
                         <div class="campo">
                             <label>Municipio</label>
-                            <input type="text">
+                            <input id="municipioInmueble" type="text">
                         </div>
 
                         <div class="campo campo-completo">
                             <label>Dirección Completa</label>
-                            <input type="text">
+                            <input id="direccionCompletaInmueble" type="text">
                         </div>
 
                     </div>
@@ -541,17 +582,22 @@
                     <h3>Referencia Geográfica</h3>
 
                     <div class="campo">
+                        <label style="margin-bottom: 8px;">¿Desea agregar algún dato adicional que ayude a ubicar mejor el establecimiento?</label>
+                        <div class="opciones-ubicacion">
+                            <label class="opcion-ubicacion">
+                                <input type="radio" name="refUbicacion" value="si" checked>
+                                <span>Sí</span>
+                            </label>
+                            <label class="opcion-ubicacion">
+                                <input type="radio" name="refUbicacion" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
 
-                        <label>Descripción de la Ubicación</label>
-
-                        <textarea style="
-                min-height:120px;
-                border:1px solid #ccc;
-                border-radius:8px;
-                padding:12px;
-                resize:vertical;">
-            </textarea>
-
+                    <div id="contenedorReferenciaUbicacion" class="campo">
+                        <label style="margin-top: 10px;">Especifique la referencia adicional</label>
+                        <textarea id="referenciaUbicacion" placeholder="Ejemplo: frente a la escuela, junto al mercado, a 200 m del centro de salud, etc."></textarea>
                     </div>
 
                 </div>
@@ -592,7 +638,34 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        function cargarUbicacionDesdeDatosGenerales() {
+            const estado = sessionStorage.getItem("estadoInmueble") || "Hidalgo";
+            const municipio = sessionStorage.getItem("municipioDatosGenerales") || "";
+            const direccion = sessionStorage.getItem("direccionDependencia") || "";
+
+            const estadoInput = document.getElementById("estadoInmueble");
+            const municipioInput = document.getElementById("municipioInmueble");
+            const direccionInput = document.getElementById("direccionCompletaInmueble");
+
+            if (estadoInput) estadoInput.value = estado;
+            if (municipioInput) municipioInput.value = municipio;
+            if (direccionInput) direccionInput.value = direccion;
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
+
+            cargarUbicacionDesdeDatosGenerales();
+
+            const radios = document.querySelectorAll('input[name="refUbicacion"]');
+            radios.forEach(radio => {
+                radio.addEventListener("change", actualizarReferenciaUbicacion);
+            });
+
+            const opcionGuardada = sessionStorage.getItem("refUbicacionSeleccionada") || "si";
+            const radioSeleccionado = document.querySelector(`input[name="refUbicacion"][value="${opcionGuardada}"]`);
+            if (radioSeleccionado) radioSeleccionado.checked = true;
+
+            actualizarReferenciaUbicacion();
 
             mapa = L.map('mapa').setView([20.1011, -98.7591], 13);
 
@@ -699,14 +772,26 @@
 
         }
 
-        function guardar() {
+        function actualizarReferenciaUbicacion() {
+            const opcion = document.querySelector('input[name="refUbicacion"]:checked')?.value || "si";
+            const contenedor = document.getElementById("contenedorReferenciaUbicacion");
+            if (contenedor) {
+                contenedor.style.display = opcion === "si" ? "block" : "none";
+            }
+        }
 
+        function guardar() {
+            sessionStorage.setItem("estadoInmueble", document.getElementById("estadoInmueble")?.value || "Hidalgo");
+            sessionStorage.setItem("municipioInmueble", document.getElementById("municipioInmueble")?.value || "");
+            sessionStorage.setItem("direccionCompletaInmueble", document.getElementById("direccionCompletaInmueble")?.value || "");
+            sessionStorage.setItem("referenciaUbicacion", document.getElementById("referenciaUbicacion")?.value || "");
+            sessionStorage.setItem("refUbicacionSeleccionada", document.querySelector('input[name="refUbicacion"]:checked')?.value || "si");
             alert("Información guardada correctamente.");
 
         }
 
         function continuar() {
-
+            guardar();
             window.location.href = 'informacion_tecnica.html';
 
         }

@@ -158,6 +158,10 @@
             padding-bottom: 10px;
         }
 
+        .card.control {
+            display: none;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -434,27 +438,27 @@
 
                         <div class="campo">
                             <label>Dependencia</label>
-                            <input type="text">
+                            <input id="dependencia" type="text">
                         </div>
 
                         <div class="campo">
                             <label>Número de edificios que conforman el complejo</label>
-                            <input type="number">
+                            <input id="numeroEdificios" type="number">
                         </div>
 
                         <div class="campo">
                             <label>Municipio</label>
-                            <input type="text">
+                            <input id="municipioDatosGenerales" type="text">
                         </div>
 
                         <div class="campo">
                             <label>Código Postal</label>
-                            <input type="text">
+                            <input id="codigoPostal" type="text">
                         </div>
 
                         <div class="campo campo-completo">
                             <label>Dirección</label>
-                            <input type="text">
+                            <input id="direccionDependencia" type="text">
                         </div>
 
                     </div>
@@ -471,13 +475,13 @@
 
                         <div class="campo">
                             <label>Nombre del Inmueble</label>
-                            <input type="text">
+                            <input id="nombreInmueble" type="text">
                         </div>
 
                         <div class="campo">
                             <label>Tipo de Inmueble</label>
 
-                            <select class="input-select">
+                            <select id="tipoInmueble" class="input-select">
                                 <option>Seleccione...</option>
                                 <option>Oficina Administrativa</option>
                                 <option>Centro Educativo</option>
@@ -491,12 +495,12 @@
 
                         <div class="campo">
                             <label>Año de Construcción</label>
-                            <input type="number">
+                            <input id="anioConstruccion" type="number">
                         </div>
 
                         <div class="campo">
                             <label>Superficie Construida (m²)</label>
-                            <input type="number">
+                            <input id="superficieConstruida" type="number">
                         </div>
 
                     </div>
@@ -505,7 +509,7 @@
 
                 <!-- CONTROL -->
 
-                <div class="card">
+                <div class="card control">
 
                     <h3>Información de Control</h3>
 
@@ -554,6 +558,25 @@
 
     <script>
 
+        function guardarDatosGeneralesEnSession() {
+            const datosGenerales = {
+                dependencia: document.getElementById("dependencia")?.value || "",
+                numeroEdificios: document.getElementById("numeroEdificios")?.value || "",
+                municipioDatosGenerales: document.getElementById("municipioDatosGenerales")?.value || "",
+                codigoPostal: document.getElementById("codigoPostal")?.value || "",
+                direccionDependencia: document.getElementById("direccionDependencia")?.value || "",
+                nombreInmueble: document.getElementById("nombreInmueble")?.value || "",
+                tipoInmueble: document.getElementById("tipoInmueble")?.value || "",
+                anioConstruccion: document.getElementById("anioConstruccion")?.value || "",
+                superficieConstruida: document.getElementById("superficieConstruida")?.value || "",
+                estadoInmueble: "Hidalgo"
+            };
+
+            Object.entries(datosGenerales).forEach(([clave, valor]) => {
+                sessionStorage.setItem(clave, valor);
+            });
+        }
+
         function regresar() {
 
             alert("Regresar a Perfil del Usuario");
@@ -563,13 +586,13 @@
         }
 
         function guardar() {
-
+            guardarDatosGeneralesEnSession();
             alert("Información guardada correctamente.");
 
         }
 
         function continuar() {
-
+            guardarDatosGeneralesEnSession();
             alert("Información guardada. Continuando a Información Técnica.");
 
             window.location.href = 'geolocalizacion.html';
