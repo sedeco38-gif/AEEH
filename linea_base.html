@@ -344,6 +344,9 @@
         }
     </style>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -444,23 +447,97 @@
 
                         <div class="campo">
                             <label>Dependencia</label>
-                            <input type="text" value="Secretaría de Desarrollo Económico" readonly class="readonly">
+                            <input id="lineaDependencia" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Municipio</label>
-                            <input type="text" value="Pachuca de Soto" readonly class="readonly">
+                            <input id="lineaMunicipio" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Nombre del Inmueble</label>
-                            <input type="text" value="Edificio Administrativo" readonly class="readonly">
+                            <input id="lineaInmueble" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Programa</label>
-                            <input type="text" value="Eficiencia Energética en Edificios Públicos" readonly
-                                class="readonly">
+                            <label>Número de edificios</label>
+                            <input id="lineaEdificios" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo campo-completo">
+                            <label>Dirección</label>
+                            <input id="lineaDireccion" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Código postal</label>
+                            <input id="lineaCodigoPostal" type="text" readonly class="readonly">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card">
+
+                    <h3>Información técnica capturada</h3>
+
+                    <div class="grid">
+
+                        <div class="campo">
+                            <label>Uso principal</label>
+                            <input id="lineaUsoPrincipal" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Niveles</label>
+                            <input id="lineaNiveles" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Áreas</label>
+                            <input id="lineaAreas" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Trabajadores</label>
+                            <input id="lineaTrabajadores" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Horario de operación</label>
+                            <input id="lineaHorario" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Días laborales por semana</label>
+                            <input id="lineaDiasLaborales" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Aire acondicionado</label>
+                            <input id="lineaAireAcondicionado" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Sistema de bombeo</label>
+                            <input id="lineaBombeo" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Elevadores</label>
+                            <input id="lineaElevadores" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Alumbrado exterior</label>
+                            <input id="lineaAlumbradoExterior" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Planta de emergencia</label>
+                            <input id="lineaPlantaEmergencia" type="text" readonly class="readonly">
                         </div>
 
                     </div>
@@ -476,23 +553,38 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Consumo Anual (kWh)</label>
-                            <input type="text" value="125,000" readonly class="readonly">
+                            <label>Suma de consumos capturados (kWh; periodo no identificado)</label>
+                            <input id="lineaConsumoCapturado" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Facturación Anual ($)</label>
-                            <input type="text" value="$452,000" readonly class="readonly">
+                            <label>Suma de importes capturados ($)</label>
+                            <input id="lineaImporteCapturado" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Demanda Máxima (kW)</label>
-                            <input type="text" value="92.5" readonly class="readonly">
+                            <label>Demanda máxima registrada (kW)</label>
+                            <input id="lineaDemandaMaxima" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Potencia Instalada (kW)</label>
-                            <input type="text" value="87.0" readonly class="readonly">
+                            <label>Capacidad de generación capturada (kW)</label>
+                            <input id="lineaCapacidadGeneracion" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Tipo de generación</label>
+                            <input id="lineaTipoGeneracion" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Servicios eléctricos capturados</label>
+                            <input id="lineaServiciosCapturados" type="text" readonly class="readonly">
+                        </div>
+
+                        <div class="campo">
+                            <label>Registros con consumo capturado</label>
+                            <input id="lineaRegistrosConsumo" type="text" readonly class="readonly">
                         </div>
 
                     </div>
@@ -503,28 +595,28 @@
 
                 <div class="card">
 
-                    <h3>Indicadores de Línea Base</h3>
+                    <h3>Información pendiente de integración</h3>
 
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Consumo Específico (kWh/m²-año)</label>
-                            <input type="text" value="82.4" readonly class="readonly">
+                            <label>Consumo anual</label>
+                            <input type="text" value="Pendiente: periodos de facturación sin fecha" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Costo Promedio ($/kWh)</label>
-                            <input type="text" value="3.61" readonly class="readonly">
+                            <label>Distribución por uso final</label>
+                            <input type="text" value="Pendiente: Censo de Carga" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Factor de Carga (%)</label>
-                            <input type="text" value="68.3" readonly class="readonly">
+                            <label>Factor de carga</label>
+                            <input type="text" value="Pendiente: perfil de demanda" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Potencial de Ahorro Estimado (%)</label>
-                            <input type="text" value="18" readonly class="readonly">
+                            <label>Potencial de ahorro</label>
+                            <input type="text" value="Pendiente: diagnóstico con datos suficientes" readonly class="readonly">
                         </div>
 
                     </div>
@@ -537,6 +629,8 @@
 
                     <h3>Comportamiento de Consumo</h3>
 
+                    <p id="estadoGraficaConsumo" class="app-photo-help" role="status" aria-live="polite"></p>
+
                     <canvas id="graficaConsumo"></canvas>
                 </div>
 
@@ -546,7 +640,9 @@
 
                     <h3>Distribución de Consumo por Categoría</h3>
 
-                    <canvas id="graficaDistribucion"></canvas>
+                    <p id="estadoDistribucion" class="app-photo-help" role="status" aria-live="polite">
+                        Distribución pendiente de integración con el Censo de Carga.
+                    </p>
 
                 </div>
 
@@ -556,15 +652,16 @@
 
                     <h3>Diagnóstico Inicial</h3>
 
-                    <textarea readonly style="
+                    <p id="diagnosticoInicial" class="app-photo-help" role="status" aria-live="polite">
+                        Diagnóstico pendiente: se requiere integrar el Censo de Carga y periodos identificados para emitir conclusiones.
+                    </p>
+                    <textarea id="detallePendienteDiagnostico" readonly style="
             width:100%;
             min-height:180px;
             padding:15px;
             border:1px solid #ccc;
             border-radius:8px;
-            resize:none;">
-El inmueble presenta oportunidades de mejora en sistemas de alumbrado y climatización. De acuerdo con la información capturada, estos rubros representan una proporción importante del consumo energético total, por lo que se recomienda evaluar proyectos de sustitución tecnológica, automatización y aprovechamiento de sistemas de generación renovable.
-        </textarea>
+                resize:none;">Sin información suficiente para un diagnóstico sustentado.</textarea>
 
                 </div>
 
@@ -576,16 +673,20 @@ El inmueble presenta oportunidades de mejora en sistemas de alumbrado y climatiz
 
                     <div style="
             text-align:center;
-            font-size:22px;
+            font-size:18px;
             font-weight:bold;
             color:#2E7D32;
         ">
-                        ✓ Línea Base Generada Correctamente
+                        <span id="estadoLineaBase">Sin facturación identificable capturada.</span>
                     </div>
 
                 </div>
 
                 <!-- BOTONES -->
+
+                <p id="estadoGuardadoLineaBase" class="app-photo-help" role="status" aria-live="polite">
+                    Esta línea base es una vista de captura local; no representa una validación de expediente.
+                </p>
 
                 <div class="acciones">
 
@@ -597,8 +698,8 @@ El inmueble presenta oportunidades de mejora en sistemas de alumbrado y climatiz
                         Guardar
                     </button>
 
-                    <button class="btn" style="background:#1565C0;color:white;" onclick="generarDiagnostico()">
-                        Generar Diagnóstico
+                    <button class="btn" style="background:#1565C0;color:white;" onclick="irAPlanTrabajo()">
+                        Plan de Trabajo
                     </button>
 
                     <button class="btn btn-continuar" onclick="finalizar()">
@@ -624,171 +725,194 @@ El inmueble presenta oportunidades de mejora en sistemas de alumbrado y climatiz
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
     <script>
-        Chart.register(ChartDataLabels);
+        const camposTecnicosAntiguos = [
+            "usoPrincipal", "numeroNiveles", "numeroAreas", "numeroTrabajadores",
+            "horarioOperacion", "diasLaborales", "cuentaAireAcondicionado",
+            "cuentaBombeo", "cuentaElevadores", "cuentaAlumbradoExterior", "cuentaPlantaEmergencia"
+        ];
+        const camposGeneracionAntiguos = [
+            "tieneGeneracion", "tipoSistema", "capacidadInstalada", "fechaInstalacion",
+            "numeroPaneles", "potenciaPanelW", "numeroInversores", "capacidadInversores",
+            "numeroAerogeneradores", "potenciaAerogenerador", "alturaTorre",
+            "combustibleCogeneracion", "potenciaElectrica", "potenciaTermica", "tipoMotorTurbina",
+            "combustibleEmergencia", "marcaGenerador", "modeloGenerador", "capacidadGenerador",
+            "otroTipoSistema", "descripcionOtroSistema", "sistemaEnOperacion", "esquemaOperacion"
+        ];
 
-        /* ==========================
-           GRAFICA DE CONSUMO
-        ========================== */
+        function leerExpediente() {
+            const estado = window.AEEHState;
+            if (!estado) return null;
 
-        const ctx1 =
-            document.getElementById('graficaConsumo')
-                .getContext('2d');
+            return {
+                general: estado.getModuleFields("datos_generales.html"),
+                tecnico: estado.getModuleFields("informacion_tecnica.html", camposTecnicosAntiguos),
+                servicios: estado.getModuleFields("servicios_electricos.html"),
+                generacion: estado.getModuleFields("sistema_generacion.html", camposGeneracionAntiguos)
+            };
+        }
 
-        new Chart(ctx1, {
+        function numeroCapturado(valor) {
+            if (valor === undefined || valor === null || String(valor).trim() === "") return null;
+            const numero = Number(valor);
+            return Number.isFinite(numero) ? numero : null;
+        }
 
-            type: 'bar',
+        function formatearNumero(valor) {
+            return new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 }).format(valor);
+        }
 
-            data: {
+        function establecerCampo(id, valor) {
+            const campo = document.getElementById(id);
+            const texto = valor === undefined || valor === null ? "" : String(valor).trim();
+            if (campo) campo.value = !texto || texto === "Seleccione..." ? "Sin información capturada" : texto;
+        }
 
-                labels: [
-                    'Ene', 'Feb', 'Mar', 'Abr',
-                    'May', 'Jun', 'Jul', 'Ago',
-                    'Sep', 'Oct', 'Nov', 'Dic'
-                ],
+        function obtenerFacturaciones(servicios) {
+            const cantidadServicios = Math.max(0, parseInt(servicios.cantidadMedidores, 10) || 0);
+            const registros = [];
 
-                datasets: [{
-
-                    label: 'Consumo (kWh)',
-
-                    data: [
-                        8500, 9200, 9800, 10100,
-                        11000, 12000, 12500, 11800,
-                        10700, 9800, 9100, 8500
-                    ],
-
-                    backgroundColor: '#701F2F'
-
-                }]
-
-            },
-
-            options: {
-
-                responsive: true,
-
-                plugins: {
-
-                    datalabels: {
-
-                        display: window.innerWidth > 768,
-
-                        anchor: 'end',
-
-                        align: 'top',
-
-                        color: '#000',
-
-                        font: {
-                            weight: 'bold',
-                            size: 11
-                        }
-
-                    }
-
+            for (let servicio = 1; servicio <= cantidadServicios; servicio++) {
+                const periodos = Math.max(0, parseInt(servicios[`numeroFacturaciones_${servicio}`], 10) || 0);
+                for (let periodo = 1; periodo <= periodos; periodo++) {
+                    const consumo = numeroCapturado(servicios[`consumo_${servicio}_${periodo}`]);
+                    const importe = numeroCapturado(servicios[`factura_${servicio}_${periodo}`]);
+                    if (consumo === null && importe === null) continue;
+                    registros.push({ servicio, periodo, consumo, importe });
                 }
+            }
+            return { cantidadServicios, registros };
+        }
 
-            },
+        function actualizarLineaBase() {
+            const expediente = leerExpediente();
+            if (!expediente) return;
 
-            plugins: [ChartDataLabels]
+            const { general, tecnico, servicios, generacion } = expediente;
+            establecerCampo("lineaDependencia", general.dependencia);
+            establecerCampo("lineaMunicipio", general.municipioDatosGenerales);
+            establecerCampo("lineaInmueble", general.dependencia);
+            establecerCampo("lineaEdificios", general.numeroEdificios);
+            establecerCampo("lineaDireccion", general.direccionDependencia);
+            establecerCampo("lineaCodigoPostal", general.codigoPostal);
+            establecerCampo("lineaUsoPrincipal", tecnico.usoPrincipal);
+            establecerCampo("lineaNiveles", tecnico.numeroNiveles);
+            establecerCampo("lineaAreas", tecnico.numeroAreas);
+            establecerCampo("lineaTrabajadores", tecnico.numeroTrabajadores);
+            establecerCampo("lineaHorario", tecnico.horarioOperacion);
+            establecerCampo("lineaDiasLaborales", tecnico.diasLaborales);
+            establecerCampo("lineaAireAcondicionado", tecnico.cuentaAireAcondicionado);
+            establecerCampo("lineaBombeo", tecnico.cuentaBombeo);
+            establecerCampo("lineaElevadores", tecnico.cuentaElevadores);
+            establecerCampo("lineaAlumbradoExterior", tecnico.cuentaAlumbradoExterior);
+            establecerCampo("lineaPlantaEmergencia", tecnico.cuentaPlantaEmergencia);
 
-        });
+            const { cantidadServicios, registros } = obtenerFacturaciones(servicios);
+            const consumos = registros.filter(registro => registro.consumo !== null);
+            const importes = registros.filter(registro => registro.importe !== null);
+            const demandaMaxima = Array.from({ length: cantidadServicios }, (_, index) =>
+                numeroCapturado(servicios[`demandaMaxima_${index + 1}`]))
+                .filter(valor => valor !== null);
+            let capacidadGeneracion = "";
+            if (generacion.tieneGeneracion === "no") {
+                capacidadGeneracion = "No aplica (se indicó que no existe generación)";
+            } else if (generacion.tieneGeneracion === "si") {
+                if (generacion.tipoSistema === "emergencia") {
+                    capacidadGeneracion = generacion.capacidadGenerador || generacion.capacidadInstalada;
+                } else if (generacion.tipoSistema === "cogeneracion") {
+                    capacidadGeneracion = generacion.potenciaElectrica || generacion.capacidadInstalada;
+                } else if (generacion.tipoSistema === "eolico" && generacion.numeroAerogeneradores && generacion.potenciaAerogenerador) {
+                    capacidadGeneracion = `${generacion.numeroAerogeneradores} aerogeneradores · ${generacion.potenciaAerogenerador} kW por unidad`;
+                } else {
+                    capacidadGeneracion = generacion.capacidadInstalada;
+                }
+            }
+            const tiposGeneracion = {
+                fotovoltaico: "Fotovoltaico",
+                eolico: "Eólico",
+                cogeneracion: "Cogeneración",
+                emergencia: "Planta de emergencia",
+                otro: generacion.otroTipoSistema || "Otro"
+            };
 
-        /* ==========================
-           GRAFICA DISTRIBUCION
-        ========================== */
+            establecerCampo("lineaConsumoCapturado", consumos.length
+                ? `${formatearNumero(consumos.reduce((total, registro) => total + registro.consumo, 0))} kWh`
+                : "");
+            establecerCampo("lineaImporteCapturado", importes.length
+                ? `$${formatearNumero(importes.reduce((total, registro) => total + registro.importe, 0))}`
+                : "");
+            establecerCampo("lineaDemandaMaxima", demandaMaxima.length
+                ? `${formatearNumero(Math.max(...demandaMaxima))} kW`
+                : "");
+            establecerCampo("lineaCapacidadGeneracion", capacidadGeneracion
+                ? capacidadGeneracion.startsWith("No aplica") || capacidadGeneracion.includes("kW") ? capacidadGeneracion : `${capacidadGeneracion} kW`
+                : "");
+            establecerCampo("lineaTipoGeneracion", generacion.tieneGeneracion === "no"
+                ? "No declarada"
+                : tiposGeneracion[generacion.tipoSistema] || "");
+            establecerCampo("lineaServiciosCapturados", cantidadServicios || "");
+            establecerCampo("lineaRegistrosConsumo", consumos.length || "");
 
-        const ctx2 =
-            document.getElementById('graficaDistribucion')
-                .getContext('2d');
-
-        new Chart(ctx2, {
-
-            type: 'doughnut',
-
-            data: {
-
-                labels: [
-                    'Alumbrado',
-                    'Climatización',
-                    'Cómputo',
-                    'Otros'
-                ],
-
-                datasets: [{
-
-                    data: [40, 25, 20, 15],
-
-                    backgroundColor: [
-                        '#701F2F',
-                        '#1565C0',
-                        '#2E7D32',
-                        '#D4A44A'
-                    ]
-
-                }]
-
-            },
-
-            options: {
-
-                responsive: true,
-
-                maintainAspectRatio: true,
-
-                cutout: '60%',
-
-                plugins: {
-
-                    legend: {
-                        position: 'bottom'
+            const estadoGrafica = document.getElementById("estadoGraficaConsumo");
+            const canvas = document.getElementById("graficaConsumo");
+            if (consumos.length && window.Chart && canvas) {
+                canvas.hidden = false;
+                estadoGrafica.textContent = "Se muestran únicamente consumos ingresados. Los periodos no tienen fecha asociada.";
+                new Chart(canvas.getContext("2d"), {
+                    type: "bar",
+                    data: {
+                        labels: consumos.map(registro => `Servicio ${registro.servicio} · Facturación ${registro.periodo}`),
+                        datasets: [{ label: "Consumo capturado (kWh)", data: consumos.map(registro => registro.consumo), backgroundColor: "#701F2F" }]
                     },
+                    options: { responsive: true, maintainAspectRatio: true }
+                });
+            } else {
+                if (canvas) canvas.hidden = true;
+                estadoGrafica.textContent = consumos.length
+                    ? "La gráfica no está disponible porque Chart.js no se cargó."
+                    : "Sin consumos capturados para graficar.";
+            }
 
-                    datalabels: {
+            const estadoLineaBase = document.getElementById("estadoLineaBase");
+            const diagnostico = document.getElementById("diagnosticoInicial");
+            const detalleDiagnostico = document.getElementById("detallePendienteDiagnostico");
+            const censoDisponible = window.AEEHState.hasModuleState("censo_carga.html");
+            const resumenConsumo = consumos.length
+                ? `${consumos.length} registro(s) con consumo; suma capturada ${formatearNumero(consumos.reduce((total, registro) => total + registro.consumo, 0))} kWh. Esta suma no representa un total anual porque no hay fechas de periodo.`
+                : "No hay consumos de facturación capturados.";
 
-                        color: '#fff',
+            estadoLineaBase.textContent = consumos.length
+                ? "Captura parcial; requiere fechas de periodos y Censo de Carga para una línea base completa."
+                : "Sin consumos capturados; la línea base está pendiente.";
+            diagnostico.textContent = censoDisponible
+                ? `Datos disponibles: ${resumenConsumo} El Censo de Carga no está integrado en esta etapa; no se generan conclusiones de uso final.`
+                : `Datos disponibles: ${resumenConsumo} Pendiente integrar el Censo de Carga antes de generar conclusiones.`;
+            detalleDiagnostico.value = `Servicios eléctricos: ${cantidadServicios || "sin información"}. Registros de consumo disponibles: ${consumos.length}. Distribución por equipos, anualización y potencial de ahorro: pendientes de integración con Censo de Carga y periodos fechados.`;
+        }
 
-                        font: {
-                            weight: 'bold',
-                            size: 14
-                        },
-
-                        formatter: (value) => value + '%'
-
-                    }
-
-                }
-
-            },
-
-            plugins: [ChartDataLabels]
-
-        });
         function regresar() {
-
-            window.location.href = 'censo_carga.html';
-
+            guardar();
+            window.location.href = "censo_carga.html";
         }
 
         function guardar() {
-
-            alert("Información guardada correctamente.");
-
+            const guardado = window.AEEHState?.save() || false;
+            document.getElementById("estadoGuardadoLineaBase").textContent = guardado
+                ? "Vista de Línea Base actualizada desde la captura temporal del expediente."
+                : "No fue posible conservar el estado local.";
+            return guardado;
         }
 
-        function generarDiagnostico() {
-
-            alert("Diagnóstico generado correctamente.");
-            window.location.href = 'plan_trabajo.html';
-
+        function irAPlanTrabajo() {
+            guardar();
+            window.location.href = "plan_trabajo.html";
         }
 
         function finalizar() {
-
-            alert("Expediente concluido correctamente.");
-            window.location.href = 'resumen_inmueble.html';
-
+            guardar();
+            window.location.href = "resumen_inmueble.html";
         }
-        plugins: [ChartDataLabels]
+
+        document.addEventListener("DOMContentLoaded", actualizarLineaBase);
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {

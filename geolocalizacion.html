@@ -399,6 +399,9 @@
             border: 1px solid #ccc;
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -498,18 +501,18 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Estado</label>
-                            <input id="estadoInmueble" type="text" value="Hidalgo">
+                            <label for="estadoInmueble">Estado</label>
+                            <input id="estadoInmueble" type="text" value="Hidalgo" readonly class="readonly">
                         </div>
 
                         <div class="campo">
-                            <label>Municipio</label>
-                            <input id="municipioInmueble" type="text">
+                            <label for="municipioInmueble">Municipio</label>
+                            <input id="municipioInmueble" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo campo-completo">
-                            <label>Dirección Completa</label>
-                            <input id="direccionCompletaInmueble" type="text">
+                            <label for="direccionCompletaInmueble">Dirección</label>
+                            <input id="direccionCompletaInmueble" type="text" readonly class="readonly">
                         </div>
 
                     </div>
@@ -557,18 +560,20 @@
 
                 <div class="card">
 
-                    <h3>Evidencia Fotográfica</h3>
+                    <h3>Evidencia fotográfica de ubicación</h3>
+
+                    <p class="app-photo-help">Use imágenes adicionales para orientar la localización: acceso, letrero exterior, referencias visibles o infraestructura cercana. Si una fotografía general ya muestra la fachada, no es necesario adjuntarla otra vez.</p>
 
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Fotografía Frontal</label>
-                            <input type="file">
+                            <label for="fotoAccesoUbicacion">Acceso o referencia visible</label>
+                            <input id="fotoAccesoUbicacion" type="file" accept="image/*">
                         </div>
 
                         <div class="campo">
-                            <label>Fotografía de Referencia</label>
-                            <input type="file">
+                            <label for="fotoEntornoUbicacion">Entorno inmediato o infraestructura cercana</label>
+                            <input id="fotoEntornoUbicacion" type="file" accept="image/*">
                         </div>
 
                     </div>
@@ -640,16 +645,20 @@
     <script>
         function cargarUbicacionDesdeDatosGenerales() {
             const estado = sessionStorage.getItem("estadoInmueble") || "Hidalgo";
-            const municipio = sessionStorage.getItem("municipioDatosGenerales") || "";
-            const direccion = sessionStorage.getItem("direccionDependencia") || "";
+            const municipio = sessionStorage.getItem("municipioDatosGenerales") ?? sessionStorage.getItem("municipioInmueble") ?? "";
+            const direccion = sessionStorage.getItem("direccionDependencia") ?? sessionStorage.getItem("direccionCompletaInmueble") ?? "";
 
             const estadoInput = document.getElementById("estadoInmueble");
             const municipioInput = document.getElementById("municipioInmueble");
             const direccionInput = document.getElementById("direccionCompletaInmueble");
+            const latitudInput = document.getElementById("latitud");
+            const longitudInput = document.getElementById("longitud");
 
             if (estadoInput) estadoInput.value = estado;
             if (municipioInput) municipioInput.value = municipio;
             if (direccionInput) direccionInput.value = direccion;
+            if (latitudInput) latitudInput.value = sessionStorage.getItem("latitudInmueble") || "";
+            if (longitudInput) longitudInput.value = sessionStorage.getItem("longitudInmueble") || "";
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -676,6 +685,18 @@
                     attribution: '© OpenStreetMap'
                 }
             ).addTo(mapa);
+
+            mapa.on("click", function (e) {
+                const lat = e.latlng.lat;
+                const lon = e.latlng.lng;
+
+                document.getElementById("latitud").value = lat.toFixed(6);
+                document.getElementById("longitud").value = lon.toFixed(6);
+
+                if (marcador) mapa.removeLayer(marcador);
+                marcador = L.marker([lat, lon]).addTo(mapa);
+                guardarUbicacionEnSession();
+            });
 
         });
 
@@ -733,7 +754,11 @@
                         document.getElementById("longitud").value =
                             posicion.lng.toFixed(6);
 
+                        guardarUbicacionEnSession();
+
                     });
+
+                    guardarUbicacionEnSession();
 
                 },
 
@@ -749,23 +774,6 @@
 
         }
 
-        mapa.on("click", function (e) {
-
-            const lat = e.latlng.lat;
-            const lon = e.latlng.lng;
-
-            document.getElementById("latitud").value = lat.toFixed(6);
-            document.getElementById("longitud").value = lon.toFixed(6);
-
-            if (marcador) {
-
-                mapa.removeLayer(marcador);
-
-            }
-
-            marcador = L.marker([lat, lon]).addTo(mapa);
-
-        });
         function regresar() {
 
             window.location.href = 'datos_generales.html';
@@ -780,12 +788,21 @@
             }
         }
 
-        function guardar() {
+        function guardarUbicacionEnSession() {
             sessionStorage.setItem("estadoInmueble", document.getElementById("estadoInmueble")?.value || "Hidalgo");
             sessionStorage.setItem("municipioInmueble", document.getElementById("municipioInmueble")?.value || "");
             sessionStorage.setItem("direccionCompletaInmueble", document.getElementById("direccionCompletaInmueble")?.value || "");
+            sessionStorage.setItem("latitudInmueble", document.getElementById("latitud")?.value || "");
+            sessionStorage.setItem("longitudInmueble", document.getElementById("longitud")?.value || "");
             sessionStorage.setItem("referenciaUbicacion", document.getElementById("referenciaUbicacion")?.value || "");
             sessionStorage.setItem("refUbicacionSeleccionada", document.querySelector('input[name="refUbicacion"]:checked')?.value || "si");
+        }
+
+        document.addEventListener("input", guardarUbicacionEnSession);
+        document.addEventListener("change", guardarUbicacionEnSession);
+
+        function guardar() {
+            guardarUbicacionEnSession();
             alert("Información guardada correctamente.");
 
         }

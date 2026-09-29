@@ -408,6 +408,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 
 <body>
@@ -461,43 +464,43 @@
                     <ul>
 
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='perfil_usuario.html'">
-                                ✓ Perfil del Usuario
+                            <button class="menu-btn" data-module-state="perfil_usuario.html" onclick="window.location.href='perfil_usuario.html'">
+                                Perfil del Usuario
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='datos_generales.html'">
-                                ✓ Datos Generales
+                            <button class="menu-btn" data-module-state="datos_generales.html" onclick="window.location.href='datos_generales.html'">
+                                Datos Generales
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='geolocalizacion.html'">
-                                ✓ Geolocalización
+                            <button class="menu-btn" data-module-state="geolocalizacion.html" onclick="window.location.href='geolocalizacion.html'">
+                                Geolocalización
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='informacion_tecnica.html'">
-                                ✓ Información Técnica
+                            <button class="menu-btn" data-module-state="informacion_tecnica.html" onclick="window.location.href='informacion_tecnica.html'">
+                                Información Técnica
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='servicios_electricos.html'">
-                                ✓ Servicios Eléctricos
+                            <button class="menu-btn" data-module-state="servicios_electricos.html" onclick="window.location.href='servicios_electricos.html'">
+                                Servicios Eléctricos
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='sistema_generacion.html'">
-                                ✓ Sistema de Generación
+                            <button class="menu-btn" data-module-state="sistema_generacion.html" onclick="window.location.href='sistema_generacion.html'">
+                                Sistema de Generación
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='evaluacion_sitio.html'">
-                                ✓ Evaluación del Sitio
+                            <button class="menu-btn" data-module-state="evaluacion_sitio.html" onclick="window.location.href='evaluacion_sitio.html'">
+                                Evaluación del Sitio
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" onclick="window.location.href='censo_carga.html'">
-                                ✓ Censo de Carga
+                            <button class="menu-btn" data-module-state="censo_carga.html" onclick="window.location.href='censo_carga.html'">
+                                Censo de Carga
                             </button>
                         </li>
 
@@ -516,23 +519,28 @@
                         <div class="grid">
 
                             <div class="campo">
-                                <label>Dependencia</label>
-                                <input type="text" value="Secretaría de Desarrollo Económico" readonly class="readonly">
+                                <label>Dependencia / Inmueble</label>
+                                <input id="resumenDependencia" type="text" readonly class="readonly">
                             </div>
 
                             <div class="campo">
                                 <label>Municipio</label>
-                                <input type="text" value="Pachuca de Soto" readonly class="readonly">
+                                <input id="resumenMunicipio" type="text" readonly class="readonly">
                             </div>
 
                             <div class="campo">
-                                <label>Inmueble</label>
-                                <input type="text" value="Edificio Administrativo" readonly class="readonly">
+                                <label>Número de edificios</label>
+                                <input id="resumenEdificios" type="text" readonly class="readonly">
                             </div>
 
                             <div class="campo">
-                                <label>Estado</label>
-                                <input type="text" value="Validado" readonly class="readonly">
+                                <label>Dirección</label>
+                                <input id="resumenDireccion" type="text" readonly class="readonly">
+                            </div>
+
+                            <div class="campo">
+                                <label>Código postal</label>
+                                <input id="resumenCodigoPostal" type="text" readonly class="readonly">
                             </div>
 
                         </div>
@@ -542,23 +550,23 @@
                     <div class="kpis">
 
                         <div class="kpi">
-                            <h4>Consumo Anual</h4>
-                            <span>125,000 kWh</span>
+                            <h4>Suma de consumos capturados</h4>
+                            <span id="resumenConsumo">Sin información capturada</span>
                         </div>
 
                         <div class="kpi">
-                            <h4>Facturación</h4>
-                            <span>$452,000</span>
+                            <h4>Suma de importes capturados</h4>
+                            <span id="resumenImporte">Sin información capturada</span>
                         </div>
 
                         <div class="kpi">
-                            <h4>Potencia</h4>
-                            <span>87 kW</span>
+                            <h4>Demanda máxima registrada</h4>
+                            <span id="resumenDemanda">Sin información capturada</span>
                         </div>
 
                         <div class="kpi">
-                            <h4>Generación</h4>
-                            <span>85 kW</span>
+                            <h4>Capacidad de generación capturada</h4>
+                            <span id="resumenGeneracion">Sin información capturada</span>
                         </div>
 
                     </div>
@@ -570,23 +578,23 @@
                         <div class="grid">
 
                             <div class="campo">
-                                <label>Completitud</label>
-                                <input type="text" value="100%" readonly class="readonly">
+                                <label>Estado local</label>
+                                <input id="resumenEstado" type="text" readonly class="readonly">
                             </div>
 
                             <div class="campo">
-                                <label>Módulos Capturados</label>
-                                <input type="text" value="9 de 9" readonly class="readonly">
+                                <label>Módulos con estado guardado</label>
+                                <input id="resumenModulos" type="text" readonly class="readonly">
                             </div>
 
                             <div class="campo">
-                                <label>Última Actualización</label>
-                                <input type="text" value="24/06/2026" readonly class="readonly">
+                                <label>Periodo energético</label>
+                                <input id="resumenPeriodo" type="text" readonly class="readonly">
                             </div>
 
                             <div class="campo">
-                                <label>Estatus</label>
-                                <input type="text" value="VALIDADO" readonly class="readonly">
+                                <label>Censo de Carga</label>
+                                <input id="resumenCenso" type="text" readonly class="readonly">
                             </div>
 
                         </div>
@@ -629,14 +637,12 @@
 
                 <h3>Observaciones</h3>
 
-                <textarea style="
+                <textarea id="observacionesExpediente" placeholder="Sin observaciones capturadas." style="
         width:100%;
         height:80px;
         border:1px solid #ccc;
         border-radius:8px;
-        padding:12px;">
-La AEEH recomienda priorizar acciones de sustitución tecnológica y mantenimiento preventivo para alcanzar las metas establecidas.
-    </textarea>
+            padding:12px;"></textarea>
 
             </div>
 
@@ -656,36 +662,185 @@ La AEEH recomienda priorizar acciones de sustitución tecnológica y mantenimien
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
-        async function descargarExpediente() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape', 'mm', 'a4');
-            const vals = [...document.querySelectorAll('.readonly')].map(e => e.value);
-            const obs = document.querySelector('textarea').value;
-            doc.setDrawColor(112, 31, 47); doc.rect(8, 8, 281, 194);
-            doc.setTextColor(112, 31, 47); doc.setFont('montserrat', 'bold'); doc.setFontSize(18);
-            doc.text('PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA', 148, 18, { align: 'center' });
-            doc.setFontSize(14); doc.text('EXPEDIENTE EJECUTIVO DEL INMUEBLE', 148, 27, { align: 'center' });
-            doc.setFontSize(9); doc.setTextColor(0);
-            doc.setFont("montserrat", "bold");
-            doc.setFontSize(9);
-            doc.text("Fecha de generación:", 210, 28);
-            doc.setFont("montserrat", "normal");
-            doc.text(new Date().toLocaleDateString(), 245, 28);
-            function sec(y, t) { doc.setFillColor(112, 31, 47); doc.rect(12, y, 265, 8, 'F'); doc.setTextColor(255); doc.text(t, 15, y + 5); doc.setTextColor(0); }
-            sec(34, 'I. INFORMACIÓN GENERAL');
-            [['Dependencia', vals[0]], ['Municipio', vals[1]], ['Inmueble', vals[2]], ['Estado', vals[3]]].forEach((r, i) => { doc.setFont('montserrat', 'bold'); doc.text(r[0] + ':', 16, 47 + i * 8); doc.setFont('montserrat', 'normal'); doc.text(r[1], 55, 47 + i * 8); });
-            sec(72, 'II. INDICADORES');
-            [['Consumo Anual', '125,000 kWh'], ['Facturación', '$452,000'], ['Potencia', '87 kW'], ['Generación', '85 kW']].forEach((r, i) => { let x = 16 + i * 62; doc.roundedRect(x, 83, 58, 22, 2, 2); doc.setFont('montserrat', 'bold'); doc.text(r[0], x + 3, 90); doc.setTextColor(112, 31, 47); doc.text(r[1], x + 3, 99); doc.setTextColor(0); });
-            sec(111, 'III. ESTADO DEL EXPEDIENTE');
-            [['Completitud', vals[4]], ['Módulos', vals[5]], ['Última actualización', vals[6]], ['Estatus', vals[7]]].forEach((r, i) => { doc.setFont('montserrat', 'bold'); doc.text(r[0] + ':', 16, 123 + i * 8); doc.setFont('montserrat', 'normal'); doc.text(r[1], 70, 123 + i * 8); });
-            sec(154, 'IV. OBSERVACIONES');
-            doc.roundedRect(16, 165, 255, 24, 2, 2);
-            doc.setFont('montserrat', 'normal'); doc.setFontSize(9);
-            doc.text(doc.splitTextToSize(obs, 245), 20, 171);
-            doc.setFontSize(8); doc.setTextColor(90);
-            doc.text('Gobierno del Estado de Hidalgo | Agencia Estatal de Energía | Plataforma Estatal de Eficiencia Energética', 148, 198, { align: 'center' });
-            doc.save('Expediente_Ejecutivo.pdf');
+        const camposTecnicosAntiguos = [
+            "usoPrincipal", "numeroNiveles", "numeroAreas", "numeroTrabajadores",
+            "horarioOperacion", "diasLaborales", "cuentaAireAcondicionado",
+            "cuentaBombeo", "cuentaElevadores", "cuentaAlumbradoExterior", "cuentaPlantaEmergencia"
+        ];
+        const camposGeneracionAntiguos = [
+            "tieneGeneracion", "tipoSistema", "capacidadInstalada", "fechaInstalacion",
+            "numeroPaneles", "potenciaPanelW", "numeroInversores", "capacidadInversores",
+            "numeroAerogeneradores", "potenciaAerogenerador", "alturaTorre",
+            "combustibleCogeneracion", "potenciaElectrica", "potenciaTermica", "tipoMotorTurbina",
+            "combustibleEmergencia", "marcaGenerador", "modeloGenerador", "capacidadGenerador",
+            "otroTipoSistema", "descripcionOtroSistema", "sistemaEnOperacion", "esquemaOperacion"
+        ];
+
+        function valorNumerico(valor) {
+            if (valor === undefined || valor === null || String(valor).trim() === "") return null;
+            const numero = Number(valor);
+            return Number.isFinite(numero) ? numero : null;
         }
+
+        function proyectarResumen() {
+            if (!window.AEEHState) return null;
+            const datosGenerales = window.AEEHState.getModuleFields("datos_generales.html");
+            const servicios = window.AEEHState.getModuleFields("servicios_electricos.html");
+            const generacion = window.AEEHState.getModuleFields("sistema_generacion.html", camposGeneracionAntiguos);
+            const registros = [];
+            const cantidadServicios = Math.max(0, parseInt(servicios.cantidadMedidores, 10) || 0);
+
+            for (let servicio = 1; servicio <= cantidadServicios; servicio++) {
+                const cantidadPeriodos = Math.max(0, parseInt(servicios[`numeroFacturaciones_${servicio}`], 10) || 0);
+                for (let periodo = 1; periodo <= cantidadPeriodos; periodo++) {
+                    const consumo = valorNumerico(servicios[`consumo_${servicio}_${periodo}`]);
+                    const importe = valorNumerico(servicios[`factura_${servicio}_${periodo}`]);
+                    if (consumo === null && importe === null) continue;
+                    registros.push({ servicio, periodo, consumo, importe });
+                }
+            }
+
+            const consumos = registros.filter(registro => registro.consumo !== null);
+            const importes = registros.filter(registro => registro.importe !== null);
+            const demandas = Array.from({ length: cantidadServicios }, (_, indice) =>
+                valorNumerico(servicios[`demandaMaxima_${indice + 1}`]))
+                .filter(valor => valor !== null);
+            let capacidad = "";
+            if (generacion.tieneGeneracion === "no") {
+                capacidad = "No aplica (sin generación declarada)";
+            } else if (generacion.tieneGeneracion === "si") {
+                if (generacion.tipoSistema === "emergencia") {
+                    capacidad = generacion.capacidadGenerador || generacion.capacidadInstalada || "";
+                } else if (generacion.tipoSistema === "cogeneracion") {
+                    capacidad = generacion.potenciaElectrica || generacion.capacidadInstalada || "";
+                } else if (generacion.tipoSistema === "eolico" && generacion.numeroAerogeneradores && generacion.potenciaAerogenerador) {
+                    capacidad = `${generacion.numeroAerogeneradores} aerogeneradores · ${generacion.potenciaAerogenerador} kW por unidad`;
+                } else {
+                    capacidad = generacion.capacidadInstalada || "";
+                }
+            }
+
+            return {
+                datosGenerales,
+                cantidadServicios,
+                registros,
+                consumos,
+                importes,
+                sumaConsumo: consumos.reduce((total, registro) => total + registro.consumo, 0),
+                sumaImportes: importes.reduce((total, registro) => total + registro.importe, 0),
+                demandaMaxima: demandas.length ? Math.max(...demandas) : null,
+                capacidad
+            };
+        }
+
+        function formatearNumero(valor) {
+            return new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 }).format(valor);
+        }
+
+        function actualizarResumenInmueble() {
+            const resumen = proyectarResumen();
+            if (!resumen) return;
+            const sinDato = "Sin información capturada";
+            const ponerValor = (id, valor) => {
+                const campo = document.getElementById(id);
+                if (campo) campo.value = valor || sinDato;
+            };
+            const ponerTexto = (id, valor) => {
+                const elemento = document.getElementById(id);
+                if (elemento) elemento.textContent = valor || sinDato;
+            };
+
+            ponerValor("resumenDependencia", resumen.datosGenerales.dependencia);
+            ponerValor("resumenMunicipio", resumen.datosGenerales.municipioDatosGenerales);
+            ponerValor("resumenEdificios", resumen.datosGenerales.numeroEdificios);
+            ponerValor("resumenDireccion", resumen.datosGenerales.direccionDependencia);
+            ponerValor("resumenCodigoPostal", resumen.datosGenerales.codigoPostal);
+            ponerTexto("resumenConsumo", resumen.consumos.length
+                ? `${formatearNumero(resumen.sumaConsumo)} kWh (suma capturada; periodo sin identificar)`
+                : sinDato);
+            ponerTexto("resumenImporte", resumen.importes.length
+                ? `$${formatearNumero(resumen.sumaImportes)} (suma capturada; periodo sin identificar)`
+                : sinDato);
+            ponerTexto("resumenDemanda", resumen.demandaMaxima === null ? sinDato : `${formatearNumero(resumen.demandaMaxima)} kW`);
+            ponerTexto("resumenGeneracion", resumen.capacidad
+                ? resumen.capacidad.startsWith("No aplica") || resumen.capacidad.includes("kW") ? resumen.capacidad : `${resumen.capacidad} kW`
+                : sinDato);
+            ponerValor("resumenEstado", "Captura local de sesión; no validada en servidor");
+            const modulos = ["datos_generales.html", "informacion_tecnica.html", "servicios_electricos.html", "sistema_generacion.html", "evaluacion_sitio.html", "censo_carga.html"];
+            ponerValor("resumenModulos", `${modulos.filter(modulo => window.AEEHState.hasModuleState(modulo)).length} de ${modulos.length} con estado local guardado`);
+            ponerValor("resumenPeriodo", resumen.registros.length ? "Sin fechas de periodo capturadas" : "Sin periodos capturados");
+            ponerValor("resumenCenso", "Pendiente de integración; no procesado en esta etapa");
+        }
+
+        async function descargarExpediente() {
+            if (!window.jspdf?.jsPDF) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("landscape", "mm", "a4");
+            const value = id => document.getElementById(id)?.value || "Sin información capturada";
+            const text = id => document.getElementById(id)?.textContent.trim() || "Sin información capturada";
+            const obs = document.getElementById("observacionesExpediente")?.value.trim() || "Sin observaciones capturadas.";
+            doc.setDrawColor(112, 31, 47);
+            doc.rect(8, 8, 281, 194);
+            doc.setTextColor(112, 31, 47);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA", 148, 18, { align: "center" });
+            doc.setFontSize(12);
+            doc.text("RESUMEN DEL INMUEBLE", 148, 26, { align: "center" });
+
+            function seccion(y, titulo) {
+                doc.setFillColor(112, 31, 47);
+                doc.rect(12, y, 265, 8, "F");
+                doc.setTextColor(255);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                doc.text(titulo, 15, y + 5);
+                doc.setTextColor(0);
+            }
+
+            function filas(rows, startY) {
+                rows.forEach((row, index) => {
+                    const y = startY + index * 6;
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`${row[0]}:`, 16, y);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(doc.splitTextToSize(String(row[1]), 210), 70, y);
+                });
+            }
+
+            seccion(32, "I. INFORMACIÓN GENERAL");
+            filas([
+                ["Dependencia / Inmueble", value("resumenDependencia")],
+                ["Municipio", value("resumenMunicipio")],
+                ["Número de edificios", value("resumenEdificios")],
+                ["Dirección", value("resumenDireccion")],
+                ["Código postal", value("resumenCodigoPostal")]
+            ], 42);
+            seccion(73, "II. DATOS ENERGÉTICOS CAPTURADOS");
+            filas([
+                ["Consumo", text("resumenConsumo")],
+                ["Importes", text("resumenImporte")],
+                ["Demanda máxima", text("resumenDemanda")],
+                ["Generación", text("resumenGeneracion")]
+            ], 83);
+            seccion(110, "III. ESTADO Y PENDIENTES");
+            filas([
+                ["Estado", value("resumenEstado")],
+                ["Módulos", value("resumenModulos")],
+                ["Periodo", value("resumenPeriodo")],
+                ["Censo de Carga", value("resumenCenso")]
+            ], 120);
+            seccion(149, "IV. OBSERVACIONES");
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.text(doc.splitTextToSize(obs, 245), 18, 163);
+            doc.setFontSize(8);
+            doc.setTextColor(90);
+            doc.text(`Generado ${new Date().toLocaleDateString("es-MX")} desde el estado local de esta sesión.`, 148, 198, { align: "center" });
+            doc.save("Expediente_Ejecutivo.pdf");
+        }
+
+        document.addEventListener("DOMContentLoaded", actualizarResumenInmueble);
 
         const nombre =
             sessionStorage.getItem("nombre");

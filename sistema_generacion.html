@@ -347,6 +347,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -470,7 +473,7 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Tipo de Sistema</label>
+                            <label for="tipoSistema">Tipo de Sistema</label>
 
                             <select class="input-select" id="tipoSistema" onchange="mostrarCaracteristicasSistema()">
                                 <option value="">Seleccione...</option>
@@ -483,13 +486,13 @@
                         </div>
 
                         <div class="campo">
-                            <label>Capacidad Instalada (kW)</label>
-                            <input type="number">
+                            <label for="capacidadInstalada">Capacidad Instalada (kW)</label>
+                            <input id="capacidadInstalada" type="number" min="0" step="any">
                         </div>
 
                         <div class="campo">
-                            <label>Fecha de Instalación</label>
-                            <input type="date">
+                            <label for="fechaInstalacion">Fecha de Instalación</label>
+                            <input id="fechaInstalacion" type="date">
                         </div>
 
                     </div>
@@ -505,23 +508,23 @@
                     <div class="grid sistema-opcion" data-sistema="fotovoltaico">
 
                         <div class="campo">
-                            <label>Número de Paneles</label>
-                            <input type="number">
+                            <label for="numeroPaneles">Número de Paneles</label>
+                            <input id="numeroPaneles" type="number" min="0" step="1">
                         </div>
 
                         <div class="campo">
-                            <label>Potencia por Panel (W)</label>
-                            <input type="number">
+                            <label for="potenciaPanelW">Potencia por Panel (W)</label>
+                            <input id="potenciaPanelW" type="number" min="0" step="any">
                         </div>
 
                         <div class="campo">
-                            <label>Número de Inversores</label>
-                            <input type="number">
+                            <label for="numeroInversores">Número de Inversores</label>
+                            <input id="numeroInversores" type="number" min="0" step="1">
                         </div>
 
                         <div class="campo">
-                            <label>Capacidad Total de Inversores (kW)</label>
-                            <input type="number">
+                            <label for="capacidadInversores">Capacidad Total de Inversores (kW)</label>
+                            <input id="capacidadInversores" type="number" min="0" step="any">
                         </div>
 
                     </div>
@@ -529,18 +532,18 @@
                     <div class="grid sistema-opcion" data-sistema="eolico">
 
                         <div class="campo">
-                            <label>Número de Aerogeneradores</label>
-                            <input type="number">
+                            <label for="numeroAerogeneradores">Número de Aerogeneradores</label>
+                            <input id="numeroAerogeneradores" type="number" min="0" step="1">
                         </div>
 
                         <div class="campo">
-                            <label>Potencia por Aerogenerador (kW)</label>
-                            <input type="number">
+                            <label for="potenciaAerogenerador">Potencia por Aerogenerador (kW)</label>
+                            <input id="potenciaAerogenerador" type="number" min="0" step="any">
                         </div>
 
                         <div class="campo">
-                            <label>Altura de Torre (m)</label>
-                            <input type="number">
+                            <label for="alturaTorre">Altura de Torre (m)</label>
+                            <input id="alturaTorre" type="number" min="0" step="any">
                         </div>
 
                     </div>
@@ -548,8 +551,8 @@
                     <div class="grid sistema-opcion" data-sistema="cogeneracion">
 
                         <div class="campo">
-                            <label>Tipo de Combustible</label>
-                            <select class="input-select">
+                            <label for="combustibleCogeneracion">Tipo de Combustible</label>
+                            <select id="combustibleCogeneracion" class="input-select">
                                 <option value="">Seleccione...</option>
                                 <option>Gas natural</option>
                                 <option>Biogás</option>
@@ -559,18 +562,18 @@
                         </div>
 
                         <div class="campo">
-                            <label>Potencia Eléctrica (kW)</label>
-                            <input type="number">
+                            <label for="potenciaElectrica">Potencia Eléctrica (kW)</label>
+                            <input id="potenciaElectrica" type="number" min="0" step="any">
                         </div>
 
                         <div class="campo">
-                            <label>Potencia Térmica (kW)</label>
-                            <input type="number">
+                            <label for="potenciaTermica">Potencia Térmica (kW)</label>
+                            <input id="potenciaTermica" type="number" min="0" step="any">
                         </div>
 
                         <div class="campo">
-                            <label>Tipo de Motor o Turbina</label>
-                            <input type="text">
+                            <label for="tipoMotorTurbina">Tipo de Motor o Turbina</label>
+                            <input id="tipoMotorTurbina" type="text">
                         </div>
 
                     </div>
@@ -578,8 +581,8 @@
                     <div class="grid sistema-opcion" data-sistema="emergencia">
 
                         <div class="campo">
-                            <label>Tipo de Combustible</label>
-                            <select class="input-select">
+                            <label for="combustibleEmergencia">Tipo de Combustible</label>
+                            <select id="combustibleEmergencia" class="input-select">
                                 <option value="">Seleccione...</option>
                                 <option>Diésel</option>
                                 <option>Gasolina</option>
@@ -589,18 +592,18 @@
                         </div>
 
                         <div class="campo">
-                            <label>Marca</label>
-                            <input type="text">
+                            <label for="marcaGenerador">Marca</label>
+                            <input id="marcaGenerador" type="text">
                         </div>
 
                         <div class="campo">
-                            <label>Modelo</label>
-                            <input type="text">
+                            <label for="modeloGenerador">Modelo</label>
+                            <input id="modeloGenerador" type="text">
                         </div>
 
                         <div class="campo">
-                            <label>Capacidad del Generador (kW)</label>
-                            <input type="number">
+                            <label for="capacidadGenerador">Capacidad del Generador (kW)</label>
+                            <input id="capacidadGenerador" type="number" min="0" step="any">
                         </div>
 
                     </div>
@@ -608,13 +611,13 @@
                     <div class="grid sistema-opcion" data-sistema="otro">
 
                         <div class="campo">
-                            <label>Especifique el tipo de sistema</label>
-                            <input type="text">
+                            <label for="otroTipoSistema">Especifique el tipo de sistema</label>
+                            <input id="otroTipoSistema" type="text">
                         </div>
 
                         <div class="campo">
-                            <label>Descripción de características</label>
-                            <input type="text">
+                            <label for="descripcionOtroSistema">Descripción de características</label>
+                            <input id="descripcionOtroSistema" type="text">
                         </div>
 
                     </div>
@@ -630,11 +633,11 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>¿Sistema en Operación?</label>
+                            <label for="sistemaEnOperacion">¿Sistema en Operación?</label>
 
-                            <select class="input-select">
+                            <select id="sistemaEnOperacion" class="input-select">
 
-                                <option>Seleccione...</option>
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
 
@@ -642,9 +645,9 @@
                         </div>
 
                         <div class="campo">
-                            <label>Esquema de Operación</label>
+                            <label for="esquemaOperacion">Esquema de Operación</label>
 
-                            <select class="input-select">
+                            <select id="esquemaOperacion" class="input-select">
                                 <option value="">Seleccione...</option>
                                 <option>Interconectado a la Red (On-Grid)</option>
                                 <option>Sistema Aislado (Off-Grid)</option>
@@ -659,6 +662,10 @@
                 </div>
 
                 <!-- BOTONES -->
+
+                <p id="estadoGuardadoGeneracion" class="app-photo-help" role="status" aria-live="polite">
+                    La información se conserva temporalmente para este usuario en esta sesión.
+                </p>
 
                 <div class="acciones">
 
@@ -703,9 +710,14 @@
 
             if (!tieneGeneracion) {
                 document.getElementById("tipoSistema").value = "";
+                document.querySelectorAll(".generacion-detalle input, .generacion-detalle select").forEach(campo => {
+                    if (campo.tagName === "SELECT") campo.selectedIndex = 0;
+                    else campo.value = "";
+                });
                 tarjetaEspecifica.classList.remove("activo");
                 tarjetaEspecifica.style.display = "none";
                 mostrarCaracteristicasSistema();
+                window.AEEHState?.save();
                 return;
             }
 
@@ -760,21 +772,27 @@
         });
 
         function regresar() {
-
-            alert("Regresar a Servicios Eléctricos");
+            if (!guardar()) return;
             window.location.href = 'servicios_electricos.html';
 
         }
 
         function guardar() {
-
-            alert("Información guardada correctamente.");
-
+            const guardado = window.AEEHState?.save() || false;
+            const estado = document.getElementById("estadoGuardadoGeneracion");
+            if (estado) {
+                estado.textContent = guardado
+                    ? "Información de generación conservada temporalmente en esta sesión."
+                    : "No fue posible conservar la información de generación en esta sesión.";
+            }
+            return guardado;
         }
 
         function continuar() {
-
-            alert("Información guardada. Continuando a Potencial de Generación.");
+            if (!guardar()) {
+                alert("No fue posible conservar la información; no se avanzó al siguiente módulo.");
+                return;
+            }
             window.location.href = 'evaluacion_sitio.html';
 
         }

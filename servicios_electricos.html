@@ -421,6 +421,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -609,6 +612,10 @@
 
             <!-- BOTONES -->
 
+            <p id="estadoGuardadoServicios" class="texto-ayuda" role="status" aria-live="polite">
+                Los cambios se conservan temporalmente en esta sesión.
+            </p>
+
             <div class="acciones">
 
                 <button class="btn" style="background:#616161;color:white;" onclick="regresar()">
@@ -643,6 +650,7 @@
         function generarServicios() {
 
             const cantidad = parseInt(document.getElementById("cantidadMedidores").value);
+            const teniaEstado = window.AEEHState?.hasSavedState() || false;
 
             if (isNaN(cantidad) || cantidad < 1) {
 
@@ -828,17 +836,35 @@
 
                     </label>
 
-                    <select class="selector-linea-base" data-servicio="${i}">
-                        <option value="12" selected>12</option>
-                        <option value="18">18</option>
-                        <option value="24">24</option>
-                    </select>
+                    <input
+                        type="number"
+                        class="selector-linea-base"
+                        id="numeroFacturaciones_${i}"
+                        data-servicio="${i}"
+                        value="12"
+                        min="12"
+                        step="1"
+                        readonly
+                        data-app-state
+                        aria-label="Cantidad de registros de facturación del servicio ${i}">
 
+                </div>
+
+                <div class="campo campo-completo">
+                    <label>Administrar registros</label>
+                    <div class="acciones">
+                        <button type="button" class="btn" style="background:#1565C0;color:white;" onclick="agregarFacturacion(${i})">
+                            Agregar registro
+                        </button>
+                        <button id="eliminarFacturacion_${i}" type="button" class="btn" style="background:#616161;color:white;" onclick="eliminarUltimaFacturacion(${i})">
+                            Eliminar último
+                        </button>
+                    </div>
                 </div>
 
             </div>
 
-            <p class="texto-ayuda">
+            <p class="texto-ayuda" id="estadoFacturacion_${i}" role="status" aria-live="polite">
                 Registre las facturaciones anteriores para establecer la línea base del inmueble.
             </p>
 
@@ -919,45 +945,158 @@
 
             document.getElementById("totalServicios").value = cantidad;
 
-            document.getElementById("estadoServicios").value = "En captura";
+            const acordeones = Array.from(contenedor.querySelectorAll(".acordeon"));
+            acordeones.forEach((acordeon, index) => asignarIdentificadoresServicio(acordeon, index + 1));
 
-            contenedor.querySelectorAll("input,select").forEach(campo => {
-
-                campo.addEventListener("input", validarServicios);
-
-                campo.addEventListener("change", validarServicios);
-
+            window.AEEHState?.restore();
+            acordeones.forEach((acordeon, index) => {
+                const servicioIndex = index + 1;
+                const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+                const cantidadFacturaciones = Math.max(12, parseInt(contador?.value, 10) || 12);
+                if (contador) contador.value = cantidadFacturaciones;
+                generarFilasLineaBase(servicioIndex, cantidadFacturaciones);
             });
 
-            for (let i = 1; i <= cantidad; i++) {
-                const selector = document.querySelector(`.selector-linea-base[data-servicio="${i}"]`);
-                if (selector) {
-                    selector.addEventListener("change", function () {
-                        generarFilasLineaBase(i, parseInt(this.value));
-                    });
-                    generarFilasLineaBase(i, 12);
-                }
-            }
+            window.AEEHState?.restore();
+            if (teniaEstado) window.AEEHState?.save();
 
-            validarServicios();
+            acordeones.forEach((acordeon, index) => {
+                const servicioIndex = index + 1;
+                const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+                const cantidadFacturaciones = Math.max(12, parseInt(contador?.value, 10) || 12);
+                if (contador) contador.value = cantidadFacturaciones;
+                ordenarCamposServicio(servicioIndex);
+                actualizarDetallesServicio(servicioIndex);
+                actualizarControlesFacturacion(servicioIndex, cantidadFacturaciones);
+
+                acordeon.querySelectorAll("select").forEach(select => {
+                    if (select.selectedIndex < 0) select.selectedIndex = 0;
+                });
+            });
+
+            requestAnimationFrame(validarServicios);
         }
 
         function generarFilasLineaBase(servicioIndex, numeroFacturaciones) {
             const tbody = document.getElementById(`tabla-linea-base-${servicioIndex}`);
             if (!tbody) return;
 
-            const filas = Array.from({ length: numeroFacturaciones }, (_, index) => {
-                const numeroPeriodo = index + 1;
-                return `
-                    <tr>
-                        <td>Facturación ${numeroPeriodo}</td>
-                        <td><input type="number" min="0" step="any" placeholder="kWh"></td>
-                        <td><input type="number" min="0" step="any" placeholder="$"></td>
-                    </tr>
-                `;
-            }).join("");
+            const cantidad = Math.max(12, Math.floor(Number(numeroFacturaciones) || 12));
+            const filasActuales = Array.from(tbody.querySelectorAll("tr"));
 
-            tbody.innerHTML = filas;
+            filasActuales.slice(cantidad).forEach(fila => fila.remove());
+
+            for (let numeroPeriodo = filasActuales.length + 1; numeroPeriodo <= cantidad; numeroPeriodo++) {
+                const fila = document.createElement("tr");
+                fila.dataset.periodo = numeroPeriodo;
+                fila.innerHTML = `
+                        <td>Facturación ${numeroPeriodo}</td>
+                        <td><input id="consumo_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Consumo de facturación ${numeroPeriodo} (kWh)"></td>
+                        <td><input id="factura_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Importe de facturación ${numeroPeriodo} ($)"></td>
+                    `;
+                tbody.appendChild(fila);
+            }
+
+            const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+            if (contador) contador.value = cantidad;
+            actualizarControlesFacturacion(servicioIndex, cantidad);
+        }
+
+        function normalizarEtiqueta(texto) {
+            return texto.replace(/\s+/g, " ").trim();
+        }
+
+        function asignarIdentificadoresServicio(acordeon, servicioIndex) {
+            const controlPorEtiqueta = etiqueta => {
+                const campo = Array.from(acordeon.querySelectorAll(".campo"))
+                    .find(elemento => normalizarEtiqueta(elemento.querySelector("label")?.textContent || "") === etiqueta);
+                return campo?.querySelector("input,select,textarea") || null;
+            };
+
+            const identificadores = {
+                "Número de Servicio CFE": `servicio_${servicioIndex}`,
+                "Tarifa": `tarifa_${servicioIndex}`,
+                "Voltaje de Suministro": `voltaje_${servicioIndex}`,
+                "Tipo de Servicio": `tipoServicio_${servicioIndex}`,
+                "Demanda Contratada (kW)": `demandaContratada_${servicioIndex}`,
+                "Demanda Máxima Registrada (kW)": `demandaMaxima_${servicioIndex}`,
+                "Número de facturaciones": `numeroFacturaciones_${servicioIndex}`,
+                "¿Cuenta con Medición Inteligente?": `medicionInteligente_${servicioIndex}`,
+                "¿Cuenta con Banco de Capacitores?": `bancoCapacitores_${servicioIndex}`
+            };
+
+            Object.entries(identificadores).forEach(([etiqueta, id]) => {
+                const control = controlPorEtiqueta(etiqueta);
+                if (control) control.id = id;
+            });
+
+            acordeon.querySelectorAll("select").forEach(select => {
+                const placeholder = Array.from(select.options)
+                    .find(option => normalizarEtiqueta(option.textContent) === "Seleccione...");
+                if (placeholder) placeholder.value = "";
+                if (select.selectedIndex < 0) select.selectedIndex = 0;
+            });
+
+            Array.from(acordeon.querySelectorAll(".acordeon-body > .card"))
+                .slice(1)
+                .forEach(card => card.classList.add("detalles-servicio"));
+
+            const tipoServicio = document.getElementById(`tipoServicio_${servicioIndex}`);
+            tipoServicio?.classList.add("tipo-servicio");
+        }
+
+        function ordenarCamposServicio(servicioIndex) {
+            const tipoServicio = document.getElementById(`tipoServicio_${servicioIndex}`)?.closest(".campo");
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.closest(".campo");
+            if (tipoServicio && tarifa && tipoServicio !== tarifa) tarifa.before(tipoServicio);
+        }
+
+        function actualizarDetallesServicio(servicioIndex) {
+            const tipoServicio = document.getElementById(`tipoServicio_${servicioIndex}`);
+            const seleccionado = Boolean(tipoServicio && tipoServicio.selectedIndex > 0 && tipoServicio.value.trim());
+            const acordeon = tipoServicio?.closest(".acordeon");
+
+            [`tarifa_${servicioIndex}`, `voltaje_${servicioIndex}`].forEach(id => {
+                const control = document.getElementById(id);
+                const campo = control?.closest(".campo");
+                if (campo) campo.style.display = seleccionado ? "flex" : "none";
+                if (!seleccionado && control) control.value = "";
+            });
+
+            acordeon?.querySelectorAll(".detalles-servicio").forEach(card => {
+                card.style.display = seleccionado ? "block" : "none";
+            });
+        }
+
+        function actualizarControlesFacturacion(servicioIndex, cantidad) {
+            const estado = document.getElementById(`estadoFacturacion_${servicioIndex}`);
+            const eliminar = document.getElementById(`eliminarFacturacion_${servicioIndex}`);
+            if (estado) estado.textContent = `${cantidad} registros disponibles. Los campos sin valor no cuentan como captura.`;
+            if (eliminar) eliminar.disabled = cantidad <= 12;
+        }
+
+        function agregarFacturacion(servicioIndex) {
+            const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+            if (!contador) return;
+
+            const cantidad = Math.max(12, parseInt(contador.value, 10) || 12) + 1;
+            contador.value = cantidad;
+            generarFilasLineaBase(servicioIndex, cantidad);
+            window.AEEHState?.save();
+            validarServicios();
+        }
+
+        function eliminarUltimaFacturacion(servicioIndex) {
+            const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+            if (!contador) return;
+
+            const cantidad = Math.max(12, parseInt(contador.value, 10) || 12);
+            if (cantidad <= 12) return;
+
+            contador.value = cantidad - 1;
+            generarFilasLineaBase(servicioIndex, cantidad - 1);
+            window.AEEHState?.save();
+            validarServicios();
         }
 
         /* ABRIR / CERRAR ACORDEÓN */
@@ -979,107 +1118,95 @@
         });
 
         function regresar() {
-
-            alert("Regresar a Información Técnica");
-
+            if (!guardar()) return;
             window.location.href = 'informacion_tecnica.html';
 
         }
 
         /* VALIDAR SERVICIOS */
 
+        function campoTieneValor(campo) {
+            if (campo.tagName === "SELECT") {
+                return campo.selectedIndex > 0 && campo.value.trim() !== "" && campo.value !== "Seleccione...";
+            }
+            return campo.value.trim() !== "";
+        }
+
         function validarServicios() {
-
             const acordeones = document.querySelectorAll(".acordeon");
+            let datosBasicos = 0;
 
-            let completos = 0;
-
-            acordeones.forEach(acordeon => {
-
+            acordeones.forEach((acordeon, indice) => {
+                const servicioIndex = indice + 1;
                 const badge = acordeon.querySelector(".badge-servicio");
+                const tipoServicio = document.getElementById(`tipoServicio_${servicioIndex}`);
+                const tieneTipo = Boolean(tipoServicio && tipoServicio.selectedIndex > 0 && tipoServicio.value.trim());
+                const campos = Array.from(acordeon.querySelectorAll("input,select"))
+                    .filter(campo => {
+                        if (campo.matches(".selector-linea-base")) return false;
+                        if (!tieneTipo && (campo.closest(".detalles-servicio") || campo.id === `tarifa_${servicioIndex}` || campo.id === `voltaje_${servicioIndex}`)) return false;
+                        return true;
+                    });
+                const tieneCaptura = campos.some(campoTieneValor);
+                const datosSuministro = [
+                    document.getElementById(`servicio_${servicioIndex}`),
+                    document.getElementById(`tipoServicio_${servicioIndex}`),
+                    document.getElementById(`tarifa_${servicioIndex}`)
+                ];
+                const tieneDatosBasicos = datosSuministro.every(campo => campo && campoTieneValor(campo));
 
-                const inputs = acordeon.querySelectorAll("input,select");
-
-                let llenos = 0;
-
-                inputs.forEach(campo => {
-
-                    if (campo.value.trim() !== "") {
-
-                        llenos++;
-
-                    }
-
-                });
-
-                if (llenos === 0) {
-
-                    badge.className = "badge-servicio badge-pendiente";
-
-                    badge.innerHTML = "Pendiente";
-
-                }
-
-                else if (llenos < inputs.length) {
-
-                    badge.className = "badge-servicio badge-captura";
-
-                    badge.innerHTML = "En captura";
-
-                }
-
-                else {
-
+                if (tieneDatosBasicos) {
                     badge.className = "badge-servicio badge-completo";
-
-                    badge.innerHTML = "Completo";
-
-                    completos++;
-
+                    badge.textContent = "Datos básicos";
+                    datosBasicos++;
+                } else if (tieneCaptura) {
+                    badge.className = "badge-servicio badge-captura";
+                    badge.textContent = "En captura";
+                } else {
+                    badge.className = "badge-servicio badge-pendiente";
+                    badge.textContent = "Pendiente";
                 }
-
             });
 
             document.getElementById("estadoServicios").value =
-
-                completos + " de " + acordeones.length + " completos";
-
+                `${datosBasicos} de ${acordeones.length} con datos básicos`;
         }
 
-        function guardar() {
-
+        const contenedorServicios = document.getElementById("contenedorServicios");
+        contenedorServicios?.addEventListener("input", validarServicios);
+        contenedorServicios?.addEventListener("change", function (event) {
+            const campo = event.target;
+            if (campo.classList.contains("tipo-servicio")) {
+                const servicioIndex = campo.id.match(/_(\d+)$/)?.[1];
+                if (servicioIndex) actualizarDetallesServicio(servicioIndex);
+            }
+            if (campo.classList.contains("selector-linea-base")) {
+                const servicioIndex = campo.dataset.servicio;
+                const cantidad = Math.max(12, parseInt(campo.value, 10) || 12);
+                campo.value = cantidad;
+                generarFilasLineaBase(servicioIndex, cantidad);
+                window.AEEHState?.save();
+            }
             validarServicios();
+        });
 
-            alert("Información guardada correctamente.");
-
+        function guardar() {
+            validarServicios();
+            const guardado = window.AEEHState?.save() || false;
+            const estadoGuardado = document.getElementById("estadoGuardadoServicios");
+            if (estadoGuardado) {
+                estadoGuardado.textContent = guardado
+                    ? "Captura conservada temporalmente para este usuario en esta sesión."
+                    : "No fue posible conservar la captura en esta sesión.";
+            }
+            return guardado;
         }
 
         function continuar() {
-
-            /*  validarServicios();
-  
-              const acordeones = document.querySelectorAll(".acordeon");
-  
-              const completos = document.querySelectorAll(".badge-completo");
-  
-              if (completos.length !== acordeones.length) {
-  
-                  alert(
-  
-                      "Debe completar la información de todos los servicios eléctricos antes de continuar."
-  
-                  );
-  
-                  return;
-  
-              }
-  
-              alert(
-  
-                  "Información guardada correctamente."
-  
-              );*/
-
+            if (!guardar()) {
+                alert("No fue posible conservar la captura local; no se avanzó al siguiente módulo.");
+                return;
+            }
             window.location.href = "sistema_generacion.html";
 
         }

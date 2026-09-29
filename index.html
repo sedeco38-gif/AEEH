@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plataforma Estatal de Eficiencia Energética</title>
 
     <style>
@@ -201,6 +202,8 @@
 
         }
     </style>
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 
 <meta charset="UTF-8">
@@ -266,8 +269,6 @@
     </div>
 
     <script>
-        const datosUsuario = usuariosDemo[usuario];
-
         function ingresar() {
 
             const usuario = document.getElementById("usuario").value.trim().toLowerCase();

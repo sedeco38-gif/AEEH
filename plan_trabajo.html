@@ -384,6 +384,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -441,22 +444,22 @@
 
                         <div class="campo">
                             <label>Dependencia</label>
-                            <input type="text" value="Secretaría de Desarrollo Económico" readonly class="readonly">
+                            <input id="planDependencia" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Ejercicio Fiscal</label>
-                            <input type="text" value="2027" readonly class="readonly">
+                            <input id="planEjercicio" type="text" value="Sin información capturada" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Inmueble</label>
-                            <input type="text" value="Edificio Administrativo" readonly class="readonly">
+                            <input id="planInmueble" type="text" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Estado del Plan</label>
-                            <input type="text" value="En Revisión" readonly class="readonly">
+                            <input id="planEstado" type="text" value="Sin estado de revisión capturado" readonly class="readonly">
                         </div>
 
                     </div>
@@ -492,23 +495,7 @@
                             <tbody>
 
                                 <tr>
-                                    <td>Sustitución de luminarias LED</td>
-                                    <td>Alumbrado</td>
-                                    <td>AEEH</td>
-                                    <td>Marzo 2027</td>
-                                    <td class="estado-revision">
-                                        En Revisión
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>Mantenimiento de equipos de climatización</td>
-                                    <td>Climatización</td>
-                                    <td>Dependencia</td>
-                                    <td>Junio 2027</td>
-                                    <td class="estado-borrador">
-                                        Borrador
-                                    </td>
+                                    <td colspan="5">Sin acciones programadas capturadas.</td>
                                 </tr>
 
                             </tbody>
@@ -529,22 +516,22 @@
 
                         <div class="campo">
                             <label>Reducción de Consumo (%)</label>
-                            <input type="text" value="15%" readonly class="readonly">
+                            <input type="text" value="Pendiente de una Línea Base sustentada" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Reducción de Demanda (%)</label>
-                            <input type="text" value="8%" readonly class="readonly">
+                            <input type="text" value="Pendiente de información suficiente" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Reducción de Emisiones (tCO₂e)</label>
-                            <input type="text" value="12" readonly class="readonly">
+                            <input type="text" value="Pendiente de información suficiente" readonly class="readonly">
                         </div>
 
                         <div class="campo">
                             <label>Ahorro Económico Estimado</label>
-                            <input type="text" value="$85,000" readonly class="readonly">
+                            <input type="text" value="Pendiente de información suficiente" readonly class="readonly">
                         </div>
 
                     </div>
@@ -582,35 +569,7 @@
                             <tbody>
 
                                 <tr>
-                                    <td>Luminarias LED</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>●</td>
-                                    <td>●</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-
-                                <tr>
-                                    <td>Mantenimiento A/C</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>●</td>
-                                    <td>●</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="13">Sin actividades capturadas para calendarizar.</td>
                                 </tr>
 
                             </tbody>
@@ -627,14 +586,12 @@
 
                     <h3>Observaciones</h3>
 
-                    <textarea style="
+                        <textarea id="observacionesPlan" placeholder="Sin observaciones capturadas." style="
             width:100%;
             min-height:150px;
             border:1px solid #ccc;
             border-radius:8px;
-            padding:12px;">
-La AEEH recomienda priorizar acciones de sustitución tecnológica y mantenimiento preventivo para alcanzar las metas establecidas.
-        </textarea>
+                    padding:12px;"></textarea>
 
                 </div>
 
@@ -698,22 +655,31 @@ La AEEH recomienda priorizar acciones de sustitución tecnológica y mantenimien
         }
 
         function regresar() {
-
+            guardar();
             window.location.href = 'linea_base.html';
 
         }
 
         function guardar() {
-
-            alert("Información guardada correctamente.");
-
+            const guardado = window.AEEHState?.save() || false;
+            const estado = document.getElementById("estadoPlanGuardado");
+            if (estado) estado.textContent = guardado
+                ? "Plan local conservado en esta sesión."
+                : "No fue posible conservar el plan en esta sesión.";
+            return guardado;
         }
 
         function continuar() {
-
+            if (!guardar()) return;
             window.location.href = 'resumen_inmueble.html';
 
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const datos = window.AEEHState?.getModuleFields("datos_generales.html") || {};
+            document.getElementById("planDependencia").value = datos.dependencia || "Sin información capturada";
+            document.getElementById("planInmueble").value = datos.dependencia || "Sin información capturada";
+        });
 
         const nombre =
             sessionStorage.getItem("nombre");

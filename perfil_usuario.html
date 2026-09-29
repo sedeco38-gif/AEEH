@@ -314,6 +314,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -414,23 +417,23 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Nombre(s)</label>
-                            <input type="text">
+                            <label for="enlaceNombre">Nombre</label>
+                            <input id="enlaceNombre" type="text" autocomplete="given-name">
                         </div>
 
                         <div class="campo">
-                            <label>Primer Apellido</label>
-                            <input type="text">
+                            <label for="enlaceApellidoPaterno">Primer apellido</label>
+                            <input id="enlaceApellidoPaterno" type="text" autocomplete="family-name">
                         </div>
 
                         <div class="campo">
-                            <label>Segundo Apellido</label>
-                            <input type="text">
+                            <label for="enlaceApellidoMaterno">Segundo apellido</label>
+                            <input id="enlaceApellidoMaterno" type="text">
                         </div>
 
                         <div class="campo">
-                            <label>Cargo</label>
-                            <input type="text">
+                            <label for="enlaceCargo">Cargo</label>
+                            <input id="enlaceCargo" type="text" autocomplete="organization-title">
                         </div>
 
                     </div>
@@ -446,45 +449,18 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Correo Electrónico</label>
-                            <input type="email">
+                            <label for="enlaceCorreo">Correo electrónico</label>
+                            <input id="enlaceCorreo" type="email" autocomplete="email">
                         </div>
 
                         <div class="campo">
-                            <label>Teléfono</label>
-                            <input type="text">
+                            <label for="enlaceTelefono">Teléfono</label>
+                            <input id="enlaceTelefono" type="tel" autocomplete="tel">
                         </div>
 
                         <div class="campo">
-                            <label>Extensión</label>
-                            <input type="text">
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- ACCESO -->
-
-                <div class="card acceso">
-
-                    <h3>Datos de Acceso</h3>
-
-                    <div class="grid">
-
-                        <div class="campo">
-                            <label>Usuario</label>
-                            <input id="usuarioSistema" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Programa Asignado</label>
-                            <input id="programaAsignado" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Estatus</label>
-                            <input type="text" value="Activo" readonly class="readonly">
+                            <label for="enlaceExtension">Extensión (opcional)</label>
+                            <input id="enlaceExtension" type="text" inputmode="numeric">
                         </div>
 
                     </div>
@@ -521,37 +497,21 @@
 
     <script src="demo_data.js"></script>
     <script>
-        const usuario = usuariosDemo[
-            sessionStorage.getItem("usuario")
-        ];
-
-        document.getElementById("usuarioSistema").value =
-            sessionStorage.getItem("usuario");
-
-        const programa =
-            sessionStorage.getItem("programaAsignado");
-
-        const nombresProgramas = {
-
-            edificios:
-                "Edificios Públicos Estatales",
-
-            bombeo:
-                "Sistemas de Bombeo",
-
-            residencial:
-                "Sector Residencial",
-
-            comercial:
-                "Sector Comercial",
-
-            industrial:
-                "Sector Industrial"
-
+        const datosEnlace = usuariosDemo[sessionStorage.getItem("usuario")] || {};
+        const camposEnlace = {
+            enlaceNombre: datosEnlace.nombre,
+            enlaceApellidoPaterno: datosEnlace.apellidoPaterno,
+            enlaceApellidoMaterno: datosEnlace.apellidoMaterno,
+            enlaceCargo: datosEnlace.cargo,
+            enlaceCorreo: datosEnlace.correo,
+            enlaceTelefono: datosEnlace.telefono,
+            enlaceExtension: datosEnlace.extension
         };
 
-        document.getElementById("programaAsignado").value =
-            nombresProgramas[programa];
+        Object.entries(camposEnlace).forEach(([id, valor]) => {
+            const campo = document.getElementById(id);
+            if (campo && valor) campo.value = valor;
+        });
 
         function guardar() {
             alert("Información guardada correctamente.");

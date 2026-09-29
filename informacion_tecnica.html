@@ -322,6 +322,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -421,9 +424,9 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Uso Principal del Inmueble</label>
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <label for="usoPrincipal">Uso Principal del Inmueble</label>
+                            <select class="input-select" id="usoPrincipal">
+                                <option value="">Seleccione...</option>
                                 <option>Oficinas Administrativas</option>
                                 <option>Centro Educativo</option>
                                 <option>Hospital</option>
@@ -434,13 +437,13 @@
                         </div>
 
                         <div class="campo">
-                            <label>Número de Niveles</label>
-                            <input type="number">
+                            <label for="numeroNiveles">Número de Niveles</label>
+                            <input id="numeroNiveles" type="number">
                         </div>
 
                         <div class="campo">
-                            <label>Número de Áreas</label>
-                            <input type="number">
+                            <label for="numeroAreas">Número de Áreas</label>
+                            <input id="numeroAreas" type="number">
                         </div>
 
                     </div>
@@ -456,18 +459,18 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Número de Trabajadores</label>
-                            <input type="number">
+                            <label for="numeroTrabajadores">Número de Trabajadores</label>
+                            <input id="numeroTrabajadores" type="number">
                         </div>
 
                         <div class="campo">
-                            <label>Horario de Operación</label>
-                            <input type="text" placeholder="Ejemplo: 08:00 - 18:00">
+                            <label for="horarioOperacion">Horario de Operación</label>
+                            <input id="horarioOperacion" type="text" placeholder="Ejemplo: 08:00 - 18:00">
                         </div>
 
                         <div class="campo">
-                            <label>Días Laborales a la Semana</label>
-                            <input type="number" min="1" max="7">
+                            <label for="diasLaborales">Días Laborales a la Semana</label>
+                            <input id="diasLaborales" type="number" min="1" max="7">
                         </div>
 
                     </div>
@@ -483,45 +486,45 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Cuenta con Aire Acondicionado</label>
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <label for="cuentaAireAcondicionado">Cuenta con Aire Acondicionado</label>
+                            <select id="cuentaAireAcondicionado" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>
                         </div>
 
                         <div class="campo">
-                            <label>Cuenta con Sistema de Bombeo</label>
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <label for="cuentaBombeo">Cuenta con Sistema de Bombeo</label>
+                            <select id="cuentaBombeo" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>
                         </div>
 
                         <div class="campo">
-                            <label>Cuenta con Elevadores</label>
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <label for="cuentaElevadores">Cuenta con Elevadores</label>
+                            <select id="cuentaElevadores" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>
                         </div>
 
                         <div class="campo">
-                            <label>Cuenta con Alumbrado Exterior</label>
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <label for="cuentaAlumbradoExterior">Cuenta con Alumbrado Exterior</label>
+                            <select id="cuentaAlumbradoExterior" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>
                         </div>
 
                         <div class="campo">
-                            <label>Cuenta con Planta de Emergencia</label>
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <label for="cuentaPlantaEmergencia">Cuenta con Planta de Emergencia</label>
+                            <select id="cuentaPlantaEmergencia" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>

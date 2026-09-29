@@ -315,26 +315,18 @@
         }
     </style>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../app.css">
+    <script src="../app_state.js" defer></script>
 </head>
 
 <body>
 
     <div class="contenedor">
-
-        <header>
-
-            <div class="logos">
-                <img src="logos.png" alt="Logos Institucionales">
-            </div>
-
-            <div class="titulo">
-                PLATAFORMA ESTATAL DE EFICIENCIA ENERGÉTICA
-            </div>
-
             <header>
 
                 <div class="logos">
-                    <img src="logos.png" alt="Logos Institucionales">
+                    <img src="../logos.png" alt="Logos Institucionales">
                 </div>
 
                 <div class="titulo">
@@ -362,7 +354,7 @@
             <div class="principal">
 
                 <div class="fondo">
-                    <img src="fondo.png" alt="Fondo">
+                    <img src="../fondo.png" alt="Fondo">
                 </div>
 
                 <div class="inicio">
@@ -419,9 +411,9 @@
 
             <footer>
 
-                <img src="Logo pie.png" alt="Logo Izquierdo" class="footer-logo-izq">
+                <img src="../Logo pie.png" alt="Logo Izquierdo" class="footer-logo-izq">
 
-                <img src="Pie_dir.png" alt="Logo Derecho" class="footer-logo-der">
+                <img src="../Pie_dir.png" alt="Logo Derecho" class="footer-logo-der">
 
             </footer>
 
@@ -432,21 +424,21 @@
 <script>
 
     function seleccionarPrograma(programa) {
-        sessionStorage.setItem("programa", programa);
+        sessionStorage.setItem("programaAsignado", programa);
         if (programa === "edificios") {
-            window.location.href = "perfil_usuario.html";
+            window.location.href = "../perfil_usuario.html";
         } else {
             alert("Su solicitud fue enviada para participar en este programa.");
         }
     }
 
     function ingresarPrograma() {
-        window.location.href = "perfil_usuario.html";
+        window.location.href = "../perfil_usuario.html";
     }
 
     function cerrarSesion() {
         sessionStorage.clear();
-        window.location.href = "index.html";
+        window.location.href = "../index.html";
     }
 
 </script>

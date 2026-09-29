@@ -1677,6 +1677,8 @@
         }
     </style>
 
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 
 <body>
@@ -1725,7 +1727,7 @@
             <!-- Fondo -->
 
             <div class="fondo">
-                <img src="logo_fondo.png" alt="Fondo">
+                <img src="fondo.png" alt="Fondo">
             </div>
 
             <!-- =====================================================
@@ -4471,6 +4473,11 @@
             }
 
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const vistaInicial = document.querySelector(".menu-item");
+            if (vistaInicial) mostrarVista("estadisticos", vistaInicial);
+        });
 
         /*====================================================
         MODELO DE DATOS

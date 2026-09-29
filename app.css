@@ -1,0 +1,356 @@
+:root {
+    --aeeh-vino: #701F2F;
+    --aeeh-dorado: #D4A44A;
+    --aeeh-verde: #2E7D32;
+    --aeeh-azul: #1565C0;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    height: auto !important;
+    overflow-x: hidden !important;
+}
+
+body {
+    min-width: 320px;
+}
+
+body > .contenedor {
+    width: min(1400px, calc(100% - 32px));
+    max-width: 1400px;
+    min-width: 0;
+    margin: 10px auto;
+}
+
+body > .contenedor > header {
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+body > .contenedor > header .logos,
+body > .contenedor > header .titulo,
+body > .contenedor > header .usuario-panel {
+    min-width: 0;
+}
+
+body > .contenedor > header .logos {
+    flex: 0 1 auto;
+    max-width: 100%;
+}
+
+body > .contenedor > header .logos img {
+    width: auto;
+    height: 65px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+body > .contenedor > header .titulo {
+    flex: 1 1 360px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+body > .contenedor > header .usuario-panel {
+    flex: 0 1 190px;
+    max-width: 100%;
+}
+
+body > .contenedor .principal {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0;
+    overflow: visible !important;
+}
+
+body > .contenedor .login {
+    width: min(390px, calc(100% - 24px));
+    margin: 32px auto;
+}
+
+body > .contenedor .programas {
+    width: min(100%, 1100px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 20px;
+}
+
+body > .contenedor .programas .programa {
+    grid-column: auto !important;
+    width: 100%;
+    min-width: 0;
+    min-height: 170px;
+    height: auto;
+    border-radius: 8px;
+}
+
+body > .contenedor .formulario {
+    width: 100%;
+    max-width: 1120px;
+}
+
+body > .contenedor .grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+body > .contenedor .card,
+body > .contenedor .sidebar,
+body > .contenedor .kpi,
+body > .contenedor .acordeon {
+    min-width: 0;
+    border-radius: 8px;
+}
+
+body > .contenedor .card {
+    padding: 20px;
+}
+
+body > .contenedor .campo,
+body > .contenedor .campo label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+body > .contenedor input,
+body > .contenedor select,
+body > .contenedor textarea,
+body > .contenedor button {
+    max-width: 100%;
+    min-width: 0;
+    font-family: Montserrat, sans-serif;
+}
+
+body > .contenedor input:not([type="checkbox"]):not([type="radio"]),
+body > .contenedor select,
+body > .contenedor textarea {
+    width: 100%;
+}
+
+body > .contenedor textarea {
+    resize: vertical;
+}
+
+body > .contenedor table {
+    max-width: 100%;
+}
+
+body > .contenedor .etapas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+body > .contenedor .etapa {
+    flex: 0 1 auto;
+    min-height: 40px;
+    max-width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    line-height: 1.3;
+    white-space: normal;
+}
+
+body > .contenedor .acciones {
+    align-items: stretch;
+    gap: 12px;
+}
+
+body > .contenedor .acciones .btn {
+    min-height: 44px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+body > .contenedor footer {
+    min-height: 70px;
+    height: auto;
+    gap: 12px;
+}
+
+body > .contenedor footer img {
+    max-width: min(45%, 280px);
+    object-fit: contain;
+}
+
+body > .contenedor .dashboard,
+body > .contenedor .dashboard-layout,
+body > .contenedor .contenido-central {
+    min-width: 0;
+}
+
+body > .contenedor .kpis {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+}
+
+.app-photo-help {
+    margin: 0 0 16px;
+    color: #555;
+    line-height: 1.55;
+}
+
+.app-photo-picker {
+    margin-bottom: 14px;
+}
+
+.app-photo-status {
+    min-height: 24px;
+    margin: 10px 0 14px;
+    color: var(--aeeh-vino);
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.app-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 14px;
+}
+
+.app-photo-item {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid #dedede;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.app-photo-item img {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.app-photo-item figcaption {
+    padding: 10px 12px;
+    overflow-wrap: anywhere;
+    color: #333;
+    font-size: 13px;
+}
+
+.app-photo-remove {
+    width: 100%;
+    min-height: 40px;
+    border: 0;
+    border-top: 1px solid #dedede;
+    background: #fff;
+    color: var(--aeeh-vino);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.app-photo-remove:hover {
+    background: #f8f0f2;
+}
+
+.app-file-note {
+    display: block;
+    margin-top: 8px;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+    body > .contenedor {
+        width: calc(100% - 16px);
+        margin: 8px auto;
+    }
+
+    body > .contenedor > header {
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+    }
+
+    body > .contenedor > header .titulo {
+        flex-basis: 100%;
+        font-size: 18px;
+    }
+
+    body > .contenedor > header .usuario-panel {
+        flex-basis: auto;
+        align-items: center;
+    }
+
+    body > .contenedor .principal {
+        padding: 16px;
+    }
+
+    body > .contenedor .etapas {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        padding-bottom: 8px;
+        scrollbar-width: thin;
+    }
+
+    body > .contenedor .etapa {
+        flex: 0 0 auto;
+    }
+
+    body > .contenedor .dashboard {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body > .contenedor footer {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    body > .contenedor {
+        width: 100%;
+        margin: 0 auto;
+        border-left: 0;
+        border-right: 0;
+    }
+
+    body > .contenedor > header .titulo {
+        font-size: 17px;
+    }
+
+    body > .contenedor .principal {
+        padding: 12px;
+    }
+
+    body > .contenedor .card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    body > .contenedor .card h3 {
+        font-size: 18px;
+        line-height: 1.3;
+    }
+
+    body > .contenedor .acciones {
+        flex-direction: column;
+    }
+
+    body > .contenedor .acciones .btn {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
+    body > .contenedor footer img {
+        max-width: min(80%, 280px);
+    }
+}
+
+body > .contenedor button:disabled {
+    cursor: wait;
+    opacity: .65;
+    transform: none;
+}

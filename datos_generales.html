@@ -338,6 +338,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -428,58 +431,53 @@
             </div>
             <div class="formulario">
 
-                <!-- DEPENDENCIA -->
+                <!-- DEPENDENCIA / INMUEBLE -->
 
                 <div class="card">
 
-                    <h3>Datos de la Dependencia</h3>
+                    <h3>Dependencia / Inmueble</h3>
 
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Dependencia</label>
+                            <label for="dependencia">Dependencia / Inmueble</label>
                             <input id="dependencia" type="text">
                         </div>
 
                         <div class="campo">
-                            <label>Número de edificios que conforman el complejo</label>
+                            <label for="numeroEdificios">Número de edificios</label>
                             <input id="numeroEdificios" type="number">
                         </div>
 
                         <div class="campo">
-                            <label>Municipio</label>
-                            <input id="municipioDatosGenerales" type="text">
+                            <label for="direccionDependencia">Dirección</label>
+                            <input id="direccionDependencia" type="text" autocomplete="street-address">
                         </div>
 
                         <div class="campo">
-                            <label>Código Postal</label>
-                            <input id="codigoPostal" type="text">
+                            <label for="codigoPostal">Código postal</label>
+                            <input id="codigoPostal" type="text" inputmode="numeric" autocomplete="postal-code">
                         </div>
 
-                        <div class="campo campo-completo">
-                            <label>Dirección</label>
-                            <input id="direccionDependencia" type="text">
+                        <div class="campo">
+                            <label for="municipioDatosGenerales">Municipio</label>
+                            <input id="municipioDatosGenerales" type="text" autocomplete="address-level2">
                         </div>
 
                     </div>
 
                 </div>
 
-                <!-- INMUEBLE -->
+                <!-- CARACTERÍSTICAS DEL INMUEBLE -->
 
                 <div class="card">
 
-                    <h3>Datos del Inmueble</h3>
+                    <h3>Características del inmueble</h3>
 
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Nombre del Inmueble</label>
-                            <input id="nombreInmueble" type="text">
-                        </div>
-
-                        <div class="campo">
-                            <label>Tipo de Inmueble</label>
+                            <label for="tipoInmueble">Tipo de inmueble</label>
 
                             <select id="tipoInmueble" class="input-select">
                                 <option>Seleccione...</option>
@@ -494,12 +492,12 @@
                         </div>
 
                         <div class="campo">
-                            <label>Año de Construcción</label>
+                            <label for="anioConstruccion">Año de construcción</label>
                             <input id="anioConstruccion" type="number">
                         </div>
 
                         <div class="campo">
-                            <label>Superficie Construida (m²)</label>
+                            <label for="superficieConstruida">Superficie construida (m²)</label>
                             <input id="superficieConstruida" type="number">
                         </div>
 
@@ -507,7 +505,20 @@
 
                 </div>
 
+                <div class="card">
+                    <h3>Fotografías generales del inmueble</h3>
+                    <p class="app-photo-help">Seleccione fotografías que muestren el inmueble en general. Se preparan vistas previas en este navegador para la sesión actual; no se envían ni se almacenan permanentemente.</p>
+                    <div class="campo app-photo-picker">
+                        <label for="fotografiasInmueble">Seleccionar fotografías</label>
+                        <input id="fotografiasInmueble" type="file" accept="image/*" multiple data-app-state-file-preview aria-describedby="estadoFotografias">
+                    </div>
+                    <p id="estadoFotografias" class="app-photo-status" role="status" aria-live="polite">No hay fotografías seleccionadas.</p>
+                    <div id="vistaPreviaFotografias" class="app-photo-grid"></div>
+                </div>
+
                 <!-- CONTROL -->
+
+                <!-- Se conserva como dato de control; su separación por perfil depende de una futura definición de roles y permisos. -->
 
                 <div class="card control">
 
@@ -565,7 +576,6 @@
                 municipioDatosGenerales: document.getElementById("municipioDatosGenerales")?.value || "",
                 codigoPostal: document.getElementById("codigoPostal")?.value || "",
                 direccionDependencia: document.getElementById("direccionDependencia")?.value || "",
-                nombreInmueble: document.getElementById("nombreInmueble")?.value || "",
                 tipoInmueble: document.getElementById("tipoInmueble")?.value || "",
                 anioConstruccion: document.getElementById("anioConstruccion")?.value || "",
                 superficieConstruida: document.getElementById("superficieConstruida")?.value || "",
@@ -593,11 +603,14 @@
 
         function continuar() {
             guardarDatosGeneralesEnSession();
-            alert("Información guardada. Continuando a Información Técnica.");
+            alert("Información guardada. Continuando a Geolocalización.");
 
             window.location.href = 'geolocalizacion.html';
 
         }
+
+        document.addEventListener("input", guardarDatosGeneralesEnSession);
+        document.addEventListener("change", guardarDatosGeneralesEnSession);
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {
@@ -618,6 +631,130 @@
             }
 
         }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const selector = document.getElementById("fotografiasInmueble");
+            const estado = document.getElementById("estadoFotografias");
+            const galeria = document.getElementById("vistaPreviaFotografias");
+            if (!selector || !estado || !galeria || !window.AEEHState) return;
+
+            let fotografias = window.AEEHState.getFilePreviews(selector.id);
+            let procesando = false;
+            let guardadoEnSesion = true;
+
+            function guardarFotografias() {
+                window.AEEHState.save();
+                guardadoEnSesion = window.AEEHState.setFilePreviews(selector.id, fotografias);
+                return guardadoEnSesion;
+            }
+
+            function actualizarEstado(restauradas = false, mensaje = "") {
+                const cantidad = fotografias.length;
+                if (procesando) {
+                    estado.textContent = `Preparando ${cantidad} fotografía(s) para vista previa...`;
+                } else if (mensaje) {
+                    estado.textContent = mensaje;
+                } else if (!cantidad) {
+                    estado.textContent = "No hay fotografías seleccionadas.";
+                } else if (!guardadoEnSesion) {
+                    estado.textContent = `${cantidad} fotografía(s) con vista previa disponible solo mientras esta página permanezca abierta. El navegador no pudo conservarlas para volver al módulo.`;
+                } else {
+                    const origen = restauradas ? "restaurada(s) desde el estado temporal de esta sesión" : "preparada(s) para vista previa";
+                    estado.textContent = `${cantidad} fotografía(s) ${origen}. No se han enviado ni almacenado permanentemente.`;
+                }
+            }
+
+            function renderizarFotografias(restauradas = false) {
+                galeria.replaceChildren();
+                fotografias.forEach((fotografia, indice) => {
+                    const elemento = document.createElement("figure");
+                    elemento.className = "app-photo-item";
+
+                    const imagen = document.createElement("img");
+                    imagen.src = fotografia.dataUrl;
+                    imagen.alt = `Vista previa de ${fotografia.name}`;
+
+                    const pie = document.createElement("figcaption");
+                    pie.textContent = fotografia.name;
+
+                    const quitar = document.createElement("button");
+                    quitar.type = "button";
+                    quitar.className = "app-photo-remove";
+                    quitar.textContent = "Eliminar";
+                    quitar.setAttribute("aria-label", `Eliminar ${fotografia.name}`);
+                    quitar.addEventListener("click", function () {
+                        fotografias = fotografias.filter((_, posicion) => posicion !== indice);
+                        guardarFotografias();
+                        renderizarFotografias();
+                    });
+
+                    elemento.append(imagen, pie, quitar);
+                    galeria.append(elemento);
+                });
+                actualizarEstado(restauradas);
+            }
+
+            function comprimirFotografia(archivo) {
+                return createImageBitmap(archivo).then(bitmap => new Promise((resolve, reject) => {
+                    const escala = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
+                    const canvas = document.createElement("canvas");
+                    canvas.width = Math.max(1, Math.round(bitmap.width * escala));
+                    canvas.height = Math.max(1, Math.round(bitmap.height * escala));
+                    canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                    bitmap.close();
+
+                    canvas.toBlob(blob => {
+                        if (!blob) {
+                            reject(new Error("No fue posible crear la vista previa."));
+                            return;
+                        }
+                        const lector = new FileReader();
+                        lector.onload = () => resolve(lector.result);
+                        lector.onerror = () => reject(lector.error);
+                        lector.readAsDataURL(blob);
+                    }, "image/jpeg", 0.72);
+                }));
+            }
+
+            async function seleccionarFotografias() {
+                const archivos = Array.from(selector.files || []);
+                if (!archivos.length) return;
+
+                procesando = true;
+                document.querySelectorAll(".etapas .etapa, .acciones button").forEach(boton => {
+                    boton.disabled = true;
+                });
+                actualizarEstado();
+
+                let errores = 0;
+                for (const archivo of archivos) {
+                    try {
+                        fotografias.push({ name: archivo.name, dataUrl: await comprimirFotografia(archivo) });
+                    } catch (error) {
+                        errores++;
+                    }
+                }
+
+                selector.value = "";
+                procesando = false;
+                guardarFotografias();
+                document.querySelectorAll(".etapas .etapa, .acciones button").forEach(boton => {
+                    boton.disabled = false;
+                });
+                renderizarFotografias();
+
+                if (errores) {
+                    actualizarEstado(false, `${fotografias.length} fotografía(s) preparadas; ${errores} archivo(s) no se pudieron leer como imagen.`);
+                } else if (!guardadoEnSesion && fotografias.length) {
+                    actualizarEstado(false);
+                }
+            }
+
+            selector.addEventListener("change", seleccionarFotografias);
+            renderizarFotografias(fotografias.length > 0);
+        }, { once: true });
     </script>
 </body>
 

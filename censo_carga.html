@@ -211,6 +211,65 @@
             background: #f5f5f5;
         }
 
+        .censo-tabla-wrap {
+            width: 100%;
+            overflow-x: auto;
+            overscroll-behavior-inline: contain;
+        }
+
+        .censo-tabla {
+            width: 100%;
+            min-width: 860px;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .censo-tabla th,
+        .censo-tabla td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .censo-tabla th {
+            background: #701F2F;
+            color: white;
+        }
+
+        .censo-tabla input {
+            min-width: 94px;
+        }
+
+        .censo-numero-entrada {
+            border-bottom: 2px solid #1565C0 !important;
+            text-decoration: underline;
+            text-decoration-color: #1565C0;
+            text-underline-offset: 3px;
+        }
+
+        .censo-calculado {
+            background: #f0f0f0;
+        }
+
+        .censo-total-row th,
+        .censo-total-row td {
+            background: #f5f5f5;
+            font-weight: 700;
+        }
+
+        .censo-metadata {
+            display: none;
+        }
+
+        .censo-logo-preview {
+            display: block;
+            max-width: 220px;
+            max-height: 100px;
+            object-fit: contain;
+            margin-top: 12px;
+        }
+
         .readonly {
             background: #f0f0f0;
         }
@@ -353,12 +412,11 @@
             }
         }
 
-        #categoriaCenso,
-        #vistaPrevia,
-        #estadoArchivo {
-            display: none;
-        }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
+    <script src="censo_carga.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -456,8 +514,7 @@
                     <h3>Formato Oficial de Censo de Carga</h3>
 
                     <p style="margin-bottom:20px;">
-                        Descargue el formato oficial, complete la información requerida y posteriormente cargue el
-                        archivo en la plataforma.
+                        Descargue el libro oficial o cargue una copia completada. La plataforma lee las hojas del XLSX y calcula los valores a partir de datos capturados.
                     </p>
 
                     <button class="btn" style="background:#1565C0;color:white;" onclick="descargarFormato()">
@@ -474,125 +531,53 @@
 
                     <div class="campo">
 
-                        <label>Seleccione el archivo de censo de carga</label>
+                        <label for="archivoExcel">Seleccione el archivo oficial de censo de carga (.xlsx)</label>
 
-                        <input type="file" id="archivoExcel" accept=".xls,.xlsx">
+                        <input type="file" id="archivoExcel" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
 
                     </div>
 
                     <br>
 
-                    <button class="btn btn-guardar" onclick="procesarArchivo()">
+                    <button id="procesarArchivoBtn" class="btn btn-guardar" onclick="procesarArchivo()">
                         Procesar Archivo
                     </button>
 
                 </div>
 
-                <!-- FILTRO DE HOJAS -->
-
-                <div class="card" id="categoriaCenso">
-
-                    <h3>Categoría del Censo</h3>
-
-                    <div class="campo">
-
-                        <label>Seleccione la categoría a visualizar</label>
-
-                        <select class="input-select">
-
-                            <option>Electrodomésticos</option>
-                            <option>Voz, Datos y Videovigilancia</option>
-                            <option>Equipos Personales</option>
-                            <option>Equipos de Oficina</option>
-                            <option>Climatización</option>
-                            <option>Bombas y Motores</option>
-                            <option>Otros Equipos</option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-                <!-- TABLA -->
-
-                <div class="card" id="vistaPrevia">
-
-                    <h3>Vista Previa del Archivo</h3>
-
-                    <div style="overflow-x:auto;">
-
-                        <table class="tabla-censo">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>Edificio</th>
-                                    <th>Nivel</th>
-                                    <th>Dependencia</th>
-                                    <th>Área</th>
-                                    <th>Equipo</th>
-                                    <th>Cantidad</th>
-                                    <th>Potencia (W)</th>
-                                    <th>Consumo Total (W)</th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                <tr>
-                                    <td>Ejemplo</td>
-                                    <td>PB</td>
-                                    <td>SEDECO</td>
-                                    <td>Planeación</td>
-                                    <td>Computadora</td>
-                                    <td>15</td>
-                                    <td>250</td>
-                                    <td>3750</td>
-                                </tr>
-
-                                <tr>
-                                    <td>Ejemplo</td>
-                                    <td>PB</td>
-                                    <td>SEDECO</td>
-                                    <td>Planeación</td>
-                                    <td>Impresora</td>
-                                    <td>2</td>
-                                    <td>800</td>
-                                    <td>1600</td>
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-                <!-- ESTADO -->
-
                 <div class="card" id="estadoArchivo">
+                    <h3>Estado del archivo</h3>
+                    <p id="estadoCenso" role="status" aria-live="polite">Sin archivo procesado.</p>
+                    <p id="detalleCenso" class="texto-ayuda"></p>
+                </div>
 
-                    <h3>Estado del Archivo</h3>
+                <div class="card" id="resultadosCenso" hidden>
+                    <h3>Resultados por sección</h3>
+                    <div id="resumenSeccionesCenso" class="grid"></div>
+                </div>
 
-                    <div class="grid">
+                <div id="seccionesCenso"></div>
 
-                        <div class="campo">
-                            <label>Estado</label>
-                            <input type="text" value="Sin archivo procesado" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Registros Detectados</label>
-                            <input type="text" value="0" readonly class="readonly">
-                        </div>
-
-                    </div>
-
+                <div class="censo-metadata" aria-hidden="true">
+                    <input id="censoSchemaVersion" type="text" value="1">
+                    <input id="censoNombreArchivo" type="text">
+                    <input id="censoHojasProcesadas" type="text">
+                    <input id="censoPresent_iluminacion" type="text">
+                    <input id="censoRows_iluminacion" type="text">
+                    <input id="censoPresent_computo" type="text">
+                    <input id="censoRows_computo" type="text">
+                    <input id="censoPresent_fuerza" type="text">
+                    <input id="censoRows_fuerza" type="text">
+                    <input id="censoPresent_aire_ac" type="text">
+                    <input id="censoRows_aire_ac" type="text">
+                    <input id="censoPresent_electrodomesticos" type="text">
+                    <input id="censoRows_electrodomesticos" type="text">
+                    <input id="censoPresent_voz_datos" type="text">
+                    <input id="censoRows_voz_datos" type="text">
+                    <input id="censoPresent_equipos_personales" type="text">
+                    <input id="censoRows_equipos_personales" type="text">
+                    <input id="censoPresent_otros" type="text">
+                    <input id="censoRows_otros" type="text">
                 </div>
 
                 <!-- BOTONES -->
@@ -626,86 +611,6 @@
 
     </div>
 
-    <script>
-
-        function descargarFormato() {
-
-            alert("Descargar formato oficial de censo de carga.");
-
-        }
-
-        function procesarArchivo() {
-
-            const archivo =
-                document.getElementById("archivoExcel");
-
-            if (archivo.files.length === 0) {
-
-                alert("Seleccione un archivo antes de continuar.");
-                return;
-
-            }
-
-            document.getElementById("categoriaCenso").style.display = "block";
-            document.getElementById("vistaPrevia").style.display = "block";
-            document.getElementById("estadoArchivo").style.display = "block";
-
-            alert("Archivo procesado correctamente.");
-
-        }
-
-        function regresar() {
-
-            window.location.href = 'evaluacion_sitio.html';
-
-        }
-
-        function guardar() {
-
-            alert("Información guardada correctamente.");
-
-        }
-
-        function continuar() {
-
-            window.location.href = 'linea_base.html';
-
-        }
-        function descargarFormato() {
-
-            const enlace = document.createElement("a");
-
-            enlace.href = "Formato/Censo de Carga.xlsx";
-
-            enlace.download = "Censo de Carga.xlsx";
-
-            document.body.appendChild(enlace);
-
-            enlace.click();
-
-            document.body.removeChild(enlace);
-
-        }
-
-        const numeroPagina = document.getElementById("numeroPagina");
-        if (numeroPagina) {
-            numeroPagina.textContent = "Página 8 de 9";
-        }
-
-        const nombre =
-            sessionStorage.getItem("nombre");
-        if (nombre) {
-            document.getElementById("nombreUsuario").textContent =
-                "👤 " + nombre;
-        }
-
-        function cerrarSesion() {
-            if (confirm("¿Desea cerrar la sesión?")) {
-                sessionStorage.clear();
-                window.location.href = "index.html";
-            }
-        }
-    </script>
 </body>
 
 </html>

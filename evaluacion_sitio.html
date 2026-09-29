@@ -402,6 +402,9 @@
             }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <script src="app_state.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -501,13 +504,13 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Área Total de Azotea (m²)</label>
-                            <input type="number">
+                            <label for="areaTotalAzotea">Área total de azotea (m²)</label>
+                            <input id="areaTotalAzotea" type="number" min="0" step="any">
                         </div>
 
                         <div class="campo">
-                            <label>Área Disponible para Generación (m²)</label>
-                            <input type="number" id="areaDisponible">
+                            <label for="areaDisponible">Área disponible para generación (m²)</label>
+                            <input type="number" id="areaDisponible" min="0" step="any">
                         </div>
 
                     </div>
@@ -523,20 +526,20 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Orientación Predominante
+                            <label for="orientacionPredominante">Orientación predominante
                                 <span class="ayuda">
                                     ℹ️
                                     <div class="tooltip">
                                         <img src="orientacion_azotea.png">
                                         <p>
                                             Seleccione la orientación predominante de la superficie disponible para
-                                            instalar los
-                                            paneles solares.
+                                            instalar paneles solares. La guía muestra direcciones cardinales; no mide
+                                            la inclinación de la cubierta.
                                         </p>
                                     </div>
                                 </span></label>
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <select id="orientacionPredominante" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Norte</option>
                                 <option>Sur</option>
                                 <option>Este</option>
@@ -546,10 +549,10 @@
                         </div>
 
                         <div class="campo">
-                            <label>Tipo de Azotea</label>
+                            <label for="tipoAzotea">Tipo de azotea</label>
 
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <select id="tipoAzotea" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Concreto</option>
                                 <option>Lámina</option>
                                 <option>Teja</option>
@@ -559,10 +562,10 @@
                         </div>
 
                         <div class="campo">
-                            <label>Estado de la Azotea</label>
+                            <label for="estadoAzotea">Estado de la azotea</label>
 
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <select id="estadoAzotea" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Bueno</option>
                                 <option>Regular</option>
                                 <option>Malo</option>
@@ -582,30 +585,30 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label>¿Existen objetos que puedan generar sombra?</label>
+                            <label for="sombraSitio">¿Existen objetos que puedan generar sombra?</label>
 
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <select id="sombraSitio" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>
                         </div>
 
                         <div class="campo">
-                            <label>¿Existe infraestructura eléctrica cercana?</label>
+                            <label for="infraestructuraCercana">¿Existe infraestructura eléctrica cercana?</label>
 
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <select id="infraestructuraCercana" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>
                         </div>
 
                         <div class="campo">
-                            <label>¿Existe espacio para inversores y protecciones?</label>
+                            <label for="espacioInversores">¿Existe espacio para inversores y protecciones?</label>
 
-                            <select class="input-select">
-                                <option>Seleccione...</option>
+                            <select id="espacioInversores" class="input-select">
+                                <option value="">Seleccione...</option>
                                 <option>Sí</option>
                                 <option>No</option>
                             </select>
@@ -619,25 +622,28 @@
 
                 <div class="card">
 
-                    <h3>Evidencia Fotográfica</h3>
+                    <h3>Evidencia específica de cubierta</h3>
+
+                    <p class="app-photo-help">Adjunte una fotografía centrada en la azotea/cubierta para documentar su condición visible. Esta imagen no se usa para calcular inclinación y no sustituye las fotografías generales de Datos Generales ni las evidencias de ubicación.</p>
 
                     <div class="grid">
 
                         <div class="campo">
-                            <label>Fotografía de Azotea</label>
-                            <input type="file">
-                        </div>
-
-                        <div class="campo">
-                            <label>Fotografía General del Inmueble</label>
-                            <input type="file">
+                            <label for="fotoAzotea">Fotografía de azotea/cubierta</label>
+                            <input id="fotoAzotea" type="file" accept="image/*">
                         </div>
 
                     </div>
 
                 </div>
 
+                <!-- Este módulo captura condiciones del sitio; no calcula inclinación ni genera un diagnóstico. La integración del resultado depende de Línea Base y módulos posteriores. -->
+
                 <!-- BOTONES -->
+
+                <p id="estadoGuardadoEvaluacion" class="app-photo-help" role="status" aria-live="polite">
+                    La evaluación se conserva temporalmente en esta sesión.
+                </p>
 
                 <div class="acciones">
 
@@ -671,24 +677,36 @@
     <script>
 
         function regresar() {
-
+            if (!guardar()) return;
             window.location.href = "sistema_generacion.html";
 
         }
 
         function guardar() {
-
-            alert("Información guardada correctamente.");
-
+            const guardado = window.AEEHState?.save() || false;
+            const estado = document.getElementById("estadoGuardadoEvaluacion");
+            if (estado) {
+                estado.textContent = guardado
+                    ? "Evaluación conservada temporalmente para este usuario en esta sesión."
+                    : "No fue posible conservar la evaluación en esta sesión.";
+            }
+            return guardado;
         }
 
         function continuar() {
-
-            alert("Información guardada. Continuando a Censo de Carga.");
-
+            if (!guardar()) {
+                alert("No fue posible conservar la evaluación local; no se avanzó al siguiente módulo.");
+                return;
+            }
             window.location.href = "censo_carga.html";
 
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".formulario select").forEach(select => {
+                if (select.selectedIndex < 0) select.selectedIndex = 0;
+            });
+        });
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {
