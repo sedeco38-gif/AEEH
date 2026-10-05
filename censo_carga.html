@@ -551,6 +551,19 @@
                     <p id="detalleCenso" class="texto-ayuda"></p>
                 </div>
 
+                <div class="card">
+                    <h3>Logotipo de la dependencia</h3>
+                    <div class="campo">
+                        <label for="logotipoDependencia">Seleccione un logotipo para esta captura del Censo</label>
+                        <input type="file" id="logotipoDependencia" accept="image/*">
+                        <button id="eliminarLogotipoDependencia" class="btn" type="button" style="background:#616161;color:white;display:none; margin-top:12px;">
+                            Eliminar logotipo
+                        </button>
+                        <p id="estadoLogotipoDependencia" class="texto-ayuda">Sin logotipo de dependencia seleccionado.</p>
+                        <img id="vistaLogotipoDependencia" class="censo-logo-preview" alt="Vista previa del logotipo de la dependencia" hidden>
+                    </div>
+                </div>
+
                 <div class="card" id="resultadosCenso" hidden>
                     <h3>Resultados por sección</h3>
                     <div id="resumenSeccionesCenso" class="grid"></div>

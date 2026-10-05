@@ -1,0 +1,25 @@
+{
+  "name": "aeeh",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000A\u0000E\u0000E\u0000H\u0000\r\u0000 \u0000#\u0000 \u0000A\u0000E\u0000E\u0000H\u0000\r\u0000 \u0000#\u0000 \u0000A\u0000E\u0000E\u0000H\u0000\r\u0000 \u0000",
+  "main": "app_state.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sedeco38-gif/AEEH.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sedeco38-gif/AEEH/issues"
+  },
+  "homepage": "https://github.com/sedeco38-gif/AEEH#readme",
+  "devDependencies": {
+    "exceljs": "^4.4.0",
+    "xlsx": "^0.18.5"
+  }
+}

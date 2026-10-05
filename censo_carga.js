@@ -117,7 +117,13 @@
     }
 
     function xmlElements(node, localName) {
-        return Array.from(node.getElementsByTagNameNS("*", localName));
+        if (!node || (typeof node.getElementsByTagNameNS !== "function" && typeof node.getElementsByTagName !== "function")) {
+            return [];
+        }
+        if (typeof node.getElementsByTagNameNS === "function") {
+            return Array.from(node.getElementsByTagNameNS("*", localName));
+        }
+        return Array.from(node.getElementsByTagName(localName));
     }
 
     function parseXml(text, partName) {
@@ -295,8 +301,8 @@
             }
             for (let columnIndex = 0; columnIndex < section.columns.length; columnIndex++) {
                 const expected = section.columns[columnIndex][2];
-                const cell = sheet.rows.get(section.headerRow)?.get(columnIndex);
-                const actual = valueFromCell(cell, sharedStrings).value;
+                const parsedCell = sheet.rows.get(section.headerRow)?.get(columnIndex);
+                const actual = parsedCell?.value || "";
                 if (normalizeName(actual) !== normalizeName(expected)) {
                     throw new Error(`Encabezado inesperado en ${section.sheet}!${columnLetter(columnIndex)}${section.headerRow}: se esperaba "${expected}" y se encontró "${actual || "vacío"}".`);
                 }
@@ -342,6 +348,10 @@
         }
 
         return { sections: parsedSections, sheetNames: sheetNodes.map(node => node.getAttribute("name")), extraSheets };
+    }
+
+    async function readOfficialWorkbook(file) {
+        return parseWorkbook(file);
     }
 
     function numericValue(value) {
@@ -447,7 +457,7 @@
         return input;
     }
 
-    function createSectionCard(section, rowIds) {
+    function createSectionCard(section, rowIds, rows = []) {
         const card = document.createElement("section");
         card.className = "card censo-seccion";
         card.id = `seccionCenso_${section.id}`;
@@ -505,7 +515,11 @@
         });
 
         card.append(title, status, addButton, tableWrap, resultFields);
-        rowIds.forEach(rowId => body.appendChild(createDataRow(section, rowId)));
+        const dataById = new Map((rows || []).map(row => [String(row.id), row.data || {}]));
+        rowIds.forEach(rowId => {
+            const data = dataById.get(String(rowId)) || {};
+            body.appendChild(createDataRow(section, rowId, data));
+        });
         updateSection(section, card);
         return card;
     }
@@ -699,7 +713,7 @@
     function createSection(section, rowIds, dataRows = []) {
         const card = document.createElement("section");
         card.className = "card censo-seccion";
-        card.id = `censoSeccion_${section.id}`;
+        card.id = `seccionCenso_${section.id}`;
         card.dataset.section = section.id;
         const heading = document.createElement("h3");
         heading.textContent = section.name;
@@ -950,8 +964,10 @@
             }
             item.querySelector("[data-result-text]").textContent = `${totals.records} registros · ${section.id === "iluminacion" ? "Lámparas" : "Cantidad"}: ${formatNumber(section.id === "iluminacion" ? totals.lamps : totals.quantity)} · Potencia: ${formatNumber(totals.power)} W · Consumo: ${formatNumber(totals.annual)} kWh/año.`;
         }
-        resultCard.hidden = false;
-        if (!container.querySelector("[data-result-section]")) {
+
+        const hasVisibleResults = Boolean(container.querySelector("[data-result-section]"));
+        resultCard.hidden = !hasVisibleResults;
+        if (!hasVisibleResults) {
             let empty = container.querySelector("[data-no-section-results]");
             if (!empty) {
                 empty = document.createElement("p");
@@ -966,7 +982,7 @@
     }
 
     function renderRowIds(section, rowIds) {
-        const card = document.getElementById(`censoSeccion_${section.id}`);
+        const card = document.getElementById(`seccionCenso_${section.id}`);
         if (!card) return;
         const body = card.querySelector("tbody");
         body.replaceChildren(...rowIds.map(rowId => createRow(section, rowId)));
@@ -976,7 +992,7 @@
     function addRow(sectionId, data = null, requestedId = null) {
         const section = sectionById.get(sectionId);
         if (!section) return;
-        let card = document.getElementById(`censoSeccion_${sectionId}`);
+        let card = document.getElementById(`seccionCenso_${sectionId}`);
         if (!card) {
             card = createSection(section, []);
             document.getElementById("seccionesCenso").appendChild(card);
@@ -1072,151 +1088,6 @@
         return { entries, readBytes, readText };
     }
 
-    function parseXml(text, partName) {
-        const xml = new DOMParser().parseFromString(text, "application/xml");
-        if (Array.from(xml.getElementsByTagNameNS("*", "parsererror")).length) throw new Error(`No se pudo interpretar ${partName}.`);
-        return xml;
-    }
-
-    function nodes(parent, name) {
-        return Array.from(parent.getElementsByTagNameNS("*", name));
-    }
-
-    function relationshipMap(xml) {
-        return new Map(nodes(xml, "Relationship").map(relationship => [relationship.getAttribute("Id"), relationship.getAttribute("Target")]));
-    }
-
-    function columnIndex(reference) {
-        const letters = reference.match(/^[A-Z]+/i)?.[0]?.toUpperCase() || "";
-        let index = 0;
-        for (const letter of letters) index = index * 26 + letter.charCodeAt(0) - 64;
-        return index - 1;
-    }
-
-    function cellReference(column, row) {
-        let value = column + 1;
-        let letters = "";
-        while (value > 0) {
-            const remainder = (value - 1) % 26;
-            letters = String.fromCharCode(65 + remainder) + letters;
-            value = Math.floor((value - 1) / 26);
-        }
-        return `${letters}${row}`;
-    }
-
-    function cellValue(cell, sharedStrings) {
-        if (!cell) return { value: "", formula: null };
-        const formula = nodes(cell, "f")[0] || null;
-        const valueNode = nodes(cell, "v")[0] || null;
-        const type = cell.getAttribute("t");
-        let value = valueNode?.textContent || "";
-        if (type === "s" && value !== "") value = sharedStrings[Number(value)] ?? "";
-        if (type === "inlineStr") value = nodes(cell, "t").map(item => item.textContent).join("");
-        return { value, formula };
-    }
-
-    async function readOfficialWorkbook(file) {
-        if (!/\.xlsx$/i.test(file.name)) throw new Error("Solo se admite el formato oficial XLSX. Los archivos .xls no son compatibles.");
-        const zip = await createZipReader(file);
-        const workbook = parseXml(await zip.readText("xl/workbook.xml"), "xl/workbook.xml");
-        const workbookRels = parseXml(await zip.readText("xl/_rels/workbook.xml.rels"), "xl/_rels/workbook.xml.rels");
-        const workbookRelationships = relationshipMap(workbookRels);
-        const sharedText = zip.entries.has("xl/sharedStrings.xml") ? await zip.readText("xl/sharedStrings.xml") : "";
-        const sharedXml = sharedText ? parseXml(sharedText, "xl/sharedStrings.xml") : null;
-        const sharedStrings = sharedXml ? nodes(sharedXml, "si").map(item => nodes(item, "t").map(part => part.textContent).join("")) : [];
-        const foundSheets = new Map();
-        const sheetNames = [];
-
-        for (const sheetNode of nodes(workbook, "sheet")) {
-            const name = sheetNode.getAttribute("name");
-            sheetNames.push(name);
-            const relationshipId = sheetNode.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || sheetNode.getAttribute("r:id");
-            const target = workbookRelationships.get(relationshipId);
-            if (!target) throw new Error(`No se pudo resolver la hoja ${name}.`);
-            const path = normalizeZipPath("xl/workbook.xml", target);
-            const xml = parseXml(await zip.readText(path), path);
-            const sheetData = nodes(xml, "sheetData")[0];
-            const rows = new Map();
-            for (const rowNode of nodes(sheetData || xml, "row")) {
-                const rowNumber = Number(rowNode.getAttribute("r"));
-                const cells = new Map();
-                for (const cell of nodes(rowNode, "c")) cells.set(columnIndex(cell.getAttribute("r")), cellValue(cell, sharedStrings));
-                rows.set(rowNumber, cells);
-            }
-            const tablePart = nodes(xml, "tablePart")[0];
-            if (!tablePart) throw new Error(`La hoja ${name} no contiene la tabla del formato oficial.`);
-            const tableId = tablePart.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || tablePart.getAttribute("r:id");
-            const relsPath = `${path.slice(0, path.lastIndexOf("/") + 1)}_rels/${path.slice(path.lastIndexOf("/") + 1)}.rels`;
-            const sheetRelationships = relationshipMap(parseXml(await zip.readText(relsPath), relsPath));
-            const tableTarget = sheetRelationships.get(tableId);
-            if (!tableTarget) throw new Error(`No se encontró la tabla asociada con ${name}.`);
-            const tablePath = normalizeZipPath(path, tableTarget);
-            const tableXml = parseXml(await zip.readText(tablePath), tablePath);
-            const table = nodes(tableXml, "table")[0];
-            const range = table?.getAttribute("ref") || "";
-            const firstTableRow = Number(range.match(/\d+/)?.[0] || 0);
-            const lastTableRow = Number(range.match(/:(?:[A-Z]+)(\d+)$/i)?.[1] || firstTableRow);
-            const tableColumns = nodes(tableXml, "tableColumn").length;
-            foundSheets.set(normalizeName(name), { name, rows, firstTableRow, lastTableRow, tableColumns });
-        }
-
-        const missing = SECTIONS.filter(section => !foundSheets.has(normalizeName(section.sheet)));
-        if (missing.length) throw new Error(`No corresponde al formato oficial. Faltan hojas: ${missing.map(section => section.sheet).join(", ")}.`);
-        const extraSheets = sheetNames.filter(name => !SECTIONS.some(section => normalizeName(section.sheet) === normalizeName(name)));
-        const parsedSections = [];
-
-        for (const section of SECTIONS) {
-            const sheet = foundSheets.get(normalizeName(section.sheet));
-            if (sheet.tableColumns !== section.columns.length) {
-                throw new Error(`La tabla de ${section.sheet} tiene ${sheet.tableColumns} columnas; se esperaban ${section.columns.length}.`);
-            }
-            for (let index = 0; index < section.columns.length; index++) {
-                const expected = section.columns[index][2];
-                const headerCell = sheet.rows.get(section.headerRow)?.get(index);
-                const actual = cellValue(headerCell, sharedStrings).value;
-                if (normalizeName(actual) !== normalizeName(expected)) {
-                    throw new Error(`Encabezado incorrecto en ${section.sheet}!${cellReference(index, section.headerRow)}: esperado "${expected}", recibido "${actual || "vacío"}".`);
-                }
-            }
-
-            const firstDataRow = sheet.firstTableRow + 1;
-            if (firstDataRow <= section.headerRow || firstDataRow > sheet.lastTableRow) {
-                throw new Error(`La tabla de ${section.sheet} no coincide con la ubicación de los encabezados.`);
-            }
-            for (const [column, template] of Object.entries(section.formulas)) {
-                const formulaNode = sheet.rows.get(firstDataRow)?.get(columnIndex(column))?.formula;
-                const actual = formulaNode?.textContent?.replace(/\$/g, "").replace(/\s/g, "").toUpperCase() || "";
-                const expected = template.replace(/\{r\}/g, String(firstDataRow)).replace(/\$/g, "").replace(/\s/g, "").toUpperCase();
-                if (actual !== expected) throw new Error(`La fórmula de ${section.sheet}!${column}${firstDataRow} no coincide: esperada ${expected}, recibida ${actual || "sin fórmula"}.`);
-            }
-
-            const importedRows = [];
-            for (let rowNumber = firstDataRow; rowNumber <= sheet.lastTableRow; rowNumber++) {
-                const rowCells = sheet.rows.get(rowNumber) || new Map();
-                const data = {};
-                let hasInput = false;
-                for (const [column, key, label, kind] of section.columns) {
-                    if (kind === "calculated") continue;
-                    const parsed = cellValue(rowCells.get(columnIndex(column)), sharedStrings);
-                    if (parsed.formula) continue;
-                    let value = String(parsed.value ?? "").trim();
-                    if (/^columna\s*\d+$/i.test(value)) value = "";
-                    if (kind === "number" && value !== "") {
-                        const numeric = Number(value);
-                        if (!Number.isFinite(numeric)) throw new Error(`Se esperaba un número en ${section.sheet}!${column}${rowNumber} (${label}); se encontró "${value}".`);
-                        value = String(numeric);
-                    }
-                    data[key] = value;
-                    if (value !== "") hasInput = true;
-                }
-                if (hasInput) importedRows.push({ id: String(rowNumber), data });
-            }
-            parsedSections.push({ section, rows: importedRows });
-        }
-
-        return { sections: parsedSections, sheetNames, extraSheets };
-    }
-
     function formatNumber(value) {
         return new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 }).format(value);
     }
@@ -1226,6 +1097,11 @@
         const status = document.getElementById("estadoLogotipoDependencia");
         const image = document.getElementById("vistaLogotipoDependencia");
         const remove = document.getElementById("eliminarLogotipoDependencia");
+
+        if (!selector || !status || !image || !remove) {
+            return;
+        }
+
         const preview = window.AEEHState?.getFilePreviews(selector.id)[0];
         if (!preview) {
             image.hidden = true;
@@ -1295,7 +1171,10 @@
                 updateSection(section, card);
             });
 
-            document.getElementById("resultadosCenso").hidden = false;
+            const resultsCard = document.getElementById("resultadosCenso");
+            const summaryContainer = document.getElementById("resumenSeccionesCenso");
+            const hasVisibleResults = summaryContainer.querySelector("[data-result-section]");
+            resultsCard.hidden = !hasVisibleResults;
             const extraMessage = workbook.extraSheets.length
                 ? ` Se ignoraron hojas no contempladas: ${workbook.extraSheets.join(", ")}.`
                 : "";
@@ -1328,17 +1207,20 @@
         });
         window.AEEHState.restore();
         SECTIONS.forEach(section => {
-            const card = document.getElementById(`censoSeccion_${section.id}`);
+            const card = document.getElementById(`seccionCenso_${section.id}`);
             if (card) updateSection(section, card);
         });
-        document.getElementById("resultadosCenso").hidden = false;
+        const resultsCard = document.getElementById("resultadosCenso");
+        const summaryContainer = document.getElementById("resumenSeccionesCenso");
+        const hasVisibleResults = summaryContainer.querySelector("[data-result-section]");
+        resultsCard.hidden = !hasVisibleResults;
         document.getElementById("estadoCenso").textContent = `Captura restaurada desde ${saved.censoNombreArchivo}.`;
         document.getElementById("detalleCenso").textContent = `${totalRows} filas restauradas del estado de esta sesión. El archivo original debe volver a seleccionarse para reprocesarlo.`;
     }
 
     function addSectionRow(sectionId) {
         const section = sectionById.get(sectionId);
-        const card = document.getElementById(`censoSeccion_${sectionId}`);
+        const card = document.getElementById(`seccionCenso_${sectionId}`);
         if (!section || !card) return;
         const rowIds = Array.from(card.querySelectorAll("tbody tr[data-censo-row]" )).map(row => row.dataset.rowId);
         const numericIds = rowIds.map(Number).filter(Number.isFinite);
@@ -1351,7 +1233,7 @@
 
     function removeSectionRow(sectionId, rowElement) {
         const section = sectionById.get(sectionId);
-        const card = document.getElementById(`censoSeccion_${sectionId}`);
+        const card = document.getElementById(`seccionCenso_${sectionId}`);
         if (!section || !card) return;
         rowElement.remove();
         updateSection(section, card);
@@ -1416,45 +1298,61 @@
         const pageNumber = document.getElementById("numeroPagina");
         if (pageNumber) pageNumber.textContent = "Página 8 de 9";
         const name = sessionStorage.getItem("nombre");
-        if (name) document.getElementById("nombreUsuario").textContent = `👤 ${name}`;
-        restoreProcessedData();
-        updateLogoPreview();
-        document.getElementById("archivoExcel").addEventListener("change", () => {
-            const file = document.getElementById("archivoExcel").files?.[0];
-            if (file) {
-                document.getElementById("estadoCenso").textContent = `Archivo seleccionado: ${file.name}. Presione Procesar Archivo para validarlo.`;
-                window.AEEHState.save();
-            }
-        });
-        document.getElementById("logotipoDependencia").addEventListener("change", selectLogo);
-        document.getElementById("eliminarLogotipoDependencia").addEventListener("click", () => {
-            document.getElementById("logotipoDependencia").value = "";
-            window.AEEHState.setFilePreviews("logotipoDependencia", []);
-            window.AEEHState.save();
-            updateLogoPreview();
-        });
+        if (name) {
+            const usuario = document.getElementById("nombreUsuario");
+            if (usuario) usuario.textContent = `👤 ${name}`;
+        }
+
+        const fileSelector = document.getElementById("archivoExcel");
+        if (fileSelector) {
+            fileSelector.addEventListener("change", () => {
+                const file = fileSelector.files?.[0];
+                if (file) {
+                    const estado = document.getElementById("estadoCenso");
+                    if (estado) estado.textContent = `Archivo seleccionado: ${file.name}. Presione Procesar Archivo para validarlo.`;
+                    window.AEEHState?.save();
+                }
+            });
+        }
+
+        const logoSelector = document.getElementById("logotipoDependencia");
+        const logoRemove = document.getElementById("eliminarLogotipoDependencia");
+        if (logoSelector) logoSelector.addEventListener("change", selectLogo);
+        if (logoRemove) {
+            logoRemove.addEventListener("click", () => {
+                if (logoSelector) logoSelector.value = "";
+                window.AEEHState?.setFilePreviews("logotipoDependencia", []);
+                window.AEEHState?.save();
+                updateLogoPreview();
+            });
+        }
 
         const sections = document.getElementById("seccionesCenso");
-        sections.addEventListener("input", event => {
-            const row = event.target.closest("tr[data-censo-row]");
-            if (!row) return;
-            const section = sectionById.get(row.closest("section[data-section]")?.dataset.section);
-            if (!section) return;
-            recalculateRow(section, row);
-            updateSection(section, row.closest("section[data-section]"));
-        });
-        sections.addEventListener("change", event => {
-            const row = event.target.closest("tr[data-censo-row]");
-            if (!row) return;
-            const section = sectionById.get(row.closest("section[data-section]")?.dataset.section);
-            if (section) updateSection(section, row.closest("section[data-section]"));
-        });
-        sections.addEventListener("click", event => {
-            const button = event.target.closest("button[data-action]");
-            if (!button) return;
-            if (button.dataset.action === "add-row") addSectionRow(button.dataset.section);
-            if (button.dataset.action === "remove-row") removeSectionRow(button.dataset.section, button.closest("tr[data-censo-row]"));
-        });
+        if (sections) {
+            sections.addEventListener("input", event => {
+                const row = event.target.closest("tr[data-censo-row]");
+                if (!row) return;
+                const section = sectionById.get(row.closest("section[data-section]")?.dataset.section);
+                if (!section) return;
+                recalculateRow(section, row);
+                updateSection(section, row.closest("section[data-section]"));
+            });
+            sections.addEventListener("change", event => {
+                const row = event.target.closest("tr[data-censo-row]");
+                if (!row) return;
+                const section = sectionById.get(row.closest("section[data-section]")?.dataset.section);
+                if (section) updateSection(section, row.closest("section[data-section]"));
+            });
+            sections.addEventListener("click", event => {
+                const button = event.target.closest("button[data-action]");
+                if (!button) return;
+                if (button.dataset.action === "add-row") addSectionRow(button.dataset.section);
+                if (button.dataset.action === "remove-row") removeSectionRow(button.dataset.section, button.closest("tr[data-censo-row]"));
+            });
+        }
+
+        restoreProcessedData();
+        updateLogoPreview();
     }
 
     window.descargarFormato = downloadTemplate;

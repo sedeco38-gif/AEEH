@@ -769,7 +769,22 @@
             const modulos = ["datos_generales.html", "informacion_tecnica.html", "servicios_electricos.html", "sistema_generacion.html", "evaluacion_sitio.html", "censo_carga.html"];
             ponerValor("resumenModulos", `${modulos.filter(modulo => window.AEEHState.hasModuleState(modulo)).length} de ${modulos.length} con estado local guardado`);
             ponerValor("resumenPeriodo", resumen.registros.length ? "Sin fechas de periodo capturadas" : "Sin periodos capturados");
-            ponerValor("resumenCenso", "Pendiente de integración; no procesado en esta etapa");
+            const censoEstado = window.AEEHState?.getModuleFields("censo_carga.html") || {};
+            const secciones = ["iluminacion", "computo", "fuerza", "aire_ac", "electrodomesticos", "voz_datos", "equipos_personales", "otros"];
+            const censoActiva = secciones.some(seccion => censoEstado[`censoPresent_${seccion}`] === "1");
+            const censoTotales = secciones.reduce((acumulado, seccion) => {
+                const registros = Number(censoEstado[`censoResultado_${seccion}_registros`] || 0);
+                const potencia = Number(censoEstado[`censoResultado_${seccion}_potenciaW`] || 0);
+                const consumo = Number(censoEstado[`censoResultado_${seccion}_consumoAnualKwh`] || 0);
+                return {
+                    registros: acumulado.registros + registros,
+                    potencia: acumulado.potencia + potencia,
+                    consumo: acumulado.consumo + consumo
+                };
+            }, { registros: 0, potencia: 0, consumo: 0 });
+            ponerValor("resumenCenso", censoActiva && censoTotales.registros > 0
+                ? `${censoTotales.registros} registros · ${formatearNumero(censoTotales.potencia)} W · ${formatearNumero(censoTotales.consumo)} kWh/año`
+                : "Sin información de Censo de Carga.");
         }
 
         async function descargarExpediente() {

@@ -570,6 +570,50 @@
 
             </div>
 
+            <div class="card" id="resultadosServicios" hidden>
+
+                <h3>
+
+                    Resultados
+
+                </h3>
+
+                <div class="grid">
+
+                    <div class="campo">
+                        <label>Consumo anual (total)</label>
+                        <input id="resultadoConsumoAnual" class="readonly" readonly value="Pendiente">
+                    </div>
+
+                    <div class="campo">
+                        <label>Consumo promedio anual</label>
+                        <input id="resultadoConsumoPromedio" class="readonly" readonly value="Pendiente">
+                    </div>
+
+                    <div class="campo">
+                        <label>Facturación anual</label>
+                        <input id="resultadoFacturacionAnual" class="readonly" readonly value="Pendiente">
+                    </div>
+
+                    <div class="campo">
+                        <label>Facturación promedio anual</label>
+                        <input id="resultadoFacturacionPromedio" class="readonly" readonly value="Pendiente">
+                    </div>
+
+                    <div class="campo">
+                        <label>Demanda máxima registrada</label>
+                        <input id="resultadoDemandaMaxima" class="readonly" readonly value="Pendiente">
+                    </div>
+
+                    <div class="campo">
+                        <label>Capacidad de generación</label>
+                        <input id="resultadoCapacidadGeneracion" class="readonly" readonly value="Pendiente">
+                    </div>
+
+                </div>
+
+            </div>
+
             <!-- RESUMEN -->
 
             <div class="card" id="resumenServicios">
@@ -647,6 +691,66 @@
 
         /* GENERAR FORMULARIOS DINÁMICOS DE SERVICIOS ELÉCTRICOS */
 
+        function formatearNumero(valor) {
+            const numero = Number(valor);
+            if (!Number.isFinite(numero)) return "0";
+            return new Intl.NumberFormat("es-MX", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }).format(numero);
+        }
+
+        function detectarPeriodicidad(tarifa) {
+            const valor = String(tarifa || "").trim().toUpperCase();
+
+            const tarifasMensuales = new Set(["1", "1A", "1B", "PDBT"]);
+            const tarifasBimestrales = new Set(["GDBT", "GDMTO", "GDMTH", "DIST", "DIT", "DAC"]);
+
+            if (!valor) {
+                return { clave: "pendiente", etiqueta: "Pendiente", maximo: 24 };
+            }
+
+            if (tarifasMensuales.has(valor)) {
+                return { clave: "mensual", etiqueta: "Mensual", maximo: 24 };
+            }
+
+            if (tarifasBimestrales.has(valor)) {
+                return { clave: "bimestral", etiqueta: "Bimestral", maximo: 12 };
+            }
+
+            return { clave: "mensual", etiqueta: "Mensual", maximo: 24 };
+        }
+
+        function actualizarPeriodicidadServicio(servicioIndex) {
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            const info = detectarPeriodicidad(tarifa);
+            const texto = document.getElementById(`periodicidad_${servicioIndex}`);
+            const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+            const cantidad = Math.max(1, parseInt(contador?.value, 10) || 1);
+
+            if (texto) {
+                if (info.clave === "pendiente") {
+                    texto.textContent = "Seleccione la tarifa para detectar la periodicidad.";
+                } else {
+                    texto.textContent = `Periodicidad ${info.etiqueta.toLowerCase()}. Máximo permitido: ${info.maximo} registros.`;
+                }
+            }
+
+            if (contador && cantidad > info.maximo) {
+                contador.value = info.maximo;
+            }
+        }
+
+        function obtenerMaximoRegistros(servicioIndex) {
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            return detectarPeriodicidad(tarifa).maximo;
+        }
+
+        function obtenerCantidadRegistros(servicioIndex) {
+            const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+            return Math.max(1, parseInt(contador?.value, 10) || 1);
+        }
+
         function generarServicios() {
 
             const cantidad = parseInt(document.getElementById("cantidadMedidores").value);
@@ -661,10 +765,12 @@
             }
 
             const contenedor = document.getElementById("contenedorServicios");
+            const estadoGuardado = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
 
             contenedor.innerHTML = "";
 
             for (let i = 1; i <= cantidad; i++) {
+                const valorInicial = Math.max(1, parseInt(estadoGuardado[`numeroFacturaciones_${i}`], 10) || 1);
 
                 contenedor.innerHTML += `
 
@@ -716,25 +822,19 @@
 
                     </label>
 
-                    <select class="input-select">
+                    <select class="input-select tarifa-servicio" id="tarifa_${i}">
 
-                        <option>Seleccione...</option>
-
-                        <option>1</option>
-
-                        <option>1A</option>
-
-                        <option>1B</option>
-
-                        <option>PDBT</option>
-
-                        <option>GDBT</option>
-
-                        <option>GDMTO</option>
-
-                        <option>DIST</option>
-
-                        <option>DIT</option>
+                        <option value="">Seleccione...</option>
+                        <option value="1">1</option>
+                        <option value="1A">1A</option>
+                        <option value="1B">1B</option>
+                        <option value="PDBT">PDBT</option>
+                        <option value="GDBT">GDBT</option>
+                        <option value="GDMTO">GDMTO</option>
+                        <option value="GDMTH">GDMTH</option>
+                        <option value="DIST">DIST</option>
+                        <option value="DIT">DIT</option>
+                        <option value="DAC">DAC</option>
 
                     </select>
 
@@ -750,7 +850,8 @@
 
                     <input
                         type="text"
-                        placeholder="Ej. 220 V">
+                        placeholder="Ej. 220 V"
+                        id="voltaje_${i}">
 
                 </div>
 
@@ -762,15 +863,12 @@
 
                     </label>
 
-                    <select class="input-select">
+                    <select class="input-select tipo-servicio" id="tipoServicio_${i}">
 
-                        <option>Seleccione...</option>
-
-                        <option>Monofásico</option>
-
-                        <option>Bifásico</option>
-
-                        <option>Trifásico</option>
+                        <option value="">Seleccione...</option>
+                        <option value="Monofásico">Monofásico</option>
+                        <option value="Bifásico">Bifásico</option>
+                        <option value="Trifásico">Trifásico</option>
 
                     </select>
 
@@ -798,7 +896,7 @@
 
                     </label>
 
-                    <input type="number">
+                    <input type="number" min="0" step="any" id="demandaContratada_${i}">
 
                 </div>
 
@@ -810,7 +908,7 @@
 
                     </label>
 
-                    <input type="number">
+                    <input type="number" min="0" step="any" id="demandaMaxima_${i}">
 
                 </div>
 
@@ -832,7 +930,7 @@
 
                     <label>
 
-                        Número de facturaciones
+                        Número de periodos
 
                     </label>
 
@@ -841,12 +939,12 @@
                         class="selector-linea-base"
                         id="numeroFacturaciones_${i}"
                         data-servicio="${i}"
-                        value="12"
-                        min="12"
+                        value="${valorInicial}"
+                        min="1"
                         step="1"
                         readonly
                         data-app-state
-                        aria-label="Cantidad de registros de facturación del servicio ${i}">
+                        aria-label="Cantidad de registros del servicio ${i}">
 
                 </div>
 
@@ -864,16 +962,20 @@
 
             </div>
 
+            <p class="texto-ayuda" id="periodicidad_${i}" role="status" aria-live="polite">
+                Seleccione la tarifa para detectar la periodicidad.
+            </p>
+
             <p class="texto-ayuda" id="estadoFacturacion_${i}" role="status" aria-live="polite">
-                Registre las facturaciones anteriores para establecer la línea base del inmueble.
+                Registre el periodo, consumo y facturación de cada registro.
             </p>
 
             <table class="tabla-linea-base">
                 <thead>
                     <tr>
-                        <th>Período</th>
+                        <th>Periodo</th>
                         <th>Consumo (kWh)</th>
-                        <th>Factura ($)</th>
+                        <th>Facturación ($)</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-linea-base-${i}"></tbody>
@@ -901,10 +1003,8 @@
 
                     <select class="input-select">
 
-                        <option>Seleccione...</option>
-
+                        <option value="">Seleccione...</option>
                         <option>Sí</option>
-
                         <option>No</option>
 
                     </select>
@@ -921,10 +1021,8 @@
 
                     <select class="input-select">
 
-                        <option>Seleccione...</option>
-
+                        <option value="">Seleccione...</option>
                         <option>Sí</option>
-
                         <option>No</option>
 
                     </select>
@@ -952,9 +1050,9 @@
             acordeones.forEach((acordeon, index) => {
                 const servicioIndex = index + 1;
                 const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
-                const cantidadFacturaciones = Math.max(12, parseInt(contador?.value, 10) || 12);
-                if (contador) contador.value = cantidadFacturaciones;
-                generarFilasLineaBase(servicioIndex, cantidadFacturaciones);
+                const valorGuardado = Math.max(1, parseInt(contador?.value, 10) || 1);
+                if (contador) contador.value = valorGuardado;
+                generarFilasLineaBase(servicioIndex, valorGuardado);
             });
 
             window.AEEHState?.restore();
@@ -963,10 +1061,11 @@
             acordeones.forEach((acordeon, index) => {
                 const servicioIndex = index + 1;
                 const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
-                const cantidadFacturaciones = Math.max(12, parseInt(contador?.value, 10) || 12);
+                const cantidadFacturaciones = Math.max(1, parseInt(contador?.value, 10) || 1);
                 if (contador) contador.value = cantidadFacturaciones;
                 ordenarCamposServicio(servicioIndex);
                 actualizarDetallesServicio(servicioIndex);
+                actualizarPeriodicidadServicio(servicioIndex);
                 actualizarControlesFacturacion(servicioIndex, cantidadFacturaciones);
 
                 acordeon.querySelectorAll("select").forEach(select => {
@@ -974,32 +1073,35 @@
                 });
             });
 
-            requestAnimationFrame(validarServicios);
+            requestAnimationFrame(() => {
+                validarServicios();
+                actualizarResultados();
+            });
         }
 
         function generarFilasLineaBase(servicioIndex, numeroFacturaciones) {
             const tbody = document.getElementById(`tabla-linea-base-${servicioIndex}`);
             if (!tbody) return;
 
-            const cantidad = Math.max(12, Math.floor(Number(numeroFacturaciones) || 12));
-            const filasActuales = Array.from(tbody.querySelectorAll("tr"));
+            const cantidad = Math.max(1, Math.floor(Number(numeroFacturaciones) || 1));
+            tbody.innerHTML = "";
 
-            filasActuales.slice(cantidad).forEach(fila => fila.remove());
-
-            for (let numeroPeriodo = filasActuales.length + 1; numeroPeriodo <= cantidad; numeroPeriodo++) {
+            for (let numeroPeriodo = 1; numeroPeriodo <= cantidad; numeroPeriodo++) {
                 const fila = document.createElement("tr");
                 fila.dataset.periodo = numeroPeriodo;
                 fila.innerHTML = `
-                        <td>Facturación ${numeroPeriodo}</td>
-                        <td><input id="consumo_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Consumo de facturación ${numeroPeriodo} (kWh)"></td>
-                        <td><input id="factura_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Importe de facturación ${numeroPeriodo} ($)"></td>
+                        <td><input id="periodo_${servicioIndex}_${numeroPeriodo}" type="text" placeholder="ej. enero-febrero" aria-label="Periodo del registro ${numeroPeriodo}"></td>
+                        <td><input id="consumo_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Consumo del periodo ${numeroPeriodo} (kWh)"></td>
+                        <td><input id="factura_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Facturación del periodo ${numeroPeriodo} ($)"></td>
                     `;
                 tbody.appendChild(fila);
             }
 
             const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
             if (contador) contador.value = cantidad;
+            actualizarPeriodicidadServicio(servicioIndex);
             actualizarControlesFacturacion(servicioIndex, cantidad);
+            actualizarResultados();
         }
 
         function normalizarEtiqueta(texto) {
@@ -1020,7 +1122,7 @@
                 "Tipo de Servicio": `tipoServicio_${servicioIndex}`,
                 "Demanda Contratada (kW)": `demandaContratada_${servicioIndex}`,
                 "Demanda Máxima Registrada (kW)": `demandaMaxima_${servicioIndex}`,
-                "Número de facturaciones": `numeroFacturaciones_${servicioIndex}`,
+                "Número de periodos": `numeroFacturaciones_${servicioIndex}`,
                 "¿Cuenta con Medición Inteligente?": `medicionInteligente_${servicioIndex}`,
                 "¿Cuenta con Banco de Capacitores?": `bancoCapacitores_${servicioIndex}`
             };
@@ -1071,15 +1173,40 @@
         function actualizarControlesFacturacion(servicioIndex, cantidad) {
             const estado = document.getElementById(`estadoFacturacion_${servicioIndex}`);
             const eliminar = document.getElementById(`eliminarFacturacion_${servicioIndex}`);
-            if (estado) estado.textContent = `${cantidad} registros disponibles. Los campos sin valor no cuentan como captura.`;
-            if (eliminar) eliminar.disabled = cantidad <= 12;
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            const informacion = detectarPeriodicidad(tarifa);
+            const excedentes = Math.max(0, cantidad - informacion.maximo);
+            if (estado) {
+                if (informacion.clave === "pendiente") {
+                    estado.textContent = "Seleccione la tarifa para detectar la periodicidad.";
+                } else if (excedentes > 0) {
+                    estado.textContent = `Hay ${excedentes} registros excedentes para tarifa ${informacion.etiqueta.toLowerCase()}. Elimínelos hasta ${informacion.maximo} antes de continuar.`;
+                } else {
+                    estado.textContent = `Periodicidad ${informacion.etiqueta.toLowerCase()}. Registros capturados: ${cantidad}. Máximo permitido: ${informacion.maximo}.`;
+                }
+            }
+            if (eliminar) eliminar.disabled = cantidad <= 1;
         }
 
         function agregarFacturacion(servicioIndex) {
             const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
             if (!contador) return;
 
-            const cantidad = Math.max(12, parseInt(contador.value, 10) || 12) + 1;
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            const informacion = detectarPeriodicidad(tarifa);
+            const cantidadActual = Math.max(1, parseInt(contador.value, 10) || 1);
+
+            if (informacion.clave === "pendiente") {
+                alert("Seleccione una tarifa antes de agregar registros.");
+                return;
+            }
+
+            if (cantidadActual >= informacion.maximo) {
+                alert(`La tarifa seleccionada corresponde a facturación ${informacion.etiqueta.toLowerCase()}. El máximo permitido es ${informacion.maximo} registros. Si hay registros excedentes, elimínelos antes de continuar.`);
+                return;
+            }
+
+            const cantidad = cantidadActual + 1;
             contador.value = cantidad;
             generarFilasLineaBase(servicioIndex, cantidad);
             window.AEEHState?.save();
@@ -1090,13 +1217,138 @@
             const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
             if (!contador) return;
 
-            const cantidad = Math.max(12, parseInt(contador.value, 10) || 12);
-            if (cantidad <= 12) return;
+            const cantidad = Math.max(1, parseInt(contador.value, 10) || 1);
+            if (cantidad <= 1) return;
 
             contador.value = cantidad - 1;
             generarFilasLineaBase(servicioIndex, cantidad - 1);
             window.AEEHState?.save();
             validarServicios();
+        }
+
+        function obtenerRegistrosServicio(servicioIndex) {
+            const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+            const cantidad = Math.max(0, parseInt(contador?.value, 10) || 0);
+            const registros = [];
+
+            for (let registro = 1; registro <= cantidad; registro++) {
+                const periodo = document.getElementById(`periodo_${servicioIndex}_${registro}`)?.value?.trim() || "";
+                const consumoRaw = document.getElementById(`consumo_${servicioIndex}_${registro}`)?.value;
+                const facturaRaw = document.getElementById(`factura_${servicioIndex}_${registro}`)?.value;
+                const consumo = consumoRaw === "" || consumoRaw === undefined || consumoRaw === null ? null : Number(consumoRaw);
+                const factura = facturaRaw === "" || facturaRaw === undefined || facturaRaw === null ? null : Number(facturaRaw);
+
+                registros.push({
+                    periodo,
+                    consumo: Number.isFinite(consumo) ? consumo : null,
+                    factura: Number.isFinite(factura) ? factura : null
+                });
+            }
+
+            return registros;
+        }
+
+        function obtenerDatosGeneracion() {
+            if (!window.AEEHState) {
+                return { tieneGeneracion: "no", texto: "Este servicio no cuenta con un sistema de generación." };
+            }
+
+            const generacion = window.AEEHState.getModuleFields("sistema_generacion.html") || {};
+            if (generacion.tieneGeneracion !== "si") {
+                return { tieneGeneracion: "no", texto: "Este servicio no cuenta con un sistema de generación." };
+            }
+
+            const capacidades = [
+                generacion.capacidadInstalada,
+                generacion.capacidadGenerador,
+                generacion.potenciaElectrica,
+                generacion.potenciaAerogenerador,
+                generacion.capacidadInversores
+            ].filter(valor => valor !== undefined && valor !== null && String(valor).trim() !== "");
+
+            return {
+                tieneGeneracion: "si",
+                texto: capacidades.length ? `${formatearNumero(Number(capacidades[0]))} kW` : "Pendiente: capacidad de generación por confirmar."
+            };
+        }
+
+        function actualizarResultados() {
+            const resultadoConsumoAnual = document.getElementById("resultadoConsumoAnual");
+            const resultadoConsumoPromedio = document.getElementById("resultadoConsumoPromedio");
+            const resultadoFacturacionAnual = document.getElementById("resultadoFacturacionAnual");
+            const resultadoFacturacionPromedio = document.getElementById("resultadoFacturacionPromedio");
+            const resultadoDemandaMaxima = document.getElementById("resultadoDemandaMaxima");
+            const resultadoCapacidadGeneracion = document.getElementById("resultadoCapacidadGeneracion");
+            if (!resultadoConsumoAnual || !resultadoFacturacionAnual) return;
+
+            let totalConsumo = 0;
+            let totalFactura = 0;
+            let periodosMensuales = 0;
+            let periodosBimestrales = 0;
+            let demandaMaxima = 0;
+            let hayDatos = false;
+
+            const cantidad = document.querySelectorAll(".acordeon").length;
+            for (let index = 1; index <= cantidad; index++) {
+                const tarifa = document.getElementById(`tarifa_${index}`)?.value || "";
+                const info = detectarPeriodicidad(tarifa);
+                const registros = obtenerRegistrosServicio(index);
+                if (!registros.length) continue;
+
+                let periodosServicio = 0;
+                registros.forEach(registro => {
+                    const periodoValido = String(registro.periodo || "").trim() !== "";
+                    if (registro.consumo !== null) {
+                        totalConsumo += registro.consumo;
+                    }
+                    if (registro.factura !== null) {
+                        totalFactura += registro.factura;
+                    }
+                    if (periodoValido || registro.consumo !== null || registro.factura !== null) {
+                        periodosServicio += 1;
+                    }
+                });
+
+                if (periodosServicio > 0) hayDatos = true;
+                if (info.clave === "mensual") {
+                    periodosMensuales += periodosServicio;
+                } else if (info.clave === "bimestral") {
+                    periodosBimestrales += periodosServicio;
+                }
+
+                const demanda = Number(document.getElementById(`demandaMaxima_${index}`)?.value || 0);
+                if (Number.isFinite(demanda) && demanda > 0) {
+                    demandaMaxima = Math.max(demandaMaxima, demanda);
+                }
+            }
+
+            const soporteMensual = periodosMensuales >= 12;
+            const soporteBimestral = periodosBimestrales >= 6;
+            const tieneSoporteAnual = soporteMensual || soporteBimestral;
+            const periodosTotales = periodosMensuales + periodosBimestrales;
+            const promedioAnual = tieneSoporteAnual
+                ? (periodosMensuales >= 12 ? totalConsumo / Math.min(2, periodosMensuales / 12) : totalConsumo / Math.min(2, periodosBimestrales / 6))
+                : 0;
+            const promedioFacturacion = tieneSoporteAnual
+                ? (periodosMensuales >= 12 ? totalFactura / Math.min(2, periodosMensuales / 12) : totalFactura / Math.min(2, periodosBimestrales / 6))
+                : 0;
+
+            resultadoConsumoAnual.value = hayDatos && tieneSoporteAnual
+                ? `${formatearNumero(totalConsumo)} kWh (${periodosTotales} periodos capturados)`
+                : "Pendiente";
+            resultadoConsumoPromedio.value = hayDatos && tieneSoporteAnual
+                ? `${formatearNumero(promedioAnual)} kWh/año`
+                : "Pendiente";
+            resultadoFacturacionAnual.value = hayDatos && tieneSoporteAnual
+                ? `$${formatearNumero(totalFactura)}`
+                : "Pendiente";
+            resultadoFacturacionPromedio.value = hayDatos && tieneSoporteAnual
+                ? `$${formatearNumero(promedioFacturacion)}/año`
+                : "Pendiente";
+            resultadoDemandaMaxima.value = demandaMaxima > 0 ? `${formatearNumero(demandaMaxima)} kW` : "Pendiente";
+
+            const generacion = obtenerDatosGeneracion();
+            resultadoCapacidadGeneracion.value = generacion.texto;
         }
 
         /* ABRIR / CERRAR ACORDEÓN */
@@ -1170,28 +1422,46 @@
 
             document.getElementById("estadoServicios").value =
                 `${datosBasicos} de ${acordeones.length} con datos básicos`;
+            actualizarResultados();
         }
 
         const contenedorServicios = document.getElementById("contenedorServicios");
-        contenedorServicios?.addEventListener("input", validarServicios);
+        contenedorServicios?.addEventListener("input", () => {
+            validarServicios();
+            actualizarResultados();
+        });
         contenedorServicios?.addEventListener("change", function (event) {
             const campo = event.target;
             if (campo.classList.contains("tipo-servicio")) {
                 const servicioIndex = campo.id.match(/_(\d+)$/)?.[1];
                 if (servicioIndex) actualizarDetallesServicio(servicioIndex);
             }
+            if (campo.classList.contains("tarifa-servicio")) {
+                const servicioIndex = campo.id.match(/_(\d+)$/)?.[1];
+                if (servicioIndex) {
+                    actualizarPeriodicidadServicio(servicioIndex);
+                    actualizarControlesFacturacion(servicioIndex, obtenerCantidadRegistros(servicioIndex));
+                }
+            }
             if (campo.classList.contains("selector-linea-base")) {
                 const servicioIndex = campo.dataset.servicio;
-                const cantidad = Math.max(12, parseInt(campo.value, 10) || 12);
-                campo.value = cantidad;
-                generarFilasLineaBase(servicioIndex, cantidad);
+                const maximo = obtenerMaximoRegistros(Number(servicioIndex));
+                const cantidad = Math.max(1, parseInt(campo.value, 10) || 1);
+                const siguiente = Math.min(cantidad, maximo);
+                if (cantidad > maximo) {
+                    alert(`La tarifa seleccionada permite un máximo de ${maximo} registros. Elimine los excedentes antes de continuar.`);
+                }
+                campo.value = siguiente;
+                generarFilasLineaBase(servicioIndex, siguiente);
                 window.AEEHState?.save();
             }
             validarServicios();
+            actualizarResultados();
         });
 
         function guardar() {
             validarServicios();
+            actualizarResultados();
             const guardado = window.AEEHState?.save() || false;
             const estadoGuardado = document.getElementById("estadoGuardadoServicios");
             if (estadoGuardado) {
