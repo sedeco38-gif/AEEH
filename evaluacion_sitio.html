@@ -594,6 +594,11 @@
                             </select>
                         </div>
 
+                        <div class="campo" id="detalleSombraSitio" style="display:none;">
+                            <label for="especificacionSombra">Especifique qué objeto genera sombra</label>
+                            <input id="especificacionSombra" type="text" placeholder="Describa el objeto">
+                        </div>
+
                     </div>
 
                 </div>
@@ -686,7 +691,21 @@
             document.querySelectorAll(".formulario select").forEach(select => {
                 if (select.selectedIndex < 0) select.selectedIndex = 0;
             });
+            actualizarDetalleSombra();
         });
+
+        function actualizarDetalleSombra() {
+            const sombraSitio = document.getElementById("sombraSitio");
+            const detalleSombra = document.getElementById("detalleSombraSitio");
+            const mostrarDetalle = sombraSitio.value === "Sí";
+
+            detalleSombra.style.display = mostrarDetalle ? "flex" : "none";
+            if (!mostrarDetalle) {
+                document.getElementById("especificacionSombra").value = "";
+            }
+        }
+
+        document.getElementById("sombraSitio").addEventListener("change", actualizarDetalleSombra);
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {

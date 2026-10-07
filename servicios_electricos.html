@@ -730,9 +730,9 @@
 
             if (texto) {
                 if (info.clave === "pendiente") {
-                    texto.textContent = "Seleccione la tarifa para detectar la periodicidad.";
+                    texto.textContent = "Seleccione la tarifa para configurar el registro de facturaciones.";
                 } else {
-                    texto.textContent = `Periodicidad ${info.etiqueta.toLowerCase()}. Máximo permitido: ${info.maximo} registros.`;
+                    texto.textContent = `Registro de facturaciones ${info.etiqueta.toLowerCase()}. Máximo permitido: ${info.maximo} registros.`;
                 }
             }
 
@@ -930,7 +930,7 @@
 
                     <label>
 
-                        Número de periodos
+                        Número de registros de facturación
 
                     </label>
 
@@ -963,7 +963,7 @@
             </div>
 
             <p class="texto-ayuda" id="periodicidad_${i}" role="status" aria-live="polite">
-                Seleccione la tarifa para detectar la periodicidad.
+                Seleccione la tarifa para configurar el registro de facturaciones.
             </p>
 
             <p class="texto-ayuda" id="estadoFacturacion_${i}" role="status" aria-live="polite">
@@ -1076,7 +1076,7 @@
                 "Tipo de Servicio": `tipoServicio_${servicioIndex}`,
                 "Demanda Contratada (kW)": `demandaContratada_${servicioIndex}`,
                 "Demanda Máxima Registrada (kW)": `demandaMaxima_${servicioIndex}`,
-                "Número de periodos": `numeroFacturaciones_${servicioIndex}`,
+                "Número de registros de facturación": `numeroFacturaciones_${servicioIndex}`,
                 "¿Cuenta con Medición Inteligente?": `medicionInteligente_${servicioIndex}`,
                 "¿Cuenta con Banco de Capacitores?": `bancoCapacitores_${servicioIndex}`
             };
@@ -1132,11 +1132,11 @@
             const excedentes = Math.max(0, cantidad - informacion.maximo);
             if (estado) {
                 if (informacion.clave === "pendiente") {
-                    estado.textContent = "Seleccione la tarifa para detectar la periodicidad.";
+                    estado.textContent = "Seleccione la tarifa para configurar el registro de facturaciones.";
                 } else if (excedentes > 0) {
-                    estado.textContent = `Hay ${excedentes} registros excedentes para tarifa ${informacion.etiqueta.toLowerCase()}. Elimínelos hasta ${informacion.maximo} antes de continuar.`;
+                    estado.textContent = `Hay ${excedentes} registros excedentes para el registro de facturaciones ${informacion.etiqueta.toLowerCase()}. Elimínelos hasta ${informacion.maximo} antes de continuar.`;
                 } else {
-                    estado.textContent = `Periodicidad ${informacion.etiqueta.toLowerCase()}. Registros capturados: ${cantidad}. Máximo permitido: ${informacion.maximo}.`;
+                    estado.textContent = `Registro de facturaciones ${informacion.etiqueta.toLowerCase()}. Registros capturados: ${cantidad}. Máximo permitido: ${informacion.maximo}.`;
                 }
             }
             if (eliminar) eliminar.disabled = cantidad <= 1;
