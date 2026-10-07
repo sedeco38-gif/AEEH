@@ -1219,10 +1219,34 @@
                 generacion.potenciaAerogenerador,
                 generacion.capacidadInversores
             ].filter(valor => valor !== undefined && valor !== null && String(valor).trim() !== "");
+            const cantidadServicios = document.querySelectorAll(".acordeon").length;
+            const servicioCapturado = Number.parseInt(generacion.servicioGeneracion, 10);
+            const servicio = Number.isInteger(servicioCapturado) &&
+                servicioCapturado >= 1 &&
+                servicioCapturado <= cantidadServicios
+                ? servicioCapturado
+                : cantidadServicios === 1
+                    ? 1
+                    : null;
+            const tipoSistema = {
+                fotovoltaico: "Fotovoltaico",
+                eolico: "Eólico",
+                cogeneracion: "Cogeneración",
+                emergencia: "Planta de emergencia",
+                otro: "Otro"
+            }[generacion.tipoSistema] || String(generacion.tipoSistema || "").trim();
+            const detalle = [
+                tipoSistema,
+                capacidades.length
+                    ? `${formatearNumero(Number(capacidades[0]))} kW`
+                    : "capacidad pendiente de confirmar"
+            ].filter(Boolean).join(" · ");
 
             return {
                 tieneGeneracion: "si",
-                texto: capacidades.length ? `${formatearNumero(Number(capacidades[0]))} kW` : "Pendiente: capacidad de generación por confirmar."
+                texto: servicio === null
+                    ? `Generación capturada (${detalle}); falta asociarla a un servicio eléctrico.`
+                    : `Servicio eléctrico ${servicio}: ${detalle}.`
             };
         }
 

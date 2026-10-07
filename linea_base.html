@@ -351,6 +351,114 @@
             max-width: 100%;
             height: 100% !important;
         }
+
+        .resumen-servicios {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .resumen-servicio {
+            min-width: 0;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .resumen-servicio.total-general {
+            border: 2px solid #701F2F;
+            background: #faf6f7;
+        }
+
+        .resumen-servicio h4 {
+            margin-bottom: 8px;
+            color: #701F2F;
+            font-size: 16px;
+        }
+
+        .resumen-servicio dl {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: repeat(8, minmax(42px, auto));
+            gap: 0;
+        }
+
+        .resumen-fila {
+            min-width: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+            align-items: start;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .resumen-fila:last-child {
+            border-bottom: 0;
+        }
+
+        .resumen-fila dt,
+        .resumen-fila dd {
+            min-width: 0;
+            margin: 0;
+            overflow-wrap: anywhere;
+            line-height: 1.3;
+        }
+
+        .resumen-fila dt {
+            color: #444;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .resumen-fila dd {
+            text-align: right;
+            font-size: 12px;
+        }
+
+        .resumen-valor-principal {
+            display: block;
+            font-weight: 600;
+        }
+
+        .resumen-valor-secundario {
+            display: block;
+            margin-top: 2px;
+            color: #666;
+            font-size: 10px;
+            font-weight: 400;
+            line-height: 1.25;
+        }
+
+        .resumen-fila-vacia {
+            visibility: hidden;
+            border-bottom: 0;
+        }
+
+        .resumen-servicios-estado {
+            margin-bottom: 14px;
+            color: #555;
+        }
+
+        @media (max-width: 900px) {
+            .resumen-servicios {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .resumen-servicios {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .resumen-servicio dl {
+                grid-template-rows: repeat(8, minmax(38px, auto));
+            }
+        }
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -452,59 +560,8 @@
 
                     <h3>Resumen Energético</h3>
 
-                    <div class="grid">
-
-                        <div class="campo">
-                            <label>Consumo total capturado (kWh)</label>
-                            <input id="lineaConsumoCapturado" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Consumo anual (kWh)</label>
-                            <input id="lineaConsumoAnual" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Consumo promedio anual (kWh/año)</label>
-                            <input id="lineaConsumoPromedioAnual" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Facturación total capturada ($)</label>
-                            <input id="lineaFacturacionCapturada" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Facturación anual ($)</label>
-                            <input id="lineaFacturacionAnual" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Facturación promedio anual ($/año)</label>
-                            <input id="lineaFacturacionPromedioAnual" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Demanda máxima registrada (kW)</label>
-                            <input id="lineaDemandaMaxima" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Capacidad de generación</label>
-                            <input id="lineaCapacidadGeneracion" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Servicios eléctricos capturados</label>
-                            <input id="lineaServiciosCapturados" type="text" readonly class="readonly">
-                        </div>
-
-                        <div class="campo">
-                            <label>Registros con consumo capturado</label>
-                            <input id="lineaRegistrosConsumo" type="text" readonly class="readonly">
-                        </div>
-
-                    </div>
+                    <p id="resumenEstadoServicios" class="resumen-servicios-estado"></p>
+                    <div id="resumenEnergeticoServicios" class="resumen-servicios"></div>
 
                 </div>
 
@@ -672,12 +729,6 @@
             return new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 }).format(valor);
         }
 
-        function establecerCampo(id, valor) {
-            const campo = document.getElementById(id);
-            const texto = valor === undefined || valor === null ? "" : String(valor).trim();
-            if (campo) campo.value = !texto || texto === "Seleccione..." ? "Sin información capturada" : texto;
-        }
-
         function detectarPeriodicidadBase(tarifa) {
             const valor = String(tarifa || "").trim().toUpperCase();
             if (!valor) return { clave: "pendiente", etiqueta: "Pendiente", maximo: 24 };
@@ -693,12 +744,9 @@
         function obtenerFacturaciones(servicios) {
             const cantidadServicios = Math.max(0, parseInt(servicios.cantidadMedidores, 10) || 0);
             const registros = [];
-            let demandaMaxima = 0;
 
             for (let servicio = 1; servicio <= cantidadServicios; servicio++) {
                 const periodos = Math.max(0, parseInt(servicios[`numeroFacturaciones_${servicio}`], 10) || 0);
-                const demanda = numeroCapturado(servicios[`demandaMaxima_${servicio}`]);
-                if (demanda !== null && demanda > demandaMaxima) demandaMaxima = demanda;
 
                 for (let periodo = 1; periodo <= periodos; periodo++) {
                     const nombrePeriodo = String(servicios[`periodo_${servicio}_${periodo}`] || "").trim();
@@ -717,65 +765,286 @@
                 }
             }
 
-            return { cantidadServicios, registros, demandaMaxima };
+            return { cantidadServicios, registros };
         }
 
-        function obtenerDatosGeneracionBase() {
+        function obtenerGeneracionBase(cantidadServicios) {
             const generacion = window.AEEHState?.getModuleFields("sistema_generacion.html") || {};
             if (generacion.tieneGeneracion !== "si") {
                 return {
-                    texto: "Este servicio no cuenta con un sistema de generación.",
-                    tipo: "No aplica"
+                    existe: false,
+                    servicio: null,
+                    tipo: "",
+                    capacidad: null
                 };
             }
 
-            const capacidades = [
-                generacion.capacidadInstalada,
-                generacion.capacidadGenerador,
-                generacion.potenciaElectrica,
-                generacion.potenciaAerogenerador,
-                generacion.capacidadInversores
-            ].filter(valor => valor !== undefined && valor !== null && String(valor).trim() !== "");
-
-            const capacidad = capacidades.length ? Number(capacidades[0]) : null;
-            return {
-                texto: capacidad !== null ? `${formatearNumero(capacidad)} kW` : "Pendiente: capacidad de generación por confirmar.",
-                tipo: generacion.tipoSistema || "No especificado"
+            const capacidadCapturada = [
+                ["capacidadInstalada", generacion.capacidadInstalada],
+                ["capacidadGenerador", generacion.capacidadGenerador],
+                ["potenciaElectrica", generacion.potenciaElectrica],
+                ["potenciaAerogenerador", generacion.potenciaAerogenerador],
+                ["capacidadInversores", generacion.capacidadInversores]
+            ].map(([campo, valor]) => ({ campo, valor: numeroCapturado(valor) }))
+                .find(capacidad => capacidad.valor !== null) || null;
+            const servicioCapturado = Number.parseInt(generacion.servicioGeneracion, 10);
+            const servicio = Number.isInteger(servicioCapturado) &&
+                servicioCapturado >= 1 &&
+                servicioCapturado <= cantidadServicios
+                ? servicioCapturado
+                : cantidadServicios === 1
+                    ? 1
+                    : null;
+            const nombresTipo = {
+                fotovoltaico: "Fotovoltaico",
+                eolico: "Eólico",
+                cogeneracion: "Cogeneración",
+                emergencia: "Planta de emergencia",
+                otro: "Otro"
             };
+            return {
+                existe: true,
+                servicio,
+                tipo: nombresTipo[generacion.tipoSistema] || String(generacion.tipoSistema || "").trim(),
+                capacidad: capacidadCapturada?.valor ?? null,
+                capacidadInstalada: capacidadCapturada?.campo === "capacidadInstalada"
+            };
+        }
+
+        function resumirServicio(servicios, registros, servicio, generacion) {
+            const registrosServicio = registros.filter(registro => registro.servicio === servicio);
+            const consumos = registrosServicio.filter(registro => registro.consumo !== null);
+            const importes = registrosServicio.filter(registro => registro.importe !== null);
+            const consumoCapturado = consumos.length
+                ? consumos.reduce((total, registro) => total + registro.consumo, 0)
+                : null;
+            const facturacionCapturada = importes.length
+                ? importes.reduce((total, registro) => total + registro.importe, 0)
+                : null;
+            const tarifa = String(servicios[`tarifa_${servicio}`] || "").trim();
+            const periodicidad = detectarPeriodicidadBase(tarifa).clave;
+            const periodosMensuales = periodicidad === "mensual" ? registrosServicio.length : 0;
+            const periodosBimestrales = periodicidad === "bimestral" ? registrosServicio.length : 0;
+            const divisorAnual = periodosMensuales >= 12
+                ? 12
+                : periodosBimestrales >= 6
+                    ? 6
+                    : null;
+            const demanda = numeroCapturado(servicios[`demandaMaxima_${servicio}`]);
+            let textoGeneracion = "Este servicio no cuenta con un sistema de generación.";
+
+            if (generacion.existe) {
+                if (generacion.servicio === null) {
+                    textoGeneracion = "Generación capturada; falta asociarla a un servicio eléctrico.";
+                } else if (generacion.servicio === servicio) {
+                    const tipo = generacion.tipo || "Tipo pendiente";
+                    const capacidad = generacion.capacidad === null
+                        ? "capacidad pendiente de confirmar"
+                        : generacion.capacidadInstalada
+                            ? `capacidad instalada: ${formatearNumero(generacion.capacidad)} kW`
+                            : `capacidad capturada: ${formatearNumero(generacion.capacidad)} kW`;
+                    textoGeneracion = `${tipo}: ${capacidad}. Sin historial de generación en kWh capturado.`;
+                } else {
+                    textoGeneracion = "Sin generación asociada.";
+                }
+            }
+
+            return {
+                servicio,
+                consumoCapturado,
+                consumoAnual: divisorAnual && consumoCapturado !== null ? consumoCapturado : null,
+                consumoPromedioAnual: divisorAnual && consumoCapturado !== null
+                    ? consumoCapturado / divisorAnual
+                    : null,
+                facturacionCapturada,
+                facturacionAnual: divisorAnual && facturacionCapturada !== null
+                    ? facturacionCapturada
+                    : null,
+                facturacionPromedioAnual: divisorAnual && facturacionCapturada !== null
+                    ? facturacionCapturada / divisorAnual
+                    : null,
+                demanda,
+                textoGeneracion
+            };
+        }
+
+        function formatearTotalGeneral(serviciosResumen, propiedad, formato, requiereCoberturaCompleta = false) {
+            const valores = serviciosResumen
+                .map(servicio => servicio[propiedad])
+                .filter(valor => valor !== null);
+            if (requiereCoberturaCompleta && valores.length !== serviciosResumen.length) {
+                return "No disponible: información anual insuficiente en uno o más servicios.";
+            }
+            if (!valores.length) return "Sin información capturada.";
+            if (valores.length !== serviciosResumen.length) {
+                return `Captura parcial: ${formato(valores.reduce((total, valor) => total + valor, 0))}`;
+            }
+            return formato(valores.reduce((total, valor) => total + valor, 0));
+        }
+
+        function escaparHtml(texto) {
+            return String(texto).replace(/[&<>"']/g, caracter => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[caracter]);
+        }
+
+        function presentarValorResumen(texto, cantidadServicios) {
+            if (texto === "Sin información capturada.") {
+                return { principal: "Sin información", secundario: "" };
+            }
+            if (texto.startsWith("No disponible:")) {
+                const detalle = texto.includes("uno o más servicios")
+                    ? cantidadServicios > 1
+                        ? "Cobertura anual insuficiente en uno o más servicios"
+                        : "Cobertura anual insuficiente"
+                    : texto.includes("cobertura anual o facturación insuficiente")
+                        ? "Cobertura anual o facturación insuficiente"
+                        : "Cobertura anual insuficiente";
+                return { principal: "No disponible", secundario: detalle };
+            }
+            if (texto === "Generación capturada; falta asociarla a un servicio eléctrico.") {
+                return {
+                    principal: "Pendiente de asociación",
+                    secundario: "Asocie la generación a un servicio"
+                };
+            }
+            const historial = ". Sin historial de generación en kWh capturado.";
+            if (texto.endsWith(historial)) {
+                return {
+                    principal: texto.slice(0, -historial.length),
+                    secundario: "Sin historial de generación en kWh"
+                };
+            }
+            return { principal: texto, secundario: "" };
+        }
+
+        function renderizarFilaResumen(etiqueta, texto, cantidadServicios, esVacia = false) {
+            if (esVacia) {
+                return '<div class="resumen-fila resumen-fila-vacia" aria-hidden="true"></div>';
+            }
+
+            const valor = presentarValorResumen(texto, cantidadServicios);
+            return `
+                <div class="resumen-fila">
+                    <dt>${escaparHtml(etiqueta)}</dt>
+                    <dd>
+                        <span class="resumen-valor-principal">${escaparHtml(valor.principal)}</span>
+                        ${valor.secundario
+                            ? `<small class="resumen-valor-secundario">${escaparHtml(valor.secundario)}</small>`
+                            : ""}
+                    </dd>
+                </div>
+            `;
+        }
+
+        function renderizarResumenEnergetico(serviciosResumen, cantidadServicios, generacion) {
+            const contenedor = document.getElementById("resumenEnergeticoServicios");
+            const estado = document.getElementById("resumenEstadoServicios");
+            const filas = [
+                ["Consumo total capturado", servicio => servicio.consumoCapturado === null
+                    ? "Sin información capturada."
+                    : `${formatearNumero(servicio.consumoCapturado)} kWh`],
+                ["Consumo anual", servicio => servicio.consumoAnual === null
+                    ? "No disponible: cobertura anual insuficiente."
+                    : `${formatearNumero(servicio.consumoAnual)} kWh`],
+                ["Consumo promedio anual", servicio => servicio.consumoPromedioAnual === null
+                    ? "No disponible: cobertura anual insuficiente."
+                    : `${formatearNumero(servicio.consumoPromedioAnual)} kWh/año`],
+                ["Facturación total", servicio => servicio.facturacionCapturada === null
+                    ? "Sin información capturada."
+                    : `$${formatearNumero(servicio.facturacionCapturada)}`],
+                ["Facturación anual", servicio => servicio.facturacionAnual === null
+                    ? "No disponible: cobertura anual o facturación insuficiente."
+                    : `$${formatearNumero(servicio.facturacionAnual)}`],
+                ["Facturación promedio anual", servicio => servicio.facturacionPromedioAnual === null
+                    ? "No disponible: cobertura anual o facturación insuficiente."
+                    : `$${formatearNumero(servicio.facturacionPromedioAnual)}/año`],
+                ["Demanda máxima registrada", servicio => servicio.demanda === null
+                    ? "Sin información capturada."
+                    : `${formatearNumero(servicio.demanda)} kW`],
+                ["Generación", servicio => servicio.textoGeneracion]
+            ];
+
+            estado.textContent = `Servicios eléctricos registrados: ${cantidadServicios}.`;
+            const tarjetas = serviciosResumen.map(servicio => `
+                <section class="resumen-servicio" aria-label="Resumen del Servicio ${servicio.servicio}">
+                    <h4>Servicio ${servicio.servicio}</h4>
+                    <dl>
+                        ${filas.map(([etiqueta, valor]) => renderizarFilaResumen(etiqueta, valor(servicio), cantidadServicios)).join("")}
+                    </dl>
+                </section>
+            `);
+
+            if (serviciosResumen.length) {
+                const totalPorPropiedad = (propiedad, formato, requiereCoberturaCompleta = false) => formatearTotalGeneral(
+                    serviciosResumen,
+                    propiedad,
+                    formato,
+                    requiereCoberturaCompleta
+                );
+                const filasGenerales = [
+                    ["Consumo total capturado", totalPorPropiedad("consumoCapturado", valor => `${formatearNumero(valor)} kWh`)],
+                    ["Consumo anual", totalPorPropiedad("consumoAnual", valor => `${formatearNumero(valor)} kWh`, true)],
+                    ["Consumo promedio anual", totalPorPropiedad("consumoPromedioAnual", valor => `${formatearNumero(valor)} kWh/año`, true)],
+                    ["Facturación total", totalPorPropiedad("facturacionCapturada", valor => `$${formatearNumero(valor)}`)],
+                    ["Facturación anual", totalPorPropiedad("facturacionAnual", valor => `$${formatearNumero(valor)}`, true)],
+                    ["Facturación promedio anual", totalPorPropiedad("facturacionPromedioAnual", valor => `$${formatearNumero(valor)}/año`, true)]
+                ];
+                const filasTotalesRenderizadas = [
+                    ...filasGenerales.map(([etiqueta, valor]) => renderizarFilaResumen(etiqueta, valor, cantidadServicios)),
+                    renderizarFilaResumen("", "", cantidadServicios, true),
+                    renderizarFilaResumen("", "", cantidadServicios, true)
+                ];
+                tarjetas.push(`
+                    <section class="resumen-servicio total-general" aria-label="Resumen total general">
+                        <h4>Total general</h4>
+                        <dl>
+                            ${filasTotalesRenderizadas.join("")}
+                        </dl>
+                    </section>
+                `);
+            } else {
+                estado.textContent = "Sin servicios eléctricos capturados.";
+            }
+
+            contenedor.innerHTML = tarjetas.join("");
         }
 
         function actualizarLineaBase() {
             const expediente = leerExpediente();
             if (!expediente) return;
 
-            const { servicios, censo } = expediente;
+            const { servicios } = expediente;
             const censoBase = obtenerDatosCensoBase();
-            const { cantidadServicios, registros, demandaMaxima } = obtenerFacturaciones(servicios || {});
+            const { cantidadServicios, registros } = obtenerFacturaciones(servicios || {});
             const consumos = registros.filter(registro => registro.consumo !== null);
-            const importes = registros.filter(registro => registro.importe !== null);
             const totalConsumo = consumos.reduce((total, registro) => total + registro.consumo, 0);
-            const totalFactura = importes.reduce((total, registro) => total + registro.importe, 0);
-            const periodosMensuales = registros.filter(registro => registro.periodicidad.clave === "mensual").length;
-            const periodosBimestrales = registros.filter(registro => registro.periodicidad.clave === "bimestral").length;
-            const coberturaAnual = periodosMensuales >= 12 || periodosBimestrales >= 6;
-            const divisorAnual = periodosMensuales >= 12 ? 12 : periodosBimestrales >= 6 ? 6 : null;
+            const generacion = obtenerGeneracionBase(cantidadServicios);
+            const serviciosResumen = Array.from({ length: cantidadServicios }, (_, indice) =>
+                resumirServicio(servicios || {}, registros, indice + 1, generacion)
+            );
+            renderizarResumenEnergetico(serviciosResumen, cantidadServicios, generacion);
 
-            const consumoAnual = coberturaAnual ? totalConsumo : null;
-            const consumoPromedioAnual = coberturaAnual && divisorAnual ? totalConsumo / divisorAnual : null;
-            const facturacionAnual = coberturaAnual ? totalFactura : null;
-            const facturacionPromedioAnual = coberturaAnual && divisorAnual ? totalFactura / divisorAnual : null;
-            const generacion = obtenerDatosGeneracionBase();
-
-            establecerCampo("lineaConsumoCapturado", consumos.length ? `${formatearNumero(totalConsumo)} kWh` : "Sin información de consumo capturada.");
-            establecerCampo("lineaConsumoAnual", consumoAnual !== null ? `${formatearNumero(consumoAnual)} kWh` : "Pendiente: información insuficiente para calcular.");
-            establecerCampo("lineaConsumoPromedioAnual", consumoPromedioAnual !== null ? `${formatearNumero(consumoPromedioAnual)} kWh/año` : "Pendiente: información insuficiente para calcular.");
-            establecerCampo("lineaFacturacionCapturada", importes.length ? `$${formatearNumero(totalFactura)}` : "Sin información de facturación capturada.");
-            establecerCampo("lineaFacturacionAnual", facturacionAnual !== null ? `$${formatearNumero(facturacionAnual)}` : "Pendiente: información insuficiente para calcular.");
-            establecerCampo("lineaFacturacionPromedioAnual", facturacionPromedioAnual !== null ? `$${formatearNumero(facturacionPromedioAnual)}/año` : "Pendiente: información insuficiente para calcular.");
-            establecerCampo("lineaDemandaMaxima", demandaMaxima > 0 ? `${formatearNumero(demandaMaxima)} kW` : "Sin información capturada.");
-            establecerCampo("lineaCapacidadGeneracion", generacion.texto || "Sin información capturada.");
-            establecerCampo("lineaServiciosCapturados", cantidadServicios || "0");
-            establecerCampo("lineaRegistrosConsumo", consumos.length || "0");
+            const coberturaAnual = serviciosResumen.length > 0 &&
+                serviciosResumen.every(servicio => servicio.consumoAnual !== null);
+            const coberturaFacturacionAnual = serviciosResumen.length > 0 &&
+                serviciosResumen.every(servicio => servicio.facturacionAnual !== null);
+            const consumoAnual = coberturaAnual
+                ? serviciosResumen.reduce((total, servicio) => total + servicio.consumoAnual, 0)
+                : null;
+            const consumoPromedioAnual = coberturaAnual
+                ? serviciosResumen.reduce((total, servicio) => total + servicio.consumoPromedioAnual, 0)
+                : null;
+            const facturacionAnual = coberturaFacturacionAnual
+                ? serviciosResumen.reduce((total, servicio) => total + servicio.facturacionAnual, 0)
+                : null;
+            const facturacionPromedioAnual = coberturaFacturacionAnual
+                ? serviciosResumen.reduce((total, servicio) => total + servicio.facturacionPromedioAnual, 0)
+                : null;
 
             const estadoGrafica = document.getElementById("estadoGraficaConsumo");
             const canvas = document.getElementById("graficaConsumo");
@@ -853,13 +1122,13 @@
             if (!coberturaAnual) {
                 estadoLineaBase.textContent = "Captura parcial de consumo; no es posible sustentar un indicador anual confiable.";
                 diagnostico.textContent = "Diagnóstico pendiente: falta cobertura anual suficiente para concluir un comportamiento sustentado.";
-                detalleDiagnostico.value = `${censoTexto}\nSe capturaron ${consumos.length} registros con consumo. Se requiere un mínimo de 12 periodos mensuales o 6 bimestrales para sostener el consumo anual y sus promedios.`;
+                detalleDiagnostico.value = `${censoTexto}\nSe capturaron ${consumos.length} registros con consumo. Se requiere cobertura suficiente en cada servicio: 12 periodos mensuales o 6 bimestrales para sostener los indicadores anuales y sus promedios.`;
                 return;
             }
 
             estadoLineaBase.textContent = "Indicadores anuales y promedio disponibles con información suficiente.";
             diagnostico.textContent = `Se observan ${registros.filter(registro => registro.consumo !== null).length} registros de consumo con cobertura anual suficiente.`;
-            detalleDiagnostico.value = `${censoTexto}\nConsumo total capturado: ${formatearNumero(totalConsumo)} kWh. Consumo anual: ${formatearNumero(consumoAnual)} kWh. Consumo promedio anual: ${formatearNumero(consumoPromedioAnual)} kWh/año. Facturación anual: $${formatearNumero(facturacionAnual)}. Facturación promedio anual: $${formatearNumero(facturacionPromedioAnual)}/año. Demanda máxima registrada: ${formatearNumero(demandaMaxima)} kW.`;
+            detalleDiagnostico.value = `${censoTexto}\nConsumo total capturado de Servicios Eléctricos: ${formatearNumero(totalConsumo)} kWh. Consumo anual: ${formatearNumero(consumoAnual)} kWh. Consumo promedio anual: ${formatearNumero(consumoPromedioAnual)} kWh/año. Facturación anual: $${facturacionAnual === null ? "No disponible por cobertura insuficiente." : formatearNumero(facturacionAnual)}. Facturación promedio anual: ${facturacionPromedioAnual === null ? "No disponible por cobertura insuficiente." : `$${formatearNumero(facturacionPromedioAnual)}/año`}.`;
         }
 
         function regresar() {
