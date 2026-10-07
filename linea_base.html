@@ -336,11 +336,20 @@
             }
         }
 
-        #graficaDistribucion {
+        #graficaConsumoContenedor {
+            position: relative;
             width: 100%;
-            max-width: 420px;
-            margin: auto;
-            aspect-ratio: 1/1;
+            max-width: 100%;
+            min-width: 0;
+            height: clamp(260px, 32vw, 380px);
+            overflow: hidden;
+        }
+
+        #graficaConsumo {
+            display: block;
+            width: 100% !important;
+            max-width: 100%;
+            height: 100% !important;
         }
     </style>
 
@@ -509,7 +518,9 @@
                         Sin información de consumo capturada.
                     </p>
 
-                    <canvas id="graficaConsumo"></canvas>
+                    <div id="graficaConsumoContenedor">
+                        <canvas id="graficaConsumo"></canvas>
+                    </div>
                 </div>
 
                 <!-- DIAGNÓSTICO -->
@@ -799,6 +810,12 @@
                                 title: {
                                     display: true,
                                     text: "Periodo"
+                                },
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 8,
+                                    minRotation: 0,
+                                    maxRotation: 45
                                 }
                             }
                         },
