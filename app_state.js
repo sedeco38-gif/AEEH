@@ -9,7 +9,10 @@
 
     function controls() {
         return Array.from(document.querySelectorAll("input, select, textarea"))
-            .filter(control => !ignoredTypes.has((control.type || "").toLowerCase()) && !control.disabled && (!control.readOnly || control.hasAttribute("data-app-state")));
+            .filter(control => !control.hasAttribute("data-app-state-ignore") &&
+                !ignoredTypes.has((control.type || "").toLowerCase()) &&
+                !control.disabled &&
+                (!control.readOnly || control.hasAttribute("data-app-state")));
     }
 
     function controlKey(control, index) {
@@ -134,7 +137,11 @@
 
     function writeFields(fields) {
         try {
-            sessionStorage.setItem(storageKey, JSON.stringify({ fields: Array.from(fields.values()) }));
+            const previous = JSON.parse(sessionStorage.getItem(storageKey) || "{}");
+            sessionStorage.setItem(storageKey, JSON.stringify({
+                ...previous,
+                fields: Array.from(fields.values())
+            }));
             return true;
         } catch (error) {
             console.warn("No se pudo conservar el estado local de este módulo.", error);
@@ -193,6 +200,34 @@
         }
     }
 
+    function getModuleData(modulePage, dataKey) {
+        try {
+            const targetPath = new URL(modulePage, window.location.href).pathname;
+            const state = JSON.parse(sessionStorage.getItem(keyForPath(targetPath)) || "{}");
+            return state.moduleData?.[dataKey] ?? null;
+        } catch (error) {
+            console.warn(`No se pudo leer el estado complementario de ${modulePage}.`, error);
+            return null;
+        }
+    }
+
+    function setModuleData(modulePage, dataKey, value) {
+        try {
+            const targetPath = new URL(modulePage, window.location.href).pathname;
+            const targetKey = keyForPath(targetPath);
+            const state = JSON.parse(sessionStorage.getItem(targetKey) || "{}");
+            const moduleData = state.moduleData && typeof state.moduleData === "object"
+                ? state.moduleData
+                : {};
+            moduleData[dataKey] = value;
+            sessionStorage.setItem(targetKey, JSON.stringify({ ...state, moduleData }));
+            return true;
+        } catch (error) {
+            console.warn(`No se pudo conservar el estado complementario de ${modulePage}.`, error);
+            return false;
+        }
+    }
+
     function setFilePreviews(controlId, previews) {
         const fields = readState();
         const key = `id:${controlId}`;
@@ -232,6 +267,8 @@
         clearCurrentModuleState,
         getModuleFields,
         hasModuleState,
+        getModuleData,
+        setModuleData,
         getFilePreviews,
         setFilePreviews
     };

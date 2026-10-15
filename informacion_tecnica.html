@@ -392,12 +392,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa pendiente" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa pendiente" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa pendiente" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa pendiente" onclick="window.location.href='evaluacion_sitio.html'">
@@ -428,10 +428,14 @@
                             <select class="input-select" id="usoPrincipal">
                                 <option value="">Seleccione...</option>
                                 <option>Oficinas Administrativas</option>
+                                <option>Administrativo – Economía</option>
+                                <option>Administrativo – Salud pública</option>
                                 <option>Centro Educativo</option>
                                 <option>Hospital</option>
                                 <option>Centro Cultural</option>
                                 <option>Instalación Deportiva</option>
+                                <option>Seguridad pública</option>
+                                <option>Protección civil</option>
                                 <option>Otro</option>
                             </select>
                         </div>
@@ -536,6 +540,8 @@
 
                 <!-- BOTONES -->
 
+                <p id="estadoGuardadoTecnica" class="app-save-status" role="status" aria-live="polite"></p>
+
                 <div class="acciones">
 
                     <button class="btn" style="background:#616161;color:white;" onclick="regresar()">
@@ -567,6 +573,22 @@
 
     <script>
 
+        let temporizadorMensajeTecnica;
+
+        function mostrarMensajeTecnica(mensaje, esError = false) {
+            const estado = document.getElementById("estadoGuardadoTecnica");
+            if (!estado) return;
+            window.clearTimeout(temporizadorMensajeTecnica);
+            estado.textContent = mensaje;
+            estado.dataset.state = esError ? "error" : "success";
+            if (!esError) {
+                temporizadorMensajeTecnica = window.setTimeout(() => {
+                    estado.textContent = "";
+                    estado.removeAttribute("data-state");
+                }, 1500);
+            }
+        }
+
         function regresar() {
 
             alert("Regresar a Geolocalizción.");
@@ -576,17 +598,22 @@
         }
 
         function guardar() {
-
-            alert("Información guardada correctamente.");
-
+            const guardado = window.AEEHState?.save() || false;
+            mostrarMensajeTecnica(
+                guardado
+                    ? "Información guardada correctamente en esta sesión."
+                    : "No fue posible guardar la información en esta sesión.",
+                !guardado
+            );
+            return guardado;
         }
 
         function continuar() {
-
-            alert("Información guardada. Continuando a Servicios Eléctricos.");
-
-            window.location.href = 'servicios_electricos.html';
-
+            if (!guardar()) return;
+            document.querySelectorAll(".acciones button").forEach(boton => boton.disabled = true);
+            window.setTimeout(() => {
+                window.location.href = 'sistema_generacion.html';
+            }, 1200);
         }
 
         const numeroPagina = document.getElementById("numeroPagina");

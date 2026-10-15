@@ -205,6 +205,18 @@ body > .contenedor .kpis {
     line-height: 1.45;
 }
 
+.app-save-status {
+    min-height: 24px;
+    margin: 0 0 14px;
+    color: var(--aeeh-vino);
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.app-save-status[data-state="error"] {
+    color: #b3261e;
+}
+
 .app-photo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));

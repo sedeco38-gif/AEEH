@@ -484,13 +484,13 @@
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" data-module-state="servicios_electricos.html" onclick="window.location.href='servicios_electricos.html'">
-                                Servicios Eléctricos
+                            <button class="menu-btn" data-module-state="sistema_generacion.html" onclick="window.location.href='sistema_generacion.html'">
+                                Sistema de Generación
                             </button>
                         </li>
                         <li>
-                            <button class="menu-btn" data-module-state="sistema_generacion.html" onclick="window.location.href='sistema_generacion.html'">
-                                Sistema de Generación
+                            <button class="menu-btn" data-module-state="servicios_electricos.html" onclick="window.location.href='servicios_electricos.html'">
+                                Servicios Eléctricos
                             </button>
                         </li>
                         <li>
@@ -766,7 +766,7 @@
                 ? resumen.capacidad.startsWith("No aplica") || resumen.capacidad.includes("kW") ? resumen.capacidad : `${resumen.capacidad} kW`
                 : sinDato);
             ponerValor("resumenEstado", "Captura local de sesión; no validada en servidor");
-            const modulos = ["datos_generales.html", "informacion_tecnica.html", "servicios_electricos.html", "sistema_generacion.html", "evaluacion_sitio.html", "censo_carga.html"];
+            const modulos = ["datos_generales.html", "informacion_tecnica.html", "sistema_generacion.html", "servicios_electricos.html", "evaluacion_sitio.html", "censo_carga.html"];
             ponerValor("resumenModulos", `${modulos.filter(modulo => window.AEEHState.hasModuleState(modulo)).length} de ${modulos.length} con estado local guardado`);
             ponerValor("resumenPeriodo", resumen.registros.length ? "Sin fechas de periodo capturadas" : "Sin periodos capturados");
             const censoEstado = window.AEEHState?.getModuleFields("censo_carga.html") || {};

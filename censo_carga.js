@@ -440,6 +440,7 @@
         const input = document.createElement("input");
         input.id = rowFieldId(section.id, rowId, field[1]);
         input.dataset.field = field[1];
+        input.dataset.appStateIgnore = "true";
         input.setAttribute("aria-label", `${section.name}, fila ${rowId}: ${field[2]}`);
         if (field[3] === "calculated") {
             input.type = "text";
@@ -782,6 +783,7 @@
             const input = document.createElement("input");
             input.id = rowInputId(section.id, rowId, field[1]);
             input.dataset.field = field[1];
+            input.dataset.appStateIgnore = "true";
             input.setAttribute("aria-label", `${section.name}, fila ${rowId}: ${field[2]}`);
             if (field[3] === "calculated") {
                 input.type = "text";
@@ -876,9 +878,23 @@
         return INPUT_COLUMNS.get(section.id).some(field => values[field[1]] !== "");
     }
 
+    function requiredRowFields(section) {
+        return section.id === "iluminacion"
+            ? ["cantidadLuminarios", "lamparasPorLuminario", "potenciaLamparaW", "horasSemanaLaboral", "horasFinSemana"]
+            : ["cantidad", "potenciaW", "horasSemanaLaboral", "horasFinSemana"];
+    }
+
+    function rowIsComplete(section, row) {
+        const values = rowValues(section, row);
+        return requiredRowFields(section).every(key =>
+            values[key] !== "" && Number.isFinite(Number(values[key]))
+        );
+    }
+
     function summarizeSection(section, card) {
         const rows = Array.from(card.querySelectorAll("tbody tr[data-censo-row]"));
-        const populated = rows.filter(row => rowIsPopulated(section, row));
+        const populated = rows.filter(row => rowIsPopulated(section, row) && rowIsComplete(section, row));
+        const incomplete = rows.filter(row => rowIsPopulated(section, row) && !rowIsComplete(section, row));
         const totals = { records: populated.length, quantity: 0, lamps: 0, power: 0, annual: 0 };
         populated.forEach(row => {
             const values = rowValues(section, row);
@@ -889,16 +905,20 @@
             totals.power += calculated.potenciaTotalW || 0;
             totals.annual += calculated.consumoAnualKwh || 0;
         });
-        return { rows, populated, totals };
+        return { rows, populated, incomplete, totals };
     }
 
     function updateSection(section, card) {
-        const { rows, populated, totals } = summarizeSection(section, card);
+        const { rows, populated, incomplete, totals } = summarizeSection(section, card);
         rows.forEach(row => recalculateRow(section, row));
         const status = card.querySelector(`#estadoSeccion_${section.id}`);
-        if (status) status.textContent = populated.length
-            ? `${populated.length} registro(s) con captura.`
-            : rows.length ? "Hay filas vacías; la sección aún no tiene información." : "Sección sin información.";
+        if (status) {
+            const parts = [];
+            if (populated.length) parts.push(`${populated.length} registro(s) completo(s).`);
+            if (incomplete.length) parts.push(`${incomplete.length} fila(s) incompleta(s); no se incluyen en los resultados.`);
+            if (!parts.length) parts.push(rows.length ? "Hay filas vacías; la sección aún no tiene información." : "Sección sin información.");
+            status.textContent = parts.join(" ");
+        }
 
         const footer = card.querySelector("tfoot");
         footer.replaceChildren();
@@ -937,14 +957,16 @@
             const field = card.querySelector(`#censoResultado_${section.id}_${key}`);
             if (field) field.value = String(Number(value.toFixed(6)));
         });
+        const incompleteField = ensureResultField(section, "incompletos");
+        incompleteField.value = String(incomplete.length);
         const presentField = document.getElementById(`censoPresent_${section.id}`);
         if (presentField) presentField.value = "1";
         const rowIdsField = document.getElementById(`censoRows_${section.id}`);
         if (rowIdsField) rowIdsField.value = rows.map(row => row.dataset.rowId).join(",");
-        updateResults(section, totals);
+        updateResults(section, totals, incomplete.length);
     }
 
-    function updateResults(section, totals) {
+    function updateResults(section, totals, incompleteCount = 0) {
         const resultCard = document.getElementById("resultadosCenso");
         const container = document.getElementById("resumenSeccionesCenso");
         let item = container.querySelector(`[data-result-section="${section.id}"]`);
@@ -962,7 +984,7 @@
                 item.append(title, details);
                 container.appendChild(item);
             }
-            item.querySelector("[data-result-text]").textContent = `${totals.records} registros · ${section.id === "iluminacion" ? "Lámparas" : "Cantidad"}: ${formatNumber(section.id === "iluminacion" ? totals.lamps : totals.quantity)} · Potencia: ${formatNumber(totals.power)} W · Consumo: ${formatNumber(totals.annual)} kWh/año.`;
+            item.querySelector("[data-result-text]").textContent = `${totals.records} registros completos · ${section.id === "iluminacion" ? "Lámparas" : "Cantidad"}: ${formatNumber(section.id === "iluminacion" ? totals.lamps : totals.quantity)} · Potencia: ${formatNumber(totals.power)} W · Consumo: ${formatNumber(totals.annual)} kWh/año.${incompleteCount ? ` ${incompleteCount} fila(s) incompleta(s) excluida(s).` : ""}`;
         }
 
         const hasVisibleResults = Boolean(container.querySelector("[data-result-section]"));
@@ -975,7 +997,11 @@
                 empty.className = "app-photo-help";
                 container.appendChild(empty);
             }
-            empty.textContent = "El libro se procesó, pero no hay secciones con registros capturados.";
+            const hasIncompleteRows = Array.from(document.querySelectorAll(".censo-seccion"))
+                .some(card => Number(card.querySelector(`[id^="censoResultado_"][id$="_incompletos"]`)?.value || 0) > 0);
+            empty.textContent = hasIncompleteRows
+                ? "No hay registros completos. Las filas parciales se conservan, pero no se incluyen en los resultados."
+                : "El libro se procesó, pero no hay secciones con registros completos.";
         } else {
             container.querySelector("[data-no-section-results]")?.remove();
         }
@@ -1017,6 +1043,403 @@
         const parsed = Number(trimmed);
         if (!Number.isFinite(parsed)) throw new Error(`Se esperaba un dato numérico en ${sheet}!${cell} (${label}); se encontró "${trimmed}".`);
         return String(parsed);
+    }
+
+    const CENSUS_DATA_KEY = "censosPorServicio";
+    let censusStore = { version: 1, services: {}, unassigned: [], migration: { legacyHandled: false } };
+    let availableServices = [];
+    let activeServiceId = "";
+    let suppressServiceChange = false;
+
+    function newStableId(prefix) {
+        return `${prefix}-${crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+    }
+
+    function loadCensusStore() {
+        const stored = window.AEEHState?.getModuleData("censo_carga.html", CENSUS_DATA_KEY);
+        if (stored && stored.version === 1 && stored.services && Array.isArray(stored.unassigned)) {
+            censusStore = {
+                ...stored,
+                services: stored.services,
+                unassigned: stored.unassigned,
+                migration: stored.migration || { legacyHandled: false }
+            };
+        }
+    }
+
+    function persistCensusStore(store = censusStore) {
+        return Boolean(window.AEEHState?.setModuleData("censo_carga.html", CENSUS_DATA_KEY, store));
+    }
+
+    function getServiceDirectory() {
+        const fields = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
+        const count = Math.max(0, Number.parseInt(fields.cantidadMedidores, 10) || 0);
+        const identityState = window.AEEHState?.getModuleData(
+            "servicios_electricos.html",
+            "identidadesServicios"
+        ) || { version: 1, activeCount: 0, activeByIndex: {}, known: {} };
+        const activeByIndex = { ...(identityState.activeByIndex || {}) };
+        const known = { ...(identityState.known || {}) };
+        const previousCount = Math.max(0, Number.parseInt(identityState.activeCount, 10) || 0);
+        if (count < previousCount) {
+            for (let index = count + 1; index <= previousCount; index++) {
+                const inactiveId = activeByIndex[index];
+                if (inactiveId && known[inactiveId]) known[inactiveId].active = false;
+                delete activeByIndex[index];
+            }
+        }
+        if (count > previousCount) {
+            for (let index = previousCount + 1; index <= count; index++) {
+                const archivedId = activeByIndex[index];
+                if (archivedId && known[archivedId]) known[archivedId].active = false;
+                delete activeByIndex[index];
+            }
+        }
+        const directory = [];
+
+        for (let index = 1; index <= count; index++) {
+            const serviceId = String(fields[`servicioIdentidad_${index}`] || activeByIndex[index] || newStableId("servicio"));
+            const serviceNumber = String(fields[`servicio_${index}`] || "").trim();
+            activeByIndex[index] = serviceId;
+            known[serviceId] = { index, numeroCfe: serviceNumber, active: true };
+            directory.push({
+                id: serviceId,
+                index,
+                serviceNumber,
+                label: serviceNumber
+                    ? `Servicio ${index} · ${serviceNumber}`
+                    : `Servicio ${index} · Número CFE pendiente`
+            });
+        }
+
+        const nextIdentityState = {
+            version: 1,
+            activeCount: count,
+            activeByIndex,
+            known
+        };
+        if (count !== previousCount ||
+            JSON.stringify(activeByIndex) !== JSON.stringify(identityState.activeByIndex || {})) {
+            if (!window.AEEHState?.setModuleData("servicios_electricos.html", "identidadesServicios", nextIdentityState)) {
+                document.getElementById("estadoServicioCenso").textContent =
+                    "No fue posible conservar la identidad de los servicios. No importe el Censo hasta resolver el almacenamiento.";
+            }
+        }
+        return directory;
+    }
+
+    function buildLegacyCensus(fields) {
+        if (fields.censoSchemaVersion !== "1" || !fields.censoNombreArchivo) return null;
+        const sections = {};
+        SECTIONS.forEach(section => {
+            if (fields[`censoPresent_${section.id}`] !== "1") return;
+            const rowIds = String(fields[`censoRows_${section.id}`] || "").split(",").filter(Boolean);
+            const rows = rowIds.map(rowId => {
+                const data = {};
+                section.columns.filter(column => column[3] !== "calculated").forEach(column => {
+                    data[column[1]] = String(fields[rowFieldId(section.id, rowId, column[1])] ?? "");
+                });
+                return { id: String(rowId), data };
+            });
+            sections[section.id] = { present: true, rows };
+        });
+        return {
+            fileName: String(fields.censoNombreArchivo),
+            sheetNames: String(fields.censoHojasProcesadas || "").split(" | ").filter(Boolean),
+            sections,
+            legacy: true
+        };
+    }
+
+    function migrateLegacyCensus() {
+        if (censusStore.migration.legacyHandled) return;
+        const legacy = buildLegacyCensus(window.AEEHState?.getModuleFields("censo_carga.html") || {});
+        const migration = { ...censusStore.migration, legacyHandled: true };
+        if (legacy) {
+            if (availableServices.length === 1) {
+                const service = availableServices[0];
+                censusStore.services[service.id] = {
+                    ...legacy,
+                    summary: summarizeCensus(legacy),
+                    serviceId: service.id,
+                    serviceIndex: service.index,
+                    serviceNumber: service.serviceNumber
+                };
+                migration.message = `El Censo anterior se asoció a ${service.label}; revise que corresponda al único servicio registrado.`;
+            } else {
+                censusStore.unassigned.push({
+                    id: newStableId("censo-legado"),
+                    label: "Censo anterior sin asignar",
+                    census: legacy
+                });
+                migration.message = availableServices.length
+                    ? "Se conservó el Censo anterior sin asignar. Elija expresamente el servicio al que pertenece."
+                    : "Se conservó el Censo anterior sin asignar. Registre primero los servicios eléctricos para poder asociarlo.";
+            }
+        }
+        const nextStore = { ...censusStore, migration };
+        if (persistCensusStore(nextStore)) {
+            censusStore = nextStore;
+        } else {
+            migration.legacyHandled = false;
+            migration.message = "No fue posible guardar la migración del Censo anterior; no se eliminó el estado legado.";
+            censusStore.migration = migration;
+        }
+    }
+
+    function requiredKeysForSection(section) {
+        return section.id === "iluminacion"
+            ? ["cantidadLuminarios", "lamparasPorLuminario", "potenciaLamparaW", "horasSemanaLaboral", "horasFinSemana"]
+            : ["cantidad", "potenciaW", "horasSemanaLaboral", "horasFinSemana"];
+    }
+
+    function classifyStoredRow(section, row) {
+        const values = row.data || {};
+        const hasInput = INPUT_COLUMNS.get(section.id).some(column => String(values[column[1]] ?? "").trim() !== "");
+        if (!hasInput) return "empty";
+        const complete = requiredKeysForSection(section).every(key =>
+            String(values[key] ?? "").trim() !== "" && Number.isFinite(Number(values[key]))
+        );
+        return complete ? "complete" : "incomplete";
+    }
+
+    function summarizeCensus(census) {
+        const summary = { records: 0, incomplete: 0, power: 0, annual: 0 };
+        SECTIONS.forEach(section => {
+            const sectionData = census?.sections?.[section.id];
+            (sectionData?.rows || []).forEach(row => {
+                const classification = classifyStoredRow(section, row);
+                if (classification === "incomplete") {
+                    summary.incomplete++;
+                    return;
+                }
+                if (classification !== "complete") return;
+                const calculated = computeRow(section, row.data || {});
+                summary.records++;
+                summary.power += calculated.potenciaTotalW || 0;
+                summary.annual += calculated.consumoAnualKwh || 0;
+            });
+        });
+        return summary;
+    }
+
+    function censusHasInformation(census) {
+        return Boolean(census?.fileName) || summarizeCensus(census).records > 0 ||
+            summarizeCensus(census).incomplete > 0;
+    }
+
+    function censusForService(service) {
+        const census = censusStore.services[service.id];
+        if (!census) return null;
+        census.serviceId = service.id;
+        census.serviceIndex = service.index;
+        census.serviceNumber = service.serviceNumber;
+        return census;
+    }
+
+    function updateServiceSelector(preferredServiceId = "") {
+        const selector = document.getElementById("servicioCensoSeleccionado");
+        const saved = window.AEEHState?.getModuleFields("censo_carga.html") || {};
+        const requested = preferredServiceId || saved.servicioCensoSeleccionado || "";
+        selector.replaceChildren(new Option("Seleccione un servicio eléctrico...", ""));
+        availableServices = getServiceDirectory();
+        availableServices.forEach(service => selector.add(new Option(service.label, service.id)));
+        const selectionExists = availableServices.some(service => service.id === requested);
+        activeServiceId = selectionExists
+            ? requested
+            : availableServices.length === 1
+                ? availableServices[0].id
+                : "";
+        suppressServiceChange = true;
+        selector.value = activeServiceId;
+        suppressServiceChange = false;
+        const noServices = availableServices.length === 0;
+        selector.disabled = noServices;
+        document.getElementById("archivoExcel").disabled = noServices;
+        document.getElementById("procesarArchivoBtn").disabled = noServices;
+        if (noServices) {
+            document.getElementById("estadoServicioCenso").textContent =
+                "Primero registre al menos un servicio eléctrico en el módulo Servicios Eléctricos.";
+            document.getElementById("seccionesCenso").replaceChildren();
+            document.getElementById("resultadosCenso").hidden = true;
+        } else if (availableServices.length > 1 && !activeServiceId) {
+            document.getElementById("estadoServicioCenso").textContent =
+                "Seleccione explícitamente el servicio antes de importar o editar un Censo.";
+        } else {
+            document.getElementById("estadoServicioCenso").textContent =
+                censusStore.migration.message || "";
+            renderCensusForService();
+        }
+        renderPendingAssignments();
+        window.AEEHState?.save();
+    }
+
+    function renderCensusForService() {
+        const container = document.getElementById("seccionesCenso");
+        const resultsCard = document.getElementById("resultadosCenso");
+        const results = document.getElementById("resumenSeccionesCenso");
+        container.replaceChildren();
+        results.replaceChildren();
+        if (!activeServiceId) {
+            resultsCard.hidden = true;
+            return;
+        }
+        const service = availableServices.find(item => item.id === activeServiceId);
+        const census = service ? censusForService(service) : null;
+        if (!census) {
+            document.getElementById("estadoCenso").textContent = "Sin Censo guardado para el servicio seleccionado.";
+            document.getElementById("detalleCenso").textContent = "Puede importar el formato oficial o agregar registros desde una sección después de procesar un libro.";
+            resultsCard.hidden = true;
+            return;
+        }
+        Object.entries(census.sections || {}).forEach(([sectionId, sectionData]) => {
+            const section = sectionById.get(sectionId);
+            if (!section || !sectionData?.present) return;
+            const rows = sectionData.rows || [];
+            const rowIds = rows.map(row => String(row.id));
+            const card = createSectionCard(section, rowIds, rows);
+            container.appendChild(card);
+            updateSection(section, card);
+        });
+        const summary = summarizeCensus(census);
+        document.getElementById("estadoCenso").textContent =
+            `Censo de ${service.label}${census.fileName ? ` · ${census.fileName}` : ""}.`;
+        document.getElementById("detalleCenso").textContent =
+            `${summary.records} registro(s) completo(s); ${summary.incomplete} fila(s) incompleta(s) excluida(s). El archivo original debe seleccionarse de nuevo para reprocesarlo.`;
+        resultsCard.hidden = !results.querySelector("[data-result-section]");
+    }
+
+    function renderPendingAssignments() {
+        const container = document.getElementById("censosPendientesAsignacion");
+        container.replaceChildren();
+        const activeIds = new Set(availableServices.map(service => service.id));
+        const pending = [
+            ...censusStore.unassigned.map(item => ({ id: item.id, label: item.label, census: item.census, unassigned: true })),
+            ...Object.entries(censusStore.services)
+                .filter(([serviceId, census]) => !activeIds.has(serviceId) && censusHasInformation(census))
+                .map(([serviceId, census]) => ({
+                    id: serviceId,
+                    label: `Censo de servicio anterior${census.serviceIndex ? ` ${census.serviceIndex}` : ""} sin servicio vigente`,
+                    census,
+                    unassigned: false
+                }))
+        ];
+        if (!pending.length) return;
+        const heading = document.createElement("p");
+        heading.className = "texto-ayuda";
+        heading.textContent = availableServices.length
+            ? "Hay censos sin servicio vigente o pendientes de asociación. Elija expresamente su destino; no se reasignan automáticamente."
+            : "Hay censos conservados sin servicios vigentes. Registre servicios eléctricos y asigne cada Censo explícitamente.";
+        container.appendChild(heading);
+        pending.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "grid";
+            const label = document.createElement("p");
+            label.textContent = `${item.label}: ${summarizeCensus(item.census).records} registro(s) completo(s), ${summarizeCensus(item.census).incomplete} incompleto(s).`;
+            row.appendChild(label);
+            if (availableServices.length) {
+                const select = document.createElement("select");
+                select.className = "input-select";
+                select.dataset.pendingCensus = item.id;
+                select.add(new Option("Seleccione el servicio destino...", ""));
+                availableServices.forEach(service => select.add(new Option(service.label, service.id)));
+                const assign = document.createElement("button");
+                assign.type = "button";
+                assign.className = "btn";
+                assign.dataset.assignCensus = item.id;
+                assign.textContent = "Asociar Censo";
+                row.append(select, assign);
+            }
+            container.appendChild(row);
+        });
+    }
+
+    function saveActiveCensus() {
+        if (!activeServiceId) return true;
+        const service = availableServices.find(item => item.id === activeServiceId);
+        if (!service) return false;
+        const previous = censusStore.services[activeServiceId] || { sections: {} };
+        const sections = {};
+        document.querySelectorAll("#seccionesCenso .censo-seccion").forEach(card => {
+            const section = sectionById.get(card.dataset.section);
+            if (!section) return;
+            sections[section.id] = {
+                present: true,
+                rows: Array.from(card.querySelectorAll("tbody tr[data-censo-row]"), row => ({
+                    id: String(row.dataset.rowId),
+                    data: rowValues(section, row)
+                }))
+            };
+        });
+        const census = {
+            ...previous,
+            serviceId: service.id,
+            serviceIndex: service.index,
+            serviceNumber: service.serviceNumber,
+            sections,
+            summary: summarizeCensus({ sections })
+        };
+        const nextStore = {
+            ...censusStore,
+            services: { ...censusStore.services, [service.id]: census }
+        };
+        if (!persistCensusStore(nextStore) || !window.AEEHState?.save()) {
+            document.getElementById("estadoCenso").textContent =
+                "No se pudo guardar el Censo en el almacenamiento de esta sesión. Los cambios actuales solo permanecen en pantalla.";
+            return false;
+        }
+        censusStore = nextStore;
+        return true;
+    }
+
+    function assignPendingCensus(pendingId, serviceId) {
+        const pendingIndex = censusStore.unassigned.findIndex(item => item.id === pendingId);
+        const pendingItem = pendingIndex >= 0 ? censusStore.unassigned[pendingIndex] : null;
+        const sourceCensus = pendingItem?.census || censusStore.services[pendingId];
+        const service = availableServices.find(item => item.id === serviceId);
+        if (!sourceCensus || !service) return false;
+        const current = censusStore.services[serviceId];
+        if (current && censusHasInformation(current) &&
+            !window.confirm(`El ${service.label} ya tiene un Censo. ¿Desea reemplazarlo? El Censo existente quedará sin asignar.`)) {
+            return false;
+        }
+        const next = {
+            ...censusStore,
+            services: { ...censusStore.services },
+            unassigned: [...censusStore.unassigned]
+        };
+        if (current && censusHasInformation(current)) {
+            next.unassigned.push({
+                id: newStableId("censo-reemplazado"),
+                label: `Censo anterior de ${service.label}`,
+                census: current
+            });
+        }
+        next.services[serviceId] = {
+            ...sourceCensus,
+            serviceId: service.id,
+            serviceIndex: service.index,
+            serviceNumber: service.serviceNumber
+        };
+        if (pendingItem) next.unassigned.splice(pendingIndex, 1);
+        else delete next.services[pendingId];
+        if (!persistCensusStore(next)) {
+            document.getElementById("estadoServicioCenso").textContent =
+                "No fue posible guardar la asociación; el Censo permanece sin asignar.";
+            return false;
+        }
+        censusStore = next;
+        updateServiceSelector(service.id);
+        document.getElementById("estadoServicioCenso").textContent = `Censo asociado explícitamente a ${service.label}.`;
+        return true;
+    }
+
+    function persistEditedSection(section) {
+        const card = document.getElementById(`seccionCenso_${section.id}`);
+        if (card) updateSection(section, card);
+        saveActiveCensus();
     }
 
     function normalizeHeader(value) {
@@ -1141,6 +1564,10 @@
         const detail = document.getElementById("detalleCenso");
         const button = document.getElementById("procesarArchivoBtn");
         const file = selector.files?.[0];
+        if (!activeServiceId) {
+            status.textContent = "Seleccione un servicio eléctrico antes de importar el Censo.";
+            return;
+        }
         if (!file) {
             status.textContent = "Seleccione un archivo XLSX antes de procesar.";
             detail.textContent = "";
@@ -1152,37 +1579,52 @@
         detail.textContent = "Se están validando las ocho hojas, sus encabezados y fórmulas.";
         try {
             const workbook = await readOfficialWorkbook(file);
+            if (!saveActiveCensus()) return;
+            const currentService = availableServices.find(service => service.id === activeServiceId);
+            const existingCensus = censusStore.services[activeServiceId];
+            if (existingCensus && censusHasInformation(existingCensus) &&
+                !window.confirm(`El Censo de ${currentService.label} ya contiene información. ¿Desea reemplazar únicamente este Censo?`)) {
+                status.textContent = "Importación cancelada; se conservó el Censo existente.";
+                return;
+            }
             const previews = window.AEEHState.getFilePreviews("logotipoDependencia");
-            if (!window.AEEHState.clearCurrentModuleState()) throw new Error("No se pudo reemplazar el estado anterior del Censo; no se cargó el nuevo archivo.");
-            if (previews.length) window.AEEHState.setFilePreviews("logotipoDependencia", previews);
-
-            const sectionsContainer = document.getElementById("seccionesCenso");
-            sectionsContainer.replaceChildren();
-            document.getElementById("resumenSeccionesCenso").replaceChildren();
+            if (previews.length && !window.AEEHState.setFilePreviews("logotipoDependencia", previews)) {
+                throw new Error("No se pudo conservar el logotipo de la dependencia.");
+            }
+            const importedSections = {};
+            workbook.sections.forEach(({ section, rows }) => {
+                importedSections[section.id] = { present: true, rows };
+            });
+            const importedCensus = {
+                serviceId: currentService.id,
+                serviceIndex: currentService.index,
+                serviceNumber: currentService.serviceNumber,
+                fileName: file.name,
+                sheetNames: workbook.sheetNames,
+                sections: importedSections
+            };
+            importedCensus.summary = summarizeCensus(importedCensus);
+            const nextStore = {
+                ...censusStore,
+                services: { ...censusStore.services, [activeServiceId]: importedCensus }
+            };
+            if (!persistCensusStore(nextStore)) {
+                throw new Error("No fue posible guardar el Censo importado en el almacenamiento de esta sesión.");
+            }
+            censusStore = nextStore;
             document.getElementById("censoSchemaVersion").value = "1";
             document.getElementById("censoNombreArchivo").value = file.name;
             document.getElementById("censoHojasProcesadas").value = workbook.sheetNames.join(" | ");
-
-            workbook.sections.forEach(({ section, rows }) => {
-                const rowIds = rows.map(row => row.id);
-                const card = createSectionCard(section, rowIds, rows);
-                sectionsContainer.appendChild(card);
-                setMetadata(section, true, rowIds);
-                updateSection(section, card);
-            });
-
-            const resultsCard = document.getElementById("resultadosCenso");
-            const summaryContainer = document.getElementById("resumenSeccionesCenso");
-            const hasVisibleResults = summaryContainer.querySelector("[data-result-section]");
-            resultsCard.hidden = !hasVisibleResults;
+            renderCensusForService();
             const extraMessage = workbook.extraSheets.length
                 ? ` Se ignoraron hojas no contempladas: ${workbook.extraSheets.join(", ")}.`
                 : "";
             status.textContent = `Formato válido: ${workbook.sheetNames.length} hojas leídas desde ${file.name}.`;
             const recordCount = workbook.sections.reduce((total, item) => total + item.rows.length, 0);
-            detail.textContent = `${recordCount} registros con datos; las filas vacías y los valores ColumnaN del formato se ignoraron. Las fórmulas se recalculan en la plataforma.${extraMessage}`;
+            const summary = summarizeCensus(importedCensus);
+            detail.textContent = `${recordCount} filas con datos; ${summary.records} registro(s) completo(s) y ${summary.incomplete} incompleto(s). Las filas vacías y los valores ColumnaN se ignoraron; las fórmulas se recalculan en la plataforma.${extraMessage}`;
             const saved = window.AEEHState.save();
-            if (!saved) status.textContent = "El archivo se procesó, pero no pudo guardarse en el estado local de la sesión.";
+            if (!saved) status.textContent = "El libro se procesó, pero no fue posible guardar toda la información del módulo.";
         } catch (error) {
             status.textContent = "No se pudo procesar el archivo.";
             detail.textContent = error.message;
@@ -1193,29 +1635,7 @@
     }
 
     function restoreProcessedData() {
-        const saved = window.AEEHState?.getModuleFields("censo_carga.html") || {};
-        if (saved.censoSchemaVersion !== "1" || !saved.censoNombreArchivo) return;
-        const container = document.getElementById("seccionesCenso");
-        container.replaceChildren();
-        let totalRows = 0;
-        SECTIONS.forEach(section => {
-            if (saved[`censoPresent_${section.id}`] !== "1") return;
-            const rowIds = String(saved[`censoRows_${section.id}`] || "").split(",").filter(Boolean);
-            const card = createSectionCard(section, rowIds);
-            container.appendChild(card);
-            totalRows += rowIds.length;
-        });
-        window.AEEHState.restore();
-        SECTIONS.forEach(section => {
-            const card = document.getElementById(`seccionCenso_${section.id}`);
-            if (card) updateSection(section, card);
-        });
-        const resultsCard = document.getElementById("resultadosCenso");
-        const summaryContainer = document.getElementById("resumenSeccionesCenso");
-        const hasVisibleResults = summaryContainer.querySelector("[data-result-section]");
-        resultsCard.hidden = !hasVisibleResults;
-        document.getElementById("estadoCenso").textContent = `Captura restaurada desde ${saved.censoNombreArchivo}.`;
-        document.getElementById("detalleCenso").textContent = `${totalRows} filas restauradas del estado de esta sesión. El archivo original debe volver a seleccionarse para reprocesarlo.`;
+        updateServiceSelector();
     }
 
     function addSectionRow(sectionId) {
@@ -1228,7 +1648,7 @@
         const row = createRow(section, nextId);
         card.querySelector("tbody").appendChild(row);
         updateSection(section, card);
-        window.AEEHState.save();
+        saveActiveCensus();
     }
 
     function removeSectionRow(sectionId, rowElement) {
@@ -1237,7 +1657,7 @@
         if (!section || !card) return;
         rowElement.remove();
         updateSection(section, card);
-        window.AEEHState.save();
+        saveActiveCensus();
     }
 
     function downloadTemplate() {
@@ -1250,12 +1670,12 @@
     }
 
     function save() {
-        const saved = window.AEEHState?.save() || false;
+        const saved = saveActiveCensus() && Boolean(window.AEEHState?.save());
         const status = document.getElementById("estadoCenso");
-        if (saved && document.getElementById("censoNombreArchivo").value) {
-            status.textContent = "Cambios del Censo guardados temporalmente en esta sesión.";
+        if (saved && activeServiceId) {
+            status.textContent = "Censo del servicio guardado temporalmente en esta sesión.";
         } else if (!saved) {
-            status.textContent = "No fue posible guardar los cambios en el estado local.";
+            status.textContent = "No fue posible guardar los cambios en el estado local de la sesión.";
         }
         return saved;
     }
@@ -1303,6 +1723,46 @@
             if (usuario) usuario.textContent = `👤 ${name}`;
         }
 
+        loadCensusStore();
+        availableServices = getServiceDirectory();
+        migrateLegacyCensus();
+        const serviceSelector = document.getElementById("servicioCensoSeleccionado");
+        serviceSelector.addEventListener("change", () => {
+            if (suppressServiceChange) return;
+            const nextServiceId = serviceSelector.value;
+            if (activeServiceId && !saveActiveCensus()) {
+                suppressServiceChange = true;
+                serviceSelector.value = activeServiceId;
+                suppressServiceChange = false;
+                return;
+            }
+            activeServiceId = nextServiceId;
+            window.AEEHState?.save();
+            renderCensusForService();
+            renderPendingAssignments();
+            if (activeServiceId) {
+                const service = availableServices.find(item => item.id === activeServiceId);
+                document.getElementById("estadoServicioCenso").textContent =
+                    service ? `Capturando información de ${service.label}.` : "";
+            } else if (availableServices.length) {
+                document.getElementById("estadoServicioCenso").textContent =
+                    "Seleccione un servicio eléctrico; no se asignarán censos automáticamente.";
+            }
+        });
+
+        document.getElementById("censosPendientesAsignacion").addEventListener("click", event => {
+            const button = event.target.closest("button[data-assign-census]");
+            if (!button) return;
+            const pendingId = button.dataset.assignCensus;
+            const select = document.querySelector(`select[data-pending-census="${CSS.escape(pendingId)}"]`);
+            if (!select?.value) {
+                document.getElementById("estadoServicioCenso").textContent =
+                    "Seleccione el servicio destino antes de asociar el Censo.";
+                return;
+            }
+            assignPendingCensus(pendingId, select.value);
+        });
+
         const fileSelector = document.getElementById("archivoExcel");
         if (fileSelector) {
             fileSelector.addEventListener("change", () => {
@@ -1336,12 +1796,13 @@
                 if (!section) return;
                 recalculateRow(section, row);
                 updateSection(section, row.closest("section[data-section]"));
+                saveActiveCensus();
             });
             sections.addEventListener("change", event => {
                 const row = event.target.closest("tr[data-censo-row]");
                 if (!row) return;
                 const section = sectionById.get(row.closest("section[data-section]")?.dataset.section);
-                if (section) updateSection(section, row.closest("section[data-section]"));
+                if (section) persistEditedSection(section);
             });
             sections.addEventListener("click", event => {
                 const button = event.target.closest("button[data-action]");

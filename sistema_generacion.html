@@ -373,7 +373,7 @@
 
             <div class="usuario-panel">
 
-                <span id="numeroPagina" class="page-indicator">Página 6 de 9</span>
+                <span id="numeroPagina" class="page-indicator">Página 5 de 9</span>
 
                 <span id="nombreUsuario" class="usuario-nombre">
 
@@ -417,12 +417,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa activa" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa pendiente" onclick="window.location.href='evaluacion_sitio.html'">
@@ -458,6 +458,7 @@
                                 <option value="no">No</option>
 
                             </select>
+                            <small id="estadoExistenciaGeneracion" class="app-photo-help" role="status" aria-live="polite"></small>
                         </div>
 
                         <div class="campo generacion-detalle" id="campoServicioGeneracion" style="display:none;">
@@ -465,6 +466,7 @@
                             <select class="input-select" id="servicioGeneracion">
                                 <option value="">Seleccione el servicio...</option>
                             </select>
+                            <small id="estadoAsociacionGeneracion" class="app-photo-help" role="status" aria-live="polite"></small>
                         </div>
 
                     </div>
@@ -635,12 +637,12 @@
 
                 <div class="card generacion-detalle">
 
-                    <h3>Operación del Sistema</h3>
+                    <h3>Estado actual del sistema</h3>
 
                     <div class="grid">
 
                         <div class="campo">
-                            <label for="sistemaEnOperacion">¿Sistema en Operación?</label>
+                            <label for="sistemaEnOperacion">¿El sistema está en funcionamiento?</label>
 
                             <select id="sistemaEnOperacion" class="input-select">
 
@@ -708,7 +710,7 @@
         function obtenerCantidadServiciosGeneracion() {
             const servicios = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
             const cantidad = Number.parseInt(servicios.cantidadMedidores, 10);
-            return Number.isInteger(cantidad) && cantidad > 0 ? cantidad : 1;
+            return Number.isInteger(cantidad) && cantidad > 0 ? cantidad : 0;
         }
 
         function actualizarServiciosGeneracion() {
@@ -716,41 +718,79 @@
             const camposGeneracion = window.AEEHState?.getModuleFields("sistema_generacion.html") || {};
             const cantidad = obtenerCantidadServiciosGeneracion();
             const servicioGuardado = String(camposGeneracion.servicioGeneracion || "");
-            const seleccionado = cantidad === 1 ? "1" : servicioGuardado;
+            const bloque = document.getElementById("campoServicioGeneracion");
+            const aviso = document.getElementById("estadoAsociacionGeneracion");
+
+            if (!cantidad) {
+                selector.innerHTML = '<option value="">Seleccione el servicio...</option>';
+                if (servicioGuardado) {
+                    const opcionAnterior = document.createElement("option");
+                    opcionAnterior.value = servicioGuardado;
+                    opcionAnterior.textContent = `Asociación anterior al Servicio ${servicioGuardado} · pendiente de verificar`;
+                    opcionAnterior.disabled = true;
+                    selector.appendChild(opcionAnterior);
+                    selector.value = servicioGuardado;
+                }
+                bloque.style.display = "none";
+                if (aviso) aviso.textContent = "La asociación estará disponible cuando se defina la cantidad de servicios eléctricos.";
+                return;
+            }
 
             selector.innerHTML = '<option value="">Seleccione el servicio...</option>';
             for (let servicio = 1; servicio <= cantidad; servicio++) {
+                const datosServicio = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
+                const numeroServicio = String(datosServicio[`servicio_${servicio}`] || "").trim();
                 const opcion = document.createElement("option");
                 opcion.value = String(servicio);
-                opcion.textContent = `Servicio eléctrico ${servicio}`;
+                opcion.textContent = numeroServicio
+                    ? `Servicio ${servicio} · ${numeroServicio}`
+                    : `Servicio ${servicio}`;
                 selector.appendChild(opcion);
             }
 
-            selector.value = seleccionado;
+            const asociacionInvalida = servicioGuardado &&
+                (!Number.isInteger(Number(servicioGuardado)) ||
+                    Number(servicioGuardado) < 1 ||
+                    Number(servicioGuardado) > cantidad);
+            if (asociacionInvalida) {
+                const opcionAnterior = document.createElement("option");
+                opcionAnterior.value = servicioGuardado;
+                opcionAnterior.textContent = `Asociación anterior al Servicio ${servicioGuardado} · requiere elegir un servicio válido`;
+                opcionAnterior.disabled = true;
+                selector.appendChild(opcionAnterior);
+                selector.value = servicioGuardado;
+                if (aviso) aviso.textContent = "La cantidad de servicios cambió. Confirme nuevamente la asociación; no se reasignó automáticamente.";
+            } else {
+                selector.value = servicioGuardado || (cantidad === 1 ? "1" : "");
+                if (aviso) aviso.textContent = !servicioGuardado && cantidad > 1
+                    ? "Seleccione el servicio correspondiente antes de finalizar."
+                    : "";
+            }
+            bloque.style.display = document.getElementById("tieneGeneracion").value === "si" ? "flex" : "none";
         }
 
         function mostrarGeneracion() {
             const selector = document.getElementById("tieneGeneracion");
             const tieneGeneracion = selector.value === "si";
-            if (tieneGeneracion && obtenerCantidadServiciosGeneracion() === 1) {
-                document.getElementById("servicioGeneracion").value = "1";
+            const estadoExistencia = document.getElementById("estadoExistenciaGeneracion");
+            if (estadoExistencia) {
+                estadoExistencia.textContent = selector.value === "no"
+                    ? "Sin sistema de generación."
+                    : selector.value === "si"
+                        ? "Sistema existente; complete su estado y características."
+                        : "Indique si existe un sistema de generación.";
             }
+            actualizarServiciosGeneracion();
             const bloques = document.querySelectorAll(".generacion-detalle:not(.card-caracteristicas-especificas)");
             const tarjetaEspecifica = document.getElementById("cardCaracteristicasEspecificas");
 
             bloques.forEach(function (bloque) {
-                bloque.style.display = tieneGeneracion ? "block" : "none";
+                if (bloque.id !== "campoServicioGeneracion") bloque.style.display = tieneGeneracion ? "block" : "none";
             });
 
             if (!tieneGeneracion) {
-                document.getElementById("tipoSistema").value = "";
-                document.querySelectorAll(".generacion-detalle input, .generacion-detalle select").forEach(campo => {
-                    if (campo.tagName === "SELECT") campo.selectedIndex = 0;
-                    else campo.value = "";
-                });
                 tarjetaEspecifica.classList.remove("activo");
                 tarjetaEspecifica.style.display = "none";
-                mostrarCaracteristicasSistema();
                 window.AEEHState?.save();
                 return;
             }
@@ -808,17 +848,22 @@
 
         function regresar() {
             if (!guardar()) return;
-            window.location.href = 'servicios_electricos.html';
+            window.location.href = 'informacion_tecnica.html';
 
         }
 
         function faltaAsociarServicioGeneracion() {
             const cantidadServicios = obtenerCantidadServiciosGeneracion();
-            const servicioSeleccionado = document.getElementById("servicioGeneracion").value;
+            const selector = document.getElementById("servicioGeneracion");
+            const servicioSeleccionado = Number(selector.value);
+            const asociacionInvalida = selector.selectedOptions[0]?.disabled;
             return (
                 document.getElementById("tieneGeneracion").value === "si" &&
-                cantidadServicios > 1 &&
-                !servicioSeleccionado
+                cantidadServicios > 0 &&
+                (!Number.isInteger(servicioSeleccionado) ||
+                    servicioSeleccionado < 1 ||
+                    servicioSeleccionado > cantidadServicios ||
+                    asociacionInvalida)
             );
         }
 
@@ -839,20 +884,19 @@
             if (faltaAsociarServicioGeneracion()) {
                 document.getElementById("estadoGuardadoGeneracion").textContent =
                     "Seleccione el servicio eléctrico al que está conectado el sistema de generación antes de continuar.";
-                alert("Seleccione el servicio eléctrico al que está conectado el sistema de generación.");
                 return;
             }
             if (!guardar()) {
                 alert("No fue posible conservar la información; no se avanzó al siguiente módulo.");
                 return;
             }
-            window.location.href = 'evaluacion_sitio.html';
+            window.location.href = 'servicios_electricos.html';
 
         }
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {
-            numeroPagina.textContent = "Página 6 de 9";
+            numeroPagina.textContent = "Página 5 de 9";
         }
 
         const nombre =

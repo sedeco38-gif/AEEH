@@ -484,12 +484,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa completada" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa completada" onclick="window.location.href='evaluacion_sitio.html'">
@@ -506,6 +506,18 @@
 
             </div>
             <div class="formulario">
+
+                <div class="card">
+                    <h3>Censo por servicio eléctrico</h3>
+                    <div class="campo">
+                        <label for="servicioCensoSeleccionado">Servicio que se desea censar</label>
+                        <select id="servicioCensoSeleccionado" class="input-select">
+                            <option value="">Seleccione un servicio eléctrico...</option>
+                        </select>
+                    </div>
+                    <p id="estadoServicioCenso" class="texto-ayuda" role="status" aria-live="polite"></p>
+                    <div id="censosPendientesAsignacion" aria-live="polite"></div>
+                </div>
 
                 <!-- DESCARGA DE FORMATO -->
 

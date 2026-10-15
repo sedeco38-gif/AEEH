@@ -384,12 +384,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa pendiente" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa pendiente" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa pendiente" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa pendiente" onclick="window.location.href='evaluacion_sitio.html'">
@@ -469,6 +469,8 @@
 
                 <!-- BOTONES -->
 
+                <p id="estadoGuardadoPerfil" class="app-save-status" role="status" aria-live="polite"></p>
+
                 <div class="acciones">
 
                     <button class="btn btn-guardar" onclick="guardar()">
@@ -497,6 +499,22 @@
 
     <script src="demo_data.js"></script>
     <script>
+        let temporizadorMensajePerfil;
+
+        function mostrarMensajePerfil(mensaje, esError = false) {
+            const estado = document.getElementById("estadoGuardadoPerfil");
+            if (!estado) return;
+            window.clearTimeout(temporizadorMensajePerfil);
+            estado.textContent = mensaje;
+            estado.dataset.state = esError ? "error" : "success";
+            if (!esError) {
+                temporizadorMensajePerfil = window.setTimeout(() => {
+                    estado.textContent = "";
+                    estado.removeAttribute("data-state");
+                }, 1500);
+            }
+        }
+
         const datosEnlace = usuariosDemo[sessionStorage.getItem("usuario")] || {};
         const camposEnlace = {
             enlaceNombre: datosEnlace.nombre,
@@ -514,15 +532,22 @@
         });
 
         function guardar() {
-            alert("Información guardada correctamente.");
+            const guardado = window.AEEHState?.save() || false;
+            mostrarMensajePerfil(
+                guardado
+                    ? "Información guardada correctamente en esta sesión."
+                    : "No fue posible guardar la información en esta sesión.",
+                !guardado
+            );
+            return guardado;
         }
 
         function continuar() {
-
-            alert("Información guardada. Continuando a Datos Generales.");
-
-            window.location.href = "datos_generales.html";
-
+            if (!guardar()) return;
+            document.querySelectorAll(".acciones button").forEach(boton => boton.disabled = true);
+            window.setTimeout(() => {
+                window.location.href = "datos_generales.html";
+            }, 1200);
         }
 
         const numeroPagina = document.getElementById("numeroPagina");

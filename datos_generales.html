@@ -408,12 +408,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa pendiente" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa pendiente" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa pendiente" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa pendiente" onclick="window.location.href='evaluacion_sitio.html'">
@@ -450,8 +450,13 @@
                         </div>
 
                         <div class="campo">
-                            <label for="direccionDependencia">Dirección</label>
-                            <input id="direccionDependencia" type="text" autocomplete="street-address">
+                            <label for="calleNumero">Calle y número</label>
+                            <input id="calleNumero" type="text" autocomplete="address-line1">
+                        </div>
+
+                        <div class="campo">
+                            <label for="colonia">Colonia</label>
+                            <input id="colonia" type="text" autocomplete="address-line2">
                         </div>
 
                         <div class="campo">
@@ -480,12 +485,14 @@
                             <label for="tipoInmueble">Tipo de inmueble</label>
 
                             <select id="tipoInmueble" class="input-select">
-                                <option>Seleccione...</option>
+                                <option value="">Seleccione...</option>
                                 <option>Oficina Administrativa</option>
                                 <option>Centro Educativo</option>
                                 <option>Hospital</option>
                                 <option>Centro Cultural</option>
                                 <option>Instalación Deportiva</option>
+                                <option>Seguridad pública</option>
+                                <option>Protección civil</option>
                                 <option>Otro</option>
                             </select>
 
@@ -494,23 +501,29 @@
                         <div class="campo">
                             <label for="anioConstruccion">Año de construcción</label>
                             <input id="anioConstruccion" type="number">
+                            <small id="notaAntiguedad" class="app-photo-help" role="status" aria-live="polite" hidden>
+                                Por la antigüedad capturada, conviene considerar el análisis de la instalación eléctrica.
+                            </small>
                         </div>
 
                         <div class="campo">
                             <label for="superficieConstruida">Superficie construida (m²)</label>
                             <input id="superficieConstruida" type="number">
+                            <small class="app-photo-help">Este dato permitirá calcular el consumo específico cuando estén disponibles los consumos energéticos reales.</small>
                         </div>
 
                     </div>
 
                 </div>
 
+                <input id="direccionDependencia" type="text" hidden>
+
                 <div class="card">
                     <h3>Fotografías generales del inmueble</h3>
                     <p class="app-photo-help">Seleccione fotografías que muestren el inmueble en general. Se preparan vistas previas en este navegador para la sesión actual; no se envían ni se almacenan permanentemente.</p>
                     <div class="campo app-photo-picker">
                         <label for="fotografiasInmueble">Seleccionar fotografías</label>
-                        <input id="fotografiasInmueble" type="file" accept="image/*" multiple data-app-state-file-preview aria-describedby="estadoFotografias">
+                        <input id="fotografiasInmueble" type="file" accept="image/*" multiple data-app-state-file-preview aria-describedby="estadoFotografias" aria-label="Seleccionar hasta ocho fotografías generales del inmueble">
                     </div>
                     <p id="estadoFotografias" class="app-photo-status" role="status" aria-live="polite">No hay fotografías seleccionadas.</p>
                     <div id="vistaPreviaFotografias" class="app-photo-grid"></div>
@@ -536,6 +549,8 @@
                 </div>
 
                 <!-- BOTONES -->
+
+                <p id="estadoGuardadoDatosGenerales" class="app-save-status" role="status" aria-live="polite"></p>
 
                 <div class="acciones">
 
@@ -569,48 +584,121 @@
 
     <script>
 
+        let temporizadorMensajeDatosGenerales;
+
+        function mostrarMensajeDatosGenerales(mensaje, esError = false) {
+            const estado = document.getElementById("estadoGuardadoDatosGenerales");
+            if (!estado) return;
+
+            window.clearTimeout(temporizadorMensajeDatosGenerales);
+            estado.textContent = mensaje;
+            estado.dataset.state = esError ? "error" : "success";
+            if (!esError) {
+                temporizadorMensajeDatosGenerales = window.setTimeout(() => {
+                    estado.textContent = "";
+                    estado.removeAttribute("data-state");
+                }, 1500);
+            }
+        }
+
+        function obtenerDireccionCompuesta() {
+            return [
+                document.getElementById("calleNumero")?.value.trim(),
+                document.getElementById("colonia")?.value.trim()
+            ].filter(Boolean).join(", ");
+        }
+
+        function migrarDireccionAnterior() {
+            const calleNumero = document.getElementById("calleNumero");
+            const colonia = document.getElementById("colonia");
+            if (calleNumero.value.trim() || colonia.value.trim()) return false;
+
+            const camposGuardados = window.AEEHState?.getModuleFields("datos_generales.html") || {};
+            const direccionAnterior = String(
+                camposGuardados.direccionDependencia ||
+                sessionStorage.getItem("direccionDependencia") ||
+                ""
+            ).trim();
+            if (!direccionAnterior) return false;
+
+            calleNumero.value = direccionAnterior;
+            return true;
+        }
+
         function guardarDatosGeneralesEnSession() {
+            const direccion = obtenerDireccionCompuesta();
+            const direccionAnterior = document.getElementById("direccionDependencia");
+            if (direccionAnterior) direccionAnterior.value = direccion;
+
             const datosGenerales = {
                 dependencia: document.getElementById("dependencia")?.value || "",
                 numeroEdificios: document.getElementById("numeroEdificios")?.value || "",
                 municipioDatosGenerales: document.getElementById("municipioDatosGenerales")?.value || "",
                 codigoPostal: document.getElementById("codigoPostal")?.value || "",
-                direccionDependencia: document.getElementById("direccionDependencia")?.value || "",
+                calleNumero: document.getElementById("calleNumero")?.value || "",
+                colonia: document.getElementById("colonia")?.value || "",
+                direccionDependencia: direccion,
                 tipoInmueble: document.getElementById("tipoInmueble")?.value || "",
                 anioConstruccion: document.getElementById("anioConstruccion")?.value || "",
                 superficieConstruida: document.getElementById("superficieConstruida")?.value || "",
                 estadoInmueble: "Hidalgo"
             };
 
-            Object.entries(datosGenerales).forEach(([clave, valor]) => {
-                sessionStorage.setItem(clave, valor);
-            });
+            try {
+                Object.entries(datosGenerales).forEach(([clave, valor]) => {
+                    sessionStorage.setItem(clave, valor);
+                });
+                return true;
+            } catch (error) {
+                console.error("No se pudieron sincronizar los datos generales de la sesión.", error);
+                return false;
+            }
         }
 
         function regresar() {
-
-            alert("Regresar a Perfil del Usuario");
 
             window.location.href = 'perfil_usuario.html';
 
         }
 
         function guardar() {
-            guardarDatosGeneralesEnSession();
-            alert("Información guardada correctamente.");
-
+            const sincronizados = guardarDatosGeneralesEnSession();
+            const guardados = window.AEEHState?.save() || false;
+            if (!sincronizados || !guardados) {
+                mostrarMensajeDatosGenerales("No fue posible guardar toda la información en esta sesión.", true);
+                return false;
+            }
+            mostrarMensajeDatosGenerales("Información guardada correctamente en esta sesión.");
+            return true;
         }
 
         function continuar() {
-            guardarDatosGeneralesEnSession();
-            alert("Información guardada. Continuando a Geolocalización.");
-
-            window.location.href = 'geolocalizacion.html';
-
+            if (!guardar()) return;
+            document.querySelectorAll(".acciones button").forEach(boton => boton.disabled = true);
+            window.setTimeout(() => {
+                window.location.href = 'geolocalizacion.html';
+            }, 1200);
         }
 
         document.addEventListener("input", guardarDatosGeneralesEnSession);
         document.addEventListener("change", guardarDatosGeneralesEnSession);
+        document.getElementById("anioConstruccion").addEventListener("input", function () {
+            const anio = Number(this.value);
+            const antiguedad = new Date().getFullYear() - anio;
+            const nota = document.getElementById("notaAntiguedad");
+            nota.hidden = Boolean(!this.value || !Number.isInteger(anio) || anio > new Date().getFullYear() || antiguedad <= 25);
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const direccionMigrada = migrarDireccionAnterior();
+            const guardado = guardarDatosGeneralesEnSession();
+            if (direccionMigrada && guardado && window.AEEHState) {
+                if (!window.AEEHState.save()) {
+                    mostrarMensajeDatosGenerales("Se recuperó la dirección anterior, pero no fue posible guardarla en esta sesión.", true);
+                }
+            }
+            document.getElementById("anioConstruccion").dispatchEvent(new Event("input"));
+        });
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {
@@ -641,13 +729,23 @@
             if (!selector || !estado || !galeria || !window.AEEHState) return;
 
             let fotografias = window.AEEHState.getFilePreviews(selector.id);
+            const habiaMasDeOchoFotografias = fotografias.length > 8;
+            if (fotografias.length > 8) {
+                fotografias = fotografias.slice(0, 8);
+            }
             let procesando = false;
             let guardadoEnSesion = true;
 
             function guardarFotografias() {
-                window.AEEHState.save();
-                guardadoEnSesion = window.AEEHState.setFilePreviews(selector.id, fotografias);
-                return guardadoEnSesion;
+                if (fotografias.length > 8) {
+                    guardadoEnSesion = false;
+                    actualizarEstado(false, "El máximo es de ocho fotografías generales del inmueble.");
+                    return false;
+                }
+                const estadoFormularioGuardado = window.AEEHState.save();
+                const vistasPreviasGuardadas = window.AEEHState.setFilePreviews(selector.id, fotografias);
+                guardadoEnSesion = estadoFormularioGuardado && vistasPreviasGuardadas;
+                return estadoFormularioGuardado && guardadoEnSesion;
             }
 
             function actualizarEstado(restauradas = false, mensaje = "") {
@@ -686,7 +784,9 @@
                     quitar.setAttribute("aria-label", `Eliminar ${fotografia.name}`);
                     quitar.addEventListener("click", function () {
                         fotografias = fotografias.filter((_, posicion) => posicion !== indice);
-                        guardarFotografias();
+                        if (!guardarFotografias()) {
+                            mostrarMensajeDatosGenerales("No fue posible conservar la lista de fotografías en esta sesión.", true);
+                        }
                         renderizarFotografias();
                     });
 
@@ -721,15 +821,24 @@
             async function seleccionarFotografias() {
                 const archivos = Array.from(selector.files || []);
                 if (!archivos.length) return;
+                const espaciosDisponibles = Math.max(0, 8 - fotografias.length);
+                const archivosPermitidos = archivos.slice(0, espaciosDisponibles);
+                const excedioLimite = archivos.length > espaciosDisponibles;
+                if (espaciosDisponibles === 0) {
+                    selector.value = "";
+                    actualizarEstado(false, "Se alcanzó el máximo de ocho fotografías generales del inmueble.");
+                    return;
+                }
 
                 procesando = true;
+                selector.disabled = true;
                 document.querySelectorAll(".etapas .etapa, .acciones button").forEach(boton => {
                     boton.disabled = true;
                 });
                 actualizarEstado();
 
                 let errores = 0;
-                for (const archivo of archivos) {
+                for (const archivo of archivosPermitidos) {
                     try {
                         fotografias.push({ name: archivo.name, dataUrl: await comprimirFotografia(archivo) });
                     } catch (error) {
@@ -739,21 +848,35 @@
 
                 selector.value = "";
                 procesando = false;
-                guardarFotografias();
+                const guardadoCorrectamente = guardarFotografias();
+                if (!guardadoCorrectamente) {
+                    mostrarMensajeDatosGenerales("No fue posible guardar las fotografías en esta sesión.", true);
+                }
+                selector.disabled = false;
                 document.querySelectorAll(".etapas .etapa, .acciones button").forEach(boton => {
                     boton.disabled = false;
                 });
                 renderizarFotografias();
 
                 if (errores) {
-                    actualizarEstado(false, `${fotografias.length} fotografía(s) preparadas; ${errores} archivo(s) no se pudieron leer como imagen.`);
+                    actualizarEstado(false, `${fotografias.length} fotografía(s) preparadas; ${errores} archivo(s) no se pudieron leer como imagen.${excedioLimite ? " Se alcanzó el máximo de ocho fotografías." : ""}`);
+                } else if (excedioLimite) {
+                    actualizarEstado(false, "Se alcanzó el máximo de ocho fotografías generales del inmueble.");
                 } else if (!guardadoEnSesion && fotografias.length) {
                     actualizarEstado(false);
                 }
             }
 
             selector.addEventListener("change", seleccionarFotografias);
-            renderizarFotografias(fotografias.length > 0);
+            if (habiaMasDeOchoFotografias) {
+                const guardadoCorrectamente = guardarFotografias();
+                renderizarFotografias();
+                estado.textContent = guardadoCorrectamente
+                    ? "La lista anterior superaba el máximo y se ajustó a ocho fotografías."
+                    : "La lista se ajustó a ocho fotografías, pero no fue posible conservar el cambio en esta sesión.";
+            } else {
+                renderizarFotografias(fotografias.length > 0);
+            }
         }, { once: true });
     </script>
 </body>

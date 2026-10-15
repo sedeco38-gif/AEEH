@@ -531,12 +531,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa completada" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa completada" onclick="window.location.href='evaluacion_sitio.html'">
@@ -578,6 +578,12 @@
                     <div id="graficaConsumoContenedor">
                         <canvas id="graficaConsumo"></canvas>
                     </div>
+                </div>
+
+                <div class="card">
+                    <h3>Censo de Carga por servicio eléctrico</h3>
+                    <p id="estadoResumenCenso" class="app-photo-help" role="status" aria-live="polite"></p>
+                    <div id="resumenCensoServicios" class="grid"></div>
                 </div>
 
                 <!-- DIAGNÓSTICO -->
@@ -687,36 +693,124 @@
         }
 
         function obtenerDatosCensoBase() {
-            const censo = window.AEEHState?.getModuleFields("censo_carga.html") || {};
-            const secciones = ["iluminacion", "computo", "fuerza", "aire_ac", "electrodomesticos", "voz_datos", "equipos_personales", "otros"];
-            const detalle = [];
-            let totalRegistros = 0;
-            let totalPotencia = 0;
-            let totalConsumo = 0;
-            let hasData = false;
-
-            secciones.forEach(seccion => {
-                const present = censo[`censoPresent_${seccion}`] === "1";
-                if (!present) return;
-                const registros = Number(censo[`censoResultado_${seccion}_registros`] || 0);
-                const potencia = Number(censo[`censoResultado_${seccion}_potenciaW`] || 0);
-                const consumo = Number(censo[`censoResultado_${seccion}_consumoAnualKwh`] || 0);
-                if (registros > 0 || potencia > 0 || consumo > 0) {
-                    hasData = true;
-                }
-                totalRegistros += registros;
-                totalPotencia += potencia;
-                totalConsumo += consumo;
-                detalle.push({ seccion, registros, potencia, consumo });
+            const servicios = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
+            const identidades = window.AEEHState?.getModuleData("servicios_electricos.html", "identidadesServicios") || {};
+            const censos = window.AEEHState?.getModuleData("censo_carga.html", "censosPorServicio") || {};
+            const cantidad = Math.max(0, Number.parseInt(servicios.cantidadMedidores, 10) || 0);
+            const serviciosResumen = [];
+            const idsActivos = new Set();
+            for (let index = 1; index <= cantidad; index++) {
+                const id = String(servicios[`servicioIdentidad_${index}`] || identidades.activeByIndex?.[index] || "");
+                if (!id || idsActivos.has(id)) continue;
+                idsActivos.add(id);
+                const censo = censos.services?.[id] || null;
+                const summary = censo?.summary || { records: 0, incomplete: 0, power: 0, annual: 0 };
+                serviciosResumen.push({
+                    index,
+                    serviceNumber: String(servicios[`servicio_${index}`] || "").trim(),
+                    censo,
+                    records: Number(summary.records) || 0,
+                    incomplete: Number(summary.incomplete) || 0,
+                    power: Number(summary.power) || 0,
+                    annual: Number(summary.annual) || 0
+                });
+            }
+            const orphanCount = Object.entries(censos.services || {})
+                .filter(([id, census]) => !idsActivos.has(id) && (
+                    Boolean(census?.fileName) ||
+                    Number(census?.summary?.records) > 0 ||
+                    Number(census?.summary?.incomplete) > 0
+                )).length;
+            const unassignedCount = Array.isArray(censos.unassigned) ? censos.unassigned.length : 0;
+            const totalRegistros = serviciosResumen.reduce((total, servicio) => total + servicio.records, 0);
+            const totalPotencia = serviciosResumen.reduce((total, servicio) => total + servicio.power, 0);
+            const totalConsumo = serviciosResumen.reduce((total, servicio) => total + servicio.annual, 0);
+            const totalIncompletos = serviciosResumen.reduce((total, servicio) => total + servicio.incomplete, 0);
+            const serviciosSinCenso = serviciosResumen.filter(servicio =>
+                !servicio.censo || servicio.records === 0
+            ).length;
+            const hasData = totalRegistros > 0;
+            const coberturaCompleta = serviciosResumen.length > 0 &&
+                serviciosSinCenso === 0 &&
+                totalIncompletos === 0 &&
+                orphanCount === 0 &&
+                unassignedCount === 0;
+            renderizarResumenCenso({
+                serviciosResumen,
+                totalRegistros,
+                totalPotencia,
+                totalConsumo,
+                totalIncompletos,
+                serviciosSinCenso,
+                orphanCount,
+                unassignedCount,
+                coberturaCompleta,
+                hasData
             });
-
             return {
                 hasData,
                 totalRegistros,
                 totalPotencia,
                 totalConsumo,
-                detalle
+                totalIncompletos,
+                serviciosSinCenso,
+                orphanCount,
+                unassignedCount,
+                coberturaCompleta,
+                serviciosResumen
             };
+        }
+
+        function renderizarResumenCenso(resumen) {
+            const estado = document.getElementById("estadoResumenCenso");
+            const contenedor = document.getElementById("resumenCensoServicios");
+            const tarjetas = resumen.serviciosResumen.map(servicio => {
+                const nombre = servicio.serviceNumber
+                    ? `Servicio ${servicio.index} · ${servicio.serviceNumber}`
+                    : `Servicio ${servicio.index}`;
+                const tieneCenso = Boolean(servicio.censo);
+                const estadoServicio = !tieneCenso
+                    ? "Sin Censo asignado"
+                    : servicio.incomplete
+                        ? `${servicio.incomplete} fila(s) incompleta(s); cobertura parcial`
+                        : servicio.records
+                            ? "Información completa"
+                            : "Sin registros completos";
+                return `
+                    <article class="card" aria-label="${escaparHtml(nombre)}">
+                        <h4>${escaparHtml(nombre)}</h4>
+                        <p>${escaparHtml(estadoServicio)}</p>
+                        <p>Registros completos: ${formatearNumero(servicio.records)}</p>
+                        <p>Potencia total: ${formatearNumero(servicio.power)} W</p>
+                        <p>Consumo anual estimado: ${formatearNumero(servicio.annual)} kWh/año</p>
+                    </article>
+                `;
+            });
+            if (resumen.serviciosResumen.length) {
+                tarjetas.push(`
+                    <article class="card" aria-label="Total general del Censo de Carga">
+                        <h4>Total general</h4>
+                        <p>${resumen.hasData ? "Suma de censos asociados, una sola vez por servicio." : "Sin registros completos."}</p>
+                        <p>Registros completos: ${formatearNumero(resumen.totalRegistros)}</p>
+                        <p>Potencia total: ${formatearNumero(resumen.totalPotencia)} W</p>
+                        <p>Consumo anual estimado: ${formatearNumero(resumen.totalConsumo)} kWh/año</p>
+                    </article>
+                `);
+            }
+            contenedor.innerHTML = tarjetas.join("");
+            const alertas = [];
+            if (!resumen.serviciosResumen.length) alertas.push("No hay servicios eléctricos registrados.");
+            if (resumen.serviciosSinCenso) alertas.push(`${resumen.serviciosSinCenso} servicio(s) sin Censo.`);
+            if (resumen.totalIncompletos) alertas.push(`${resumen.totalIncompletos} fila(s) incompleta(s), excluida(s) de los totales.`);
+            if (resumen.orphanCount || resumen.unassignedCount) {
+                alertas.push(`${resumen.orphanCount + resumen.unassignedCount} Censo(s) sin asignar a servicios vigentes.`);
+            }
+            if (resumen.serviciosResumen.length && resumen.coberturaCompleta) {
+                alertas.push("Cobertura completa: todos los servicios tienen registros completos y no hay censos sin asignar.");
+            } else if (!resumen.hasData && !alertas.length) {
+                alertas.push("No hay registros completos de Censo de Carga.");
+            }
+            estado.textContent = alertas.join(" ");
         }
 
         function numeroCapturado(valor) {
@@ -1107,28 +1201,39 @@
             const detalleDiagnostico = document.getElementById("detallePendienteDiagnostico");
 
             const censoTexto = censoBase.hasData
-                ? `Censo de Carga: ${censoBase.totalRegistros} registros; potencia total ${formatearNumero(censoBase.totalPotencia)} W; consumo anual estimado ${formatearNumero(censoBase.totalConsumo)} kWh/año.`
-                : "Sin información de Censo de Carga.";
+                ? `Censo de Carga (estimación independiente de la facturación): ${censoBase.totalRegistros} registros completos; potencia ${formatearNumero(censoBase.totalPotencia)} W; consumo anual estimado ${formatearNumero(censoBase.totalConsumo)} kWh/año.`
+                : "Sin registros completos de Censo de Carga.";
+            const coberturaCensoTexto = [
+                censoBase.serviciosSinCenso ? `${censoBase.serviciosSinCenso} servicio(s) sin registros completos de Censo` : "",
+                censoBase.totalIncompletos ? `${censoBase.totalIncompletos} fila(s) incompleta(s)` : "",
+                censoBase.orphanCount + censoBase.unassignedCount
+                    ? `${censoBase.orphanCount + censoBase.unassignedCount} Censo(s) sin asignar`
+                    : ""
+            ].filter(Boolean).join("; ");
+            const censoDetalle = coberturaCensoTexto
+                ? `${censoTexto} Cobertura incompleta: ${coberturaCensoTexto}.`
+                : censoBase.coberturaCompleta
+                    ? `${censoTexto} Todos los servicios tienen Censo con registros completos.`
+                    : censoTexto;
 
             if (consumos.length === 0) {
                 estadoLineaBase.textContent = "Sin información de consumo capturada.";
                 diagnostico.textContent = "Diagnóstico pendiente de contar con información suficiente.";
-                detalleDiagnostico.value = censoBase.hasData
-                    ? `${censoTexto}\nNo existen consumos capturados en servicios eléctricos para sustentar un análisis de línea base, pero sí existe información del Censo.`
-                    : "No existen consumos capturados en los servicios eléctricos para sustentar un análisis de línea base.\nSin información de Censo de Carga.";
+                detalleDiagnostico.value =
+                    `${censoDetalle}\nNo existen consumos capturados en servicios eléctricos para sustentar un análisis de línea base.`;
                 return;
             }
 
             if (!coberturaAnual) {
                 estadoLineaBase.textContent = "Captura parcial de consumo; no es posible sustentar un indicador anual confiable.";
                 diagnostico.textContent = "Diagnóstico pendiente: falta cobertura anual suficiente para concluir un comportamiento sustentado.";
-                detalleDiagnostico.value = `${censoTexto}\nSe capturaron ${consumos.length} registros con consumo. Se requiere cobertura suficiente en cada servicio: 12 periodos mensuales o 6 bimestrales para sostener los indicadores anuales y sus promedios.`;
+                detalleDiagnostico.value = `${censoDetalle}\nSe capturaron ${consumos.length} registros con consumo. Se requiere cobertura suficiente en cada servicio: 12 periodos mensuales o 6 bimestrales para sostener los indicadores anuales y sus promedios.`;
                 return;
             }
 
             estadoLineaBase.textContent = "Indicadores anuales y promedio disponibles con información suficiente.";
             diagnostico.textContent = `Se observan ${registros.filter(registro => registro.consumo !== null).length} registros de consumo con cobertura anual suficiente.`;
-            detalleDiagnostico.value = `${censoTexto}\nConsumo total capturado de Servicios Eléctricos: ${formatearNumero(totalConsumo)} kWh. Consumo anual: ${formatearNumero(consumoAnual)} kWh. Consumo promedio anual: ${formatearNumero(consumoPromedioAnual)} kWh/año. Facturación anual: $${facturacionAnual === null ? "No disponible por cobertura insuficiente." : formatearNumero(facturacionAnual)}. Facturación promedio anual: ${facturacionPromedioAnual === null ? "No disponible por cobertura insuficiente." : `$${formatearNumero(facturacionPromedioAnual)}/año`}.`;
+            detalleDiagnostico.value = `${censoDetalle}\nConsumo total capturado de Servicios Eléctricos: ${formatearNumero(totalConsumo)} kWh. Consumo anual: ${formatearNumero(consumoAnual)} kWh. Consumo promedio anual: ${formatearNumero(consumoPromedioAnual)} kWh/año. Facturación anual: $${facturacionAnual === null ? "No disponible por cobertura insuficiente." : formatearNumero(facturacionAnual)}. Facturación promedio anual: ${facturacionPromedioAnual === null ? "No disponible por cobertura insuficiente." : `$${formatearNumero(facturacionPromedioAnual)}/año`}.`;
         }
 
         function regresar() {

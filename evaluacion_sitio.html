@@ -338,6 +338,63 @@
             width: auto;
         }
 
+        .orientacion-fotos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 8px 0 14px;
+        }
+
+        .orientacion-fotos span {
+            flex: 1 1 130px;
+            padding: 10px;
+            border: 1px solid #d7dce2;
+            border-radius: 8px;
+            color: #344054;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .modal-foto-cubierta {
+            width: min(900px, calc(100vw - 32px));
+            max-width: 900px;
+            max-height: calc(100vh - 32px);
+            margin: auto;
+            padding: 16px;
+            border: 0;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .35);
+        }
+
+        .modal-foto-cubierta::backdrop {
+            background: rgba(0, 0, 0, .72);
+        }
+
+        .modal-foto-cubierta-contenido {
+            display: grid;
+            justify-items: end;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .modal-foto-cubierta img {
+            display: block;
+            max-width: 100%;
+            max-height: calc(100vh - 110px);
+            object-fit: contain;
+            justify-self: center;
+        }
+
+        .btn-cerrar-foto {
+            padding: 9px 14px;
+            border: 0;
+            border-radius: 7px;
+            background: #701F2F;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         /* RESPONSIVO */
 
         @media(max-width:900px) {
@@ -399,6 +456,10 @@
 
             .campo input[type="file"] {
                 font-size: 13px;
+            }
+
+            .modal-foto-cubierta {
+                padding: 10px;
             }
         }
     </style>
@@ -472,12 +533,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa completada" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa completada" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa activa" onclick="window.location.href='evaluacion_sitio.html'">
@@ -499,7 +560,7 @@
 
                 <div class="card">
 
-                    <h3>Condiciones de la cubierta</h3>
+                    <h3>Condiciones del sitio para el sistema de generación</h3>
 
                     <div class="grid">
 
@@ -509,8 +570,9 @@
                         </div>
 
                         <div class="campo">
-                            <label for="areaDisponible">Área disponible para generación (m²)</label>
+                            <label for="areaDisponible">Área disponible destinada a la generación (m²)</label>
                             <input type="number" id="areaDisponible" min="0" step="any">
+                            <small class="app-photo-help">Se registra una sola vez para el inmueble; no implica que cada servicio eléctrico tenga una cubierta independiente.</small>
                         </div>
 
                     </div>
@@ -526,15 +588,24 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label for="orientacionPredominante">Orientación predominante
+                            <label for="tipoCubierta">¿Qué tipo de cubierta tiene el inmueble?</label>
+                            <select id="tipoCubierta" class="input-select">
+                                <option value="">Seleccione...</option>
+                                <option value="plana">Plana</option>
+                                <option value="dosAguas">A dos aguas</option>
+                            </select>
+                            <small id="estadoTipoCubierta" class="app-photo-help" role="status" aria-live="polite"></small>
+                        </div>
+
+                        <div class="campo" id="campoOrientacionCubierta">
+                            <label for="orientacionPredominante">Orientación de los faldones
                                 <span class="ayuda">
                                     ℹ️
                                     <div class="tooltip">
                                         <img src="orientacion_azotea.png">
                                         <p>
-                                            Seleccione la orientación predominante de la superficie disponible para
-                                            instalar paneles solares. La guía muestra direcciones cardinales y ayuda
-                                            a evaluar la cubierta; no mide inclinación ni pendiente.
+                                            Seleccione la orientación predominante de los faldones de la cubierta.
+                                            La guía muestra direcciones cardinales y no mide inclinación ni pendiente.
                                         </p>
                                     </div>
                                 </span></label>
@@ -549,7 +620,7 @@
                         </div>
 
                         <div class="campo">
-                            <label for="tipoAzotea">Tipo de cubierta</label>
+                            <label for="tipoAzotea">Material de la cubierta</label>
 
                             <select id="tipoAzotea" class="input-select">
                                 <option value="">Seleccione...</option>
@@ -607,18 +678,31 @@
 
                 <div class="card">
 
-                    <h3>Evidencia específica de cubierta</h3>
+                    <h3>Fotografías de referencia de la cubierta</h3>
 
-                    <p class="app-photo-help">Adjunte una imagen de referencia de la cubierta para documentar su condición visible. Esta imagen no sustituye la fotografía general del inmueble capturada en Datos Generales ni la evidencia de ubicación.</p>
+                    <p class="app-photo-help">Esta evidencia es exclusiva de la cubierta; no sustituye las fotografías generales del inmueble ni la evidencia de ubicación.</p>
+                    <p class="app-photo-help">Con extrema precaución, posiciónese en un lugar seguro desde el que pueda observar la cubierta. Procure capturar imágenes que permitan apreciar la mayor parte de la superficie disponible y sus condiciones. Si no existe un punto de observación seguro, tome las imágenes desde otro lugar adecuado; no es necesario subir a la cubierta.</p>
+
+                    <div class="orientacion-fotos" aria-label="Direcciones de referencia">
+                        <span>Dirección sur</span>
+                        <span>Dirección este</span>
+                        <span>Dirección oeste</span>
+                    </div>
 
                     <div class="grid">
-
                         <div class="campo">
-                            <label for="fotoAzotea">Imagen de referencia de la cubierta</label>
-                            <input id="fotoAzotea" type="file" accept="image/*">
+                            <label for="fotoAzotea">Agregar hasta cinco fotografías de la cubierta</label>
+                            <input id="fotoAzotea" type="file" accept="image/*" multiple data-app-state-file-preview aria-describedby="estadoFotosCubierta" aria-label="Seleccionar hasta cinco fotografías de referencia de la cubierta">
                         </div>
-
                     </div>
+                    <p id="estadoFotosCubierta" class="app-photo-status" role="status" aria-live="polite">No hay fotografías de cubierta seleccionadas.</p>
+                    <div id="galeriaFotosCubierta" class="app-photo-grid"></div>
+                    <dialog id="modalFotoCubierta" class="modal-foto-cubierta" aria-label="Vista ampliada de la fotografía de cubierta">
+                        <div class="modal-foto-cubierta-contenido">
+                            <button id="cerrarModalFotoCubierta" type="button" class="btn-cerrar-foto">Cerrar imagen ampliada</button>
+                            <img id="imagenAmpliadaCubierta" alt="">
+                        </div>
+                    </dialog>
 
                 </div>
 
@@ -663,12 +747,14 @@
 
         function regresar() {
             if (!guardar()) return;
-            window.location.href = "sistema_generacion.html";
+            window.location.href = "servicios_electricos.html";
 
         }
 
         function guardar() {
-            const guardado = window.AEEHState?.save() || false;
+            const guardadoFormulario = window.AEEHState?.save() || false;
+            const guardadoFotos = window.AEEHState?.setFilePreviews("fotoAzotea", fotosCubierta) || false;
+            const guardado = guardadoFormulario && guardadoFotos;
             const estado = document.getElementById("estadoGuardadoEvaluacion");
             if (estado) {
                 estado.textContent = guardado
@@ -692,6 +778,8 @@
                 if (select.selectedIndex < 0) select.selectedIndex = 0;
             });
             actualizarDetalleSombra();
+            actualizarOrientacionCubierta();
+            iniciarGaleriaCubierta();
         });
 
         function actualizarDetalleSombra() {
@@ -706,6 +794,198 @@
         }
 
         document.getElementById("sombraSitio").addEventListener("change", actualizarDetalleSombra);
+
+        function actualizarOrientacionCubierta() {
+            const tipo = document.getElementById("tipoCubierta").value;
+            const campoOrientacion = document.getElementById("campoOrientacionCubierta");
+            campoOrientacion.style.display = tipo === "dosAguas" ? "flex" : "none";
+            const aviso = document.getElementById("estadoTipoCubierta");
+            if (aviso) {
+                aviso.textContent = tipo === "plana" && document.getElementById("orientacionPredominante").value
+                    ? "La orientación capturada se conserva, aunque no aplica a una cubierta plana."
+                    : "";
+            }
+        }
+
+        document.getElementById("tipoCubierta").addEventListener("change", function () {
+            actualizarOrientacionCubierta();
+            window.AEEHState?.save();
+        });
+
+        let fotosCubierta = [];
+        let procesandoFotosCubierta = false;
+
+        function actualizarEstadoFotosCubierta(mensaje) {
+            const estado = document.getElementById("estadoFotosCubierta");
+            if (estado) estado.textContent = mensaje;
+        }
+
+        function guardarFotosCubierta() {
+            if (!window.AEEHState) {
+                actualizarEstadoFotosCubierta("No está disponible el mecanismo de persistencia de esta sesión.");
+                return false;
+            }
+            if (fotosCubierta.length > 5) {
+                actualizarEstadoFotosCubierta("El límite es de cinco fotografías por evaluación.");
+                return false;
+            }
+            const guardadoFormulario = window.AEEHState.save();
+            const guardadoFotos = window.AEEHState.setFilePreviews("fotoAzotea", fotosCubierta);
+            return guardadoFormulario && guardadoFotos;
+        }
+
+        function renderizarGaleriaCubierta() {
+            const galeria = document.getElementById("galeriaFotosCubierta");
+            const selector = document.getElementById("fotoAzotea");
+            galeria.replaceChildren();
+            selector.disabled = procesandoFotosCubierta;
+
+            fotosCubierta.forEach((foto, indice) => {
+                const figura = document.createElement("figure");
+                figura.className = "app-photo-item";
+
+                const imagen = document.createElement("img");
+                imagen.src = foto.dataUrl;
+                imagen.alt = `Vista previa de ${foto.name}`;
+
+                const nombre = document.createElement("figcaption");
+                nombre.textContent = foto.name;
+
+                const acciones = document.createElement("div");
+                acciones.className = "acciones";
+
+                const ampliar = document.createElement("button");
+                ampliar.type = "button";
+                ampliar.className = "btn";
+                ampliar.textContent = "Ampliar";
+                ampliar.setAttribute("aria-label", `Ampliar fotografía ${foto.name}`);
+                ampliar.addEventListener("click", function () {
+                    const modal = document.getElementById("modalFotoCubierta");
+                    const imagenAmpliada = document.getElementById("imagenAmpliadaCubierta");
+                    imagenAmpliada.src = foto.dataUrl;
+                    imagenAmpliada.alt = `Fotografía ampliada de la cubierta: ${foto.name}`;
+                    modal.showModal();
+                });
+
+                const eliminar = document.createElement("button");
+                eliminar.type = "button";
+                eliminar.className = "app-photo-remove";
+                eliminar.textContent = "Eliminar";
+                eliminar.setAttribute("aria-label", `Eliminar fotografía ${foto.name}`);
+                eliminar.addEventListener("click", function () {
+                    fotosCubierta = fotosCubierta.filter((_, posicion) => posicion !== indice);
+                    const guardado = guardarFotosCubierta();
+                    renderizarGaleriaCubierta();
+                    actualizarEstadoFotosCubierta(guardado
+                        ? `${fotosCubierta.length} de 5 fotografías de cubierta guardadas en esta sesión.`
+                        : "No fue posible guardar los cambios de las fotografías en esta sesión.");
+                });
+
+                acciones.append(ampliar, eliminar);
+                figura.append(imagen, nombre, acciones);
+                galeria.append(figura);
+            });
+
+            if (!fotosCubierta.length) {
+                actualizarEstadoFotosCubierta("No hay fotografías de cubierta seleccionadas.");
+            } else if (fotosCubierta.length >= 5) {
+                actualizarEstadoFotosCubierta("Se alcanzó el máximo de cinco fotografías de cubierta.");
+            } else {
+                actualizarEstadoFotosCubierta(`${fotosCubierta.length} de 5 fotografías de cubierta guardadas en esta sesión.`);
+            }
+        }
+
+        function comprimirFotoCubierta(archivo) {
+            return createImageBitmap(archivo).then(bitmap => new Promise((resolve, reject) => {
+                const escala = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.max(1, Math.round(bitmap.width * escala));
+                canvas.height = Math.max(1, Math.round(bitmap.height * escala));
+                const contexto = canvas.getContext("2d");
+                if (!contexto) {
+                    bitmap.close();
+                    reject(new Error("No se pudo preparar la vista previa de la fotografía."));
+                    return;
+                }
+                contexto.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                bitmap.close();
+                canvas.toBlob(blob => {
+                    if (!blob) {
+                        reject(new Error("No fue posible crear la vista previa de la fotografía."));
+                        return;
+                    }
+                    const lector = new FileReader();
+                    lector.onload = () => resolve(lector.result);
+                    lector.onerror = () => reject(lector.error || new Error("No fue posible leer la fotografía."));
+                    lector.readAsDataURL(blob);
+                }, "image/jpeg", 0.72);
+            }));
+        }
+
+        async function seleccionarFotosCubierta() {
+            const selector = document.getElementById("fotoAzotea");
+            const archivos = Array.from(selector.files || []);
+            if (!archivos.length) return;
+            const espaciosDisponibles = Math.max(0, 5 - fotosCubierta.length);
+            if (!espaciosDisponibles) {
+                selector.value = "";
+                actualizarEstadoFotosCubierta("Se alcanzó el máximo de cinco fotografías de cubierta.");
+                return;
+            }
+            const archivosPermitidos = archivos.slice(0, espaciosDisponibles);
+            const excedeLimite = archivos.length > espaciosDisponibles;
+            procesandoFotosCubierta = true;
+            renderizarGaleriaCubierta();
+            let fallidas = 0;
+            for (const archivo of archivosPermitidos) {
+                try {
+                    fotosCubierta.push({ name: archivo.name, dataUrl: await comprimirFotoCubierta(archivo) });
+                } catch (error) {
+                    fallidas++;
+                    console.error(`No se pudo preparar la fotografía de cubierta "${archivo.name}".`, error);
+                }
+            }
+            selector.value = "";
+            procesandoFotosCubierta = false;
+            selector.disabled = false;
+            const guardado = guardarFotosCubierta();
+            renderizarGaleriaCubierta();
+            if (fallidas || excedeLimite || !guardado) {
+                const mensajes = [];
+                if (fallidas) mensajes.push(`${fallidas} archivo(s) no se pudieron leer como imagen`);
+                if (excedeLimite) mensajes.push("se alcanzó el máximo de cinco fotografías");
+                if (!guardado) mensajes.push("no fue posible conservar los cambios en esta sesión");
+                actualizarEstadoFotosCubierta(`${fotosCubierta.length} fotografía(s) listas; ${mensajes.join("; ")}.`);
+            }
+        }
+
+        function iniciarGaleriaCubierta() {
+            const selector = document.getElementById("fotoAzotea");
+            if (!window.AEEHState) {
+                actualizarEstadoFotosCubierta("No está disponible el mecanismo de persistencia de esta sesión.");
+                selector.disabled = true;
+                return;
+            }
+            fotosCubierta = window.AEEHState.getFilePreviews("fotoAzotea");
+            const excediaLimite = fotosCubierta.length > 5;
+            if (excediaLimite) fotosCubierta = fotosCubierta.slice(0, 5);
+            selector.addEventListener("change", seleccionarFotosCubierta);
+            document.getElementById("cerrarModalFotoCubierta").addEventListener("click", function () {
+                document.getElementById("modalFotoCubierta").close();
+            });
+            document.getElementById("modalFotoCubierta").addEventListener("click", function (event) {
+                if (event.target === this) this.close();
+            });
+            if (excediaLimite) {
+                const guardado = guardarFotosCubierta();
+                renderizarGaleriaCubierta();
+                actualizarEstadoFotosCubierta(guardado
+                    ? "Una galería anterior superaba el máximo y se ajustó a cinco fotografías."
+                    : "La galería anterior se ajustó a cinco fotografías, pero no se pudo conservar el cambio.");
+            } else {
+                renderizarGaleriaCubierta();
+            }
+        }
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {

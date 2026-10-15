@@ -447,7 +447,7 @@
 
             <div class="usuario-panel">
 
-                <span id="numeroPagina" class="page-indicator">Página 5 de 9</span>
+                <span id="numeroPagina" class="page-indicator">Página 6 de 9</span>
 
                 <span id="nombreUsuario" class="usuario-nombre">
 
@@ -491,12 +491,12 @@
                     Información Técnica
                 </button>
 
-                <button class="etapa activa" onclick="window.location.href='servicios_electricos.html'">
-                    Servicios Eléctricos
-                </button>
-
                 <button class="etapa pendiente" onclick="window.location.href='sistema_generacion.html'">
                     Sistema de Generación
+                </button>
+
+                <button class="etapa activa" onclick="window.location.href='servicios_electricos.html'">
+                    Servicios Eléctricos
                 </button>
 
                 <button class="etapa pendiente" onclick="window.location.href='evaluacion_sitio.html'">
@@ -707,18 +707,89 @@
             const tarifasBimestrales = new Set(["GDBT", "GDMTO", "GDMTH", "DIST", "DIT", "DAC"]);
 
             if (!valor) {
-                return { clave: "pendiente", etiqueta: "Pendiente", maximo: 24 };
+                return { clave: "pendiente", etiqueta: "Pendiente", inicial: 1, maximo: 24 };
             }
 
             if (tarifasMensuales.has(valor)) {
-                return { clave: "mensual", etiqueta: "Mensual", maximo: 24 };
+                return { clave: "mensual", etiqueta: "Mensual", inicial: 12, maximo: 24 };
             }
 
             if (tarifasBimestrales.has(valor)) {
-                return { clave: "bimestral", etiqueta: "Bimestral", maximo: 12 };
+                return { clave: "bimestral", etiqueta: "Bimestral", inicial: 6, maximo: 12 };
             }
 
-            return { clave: "mensual", etiqueta: "Mensual", maximo: 24 };
+            return { clave: "mensual", etiqueta: "Mensual", inicial: 12, maximo: 24 };
+        }
+
+        function tarifaTieneDemanda(tarifa) {
+            return new Set(["GDBT", "GDMTO", "GDMTH", "DIST", "DIT"])
+                .has(String(tarifa || "").trim().toUpperCase());
+        }
+
+        function leerHistorialDemanda(servicioIndex) {
+            const historial = document.getElementById(`historialDemanda_${servicioIndex}`);
+            if (!historial || !historial.value) return {};
+            try {
+                const datos = JSON.parse(historial.value);
+                return datos && typeof datos === "object" && !Array.isArray(datos) ? datos : {};
+            } catch (error) {
+                console.warn(`No se pudo leer el historial de demanda del servicio ${servicioIndex}.`, error);
+                return {};
+            }
+        }
+
+        function actualizarVisibilidadDemanda(servicioIndex) {
+            const tarjeta = document.getElementById(`informacionDemanda_${servicioIndex}`);
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            const tipoServicio = document.getElementById(`tipoServicio_${servicioIndex}`);
+            const tieneTipoServicio = Boolean(tipoServicio?.value);
+            if (tarjeta) tarjeta.style.display = tieneTipoServicio && tarifaTieneDemanda(tarifa) ? "block" : "none";
+        }
+
+        function cambiarTarifaServicio(servicioIndex, tarifaAnterior) {
+            const tarifaNueva = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            const contratada = document.getElementById(`demandaContratada_${servicioIndex}`);
+            const maxima = document.getElementById(`demandaMaxima_${servicioIndex}`);
+            const historialInput = document.getElementById(`historialDemanda_${servicioIndex}`);
+            const historial = leerHistorialDemanda(servicioIndex);
+
+            if (tarifaAnterior && tarifaTieneDemanda(tarifaAnterior) && contratada && maxima) {
+                historial[tarifaAnterior] = {
+                    demandaContratada: contratada.value,
+                    demandaMaxima: maxima.value
+                };
+            }
+
+            if (tarifaTieneDemanda(tarifaNueva)) {
+                const valores = historial[tarifaNueva];
+                if (contratada) contratada.value = valores?.demandaContratada || "";
+                if (maxima) maxima.value = valores?.demandaMaxima || "";
+            } else {
+                if (contratada) contratada.value = "";
+                if (maxima) maxima.value = "";
+            }
+
+            if (historialInput) historialInput.value = JSON.stringify(historial);
+            actualizarVisibilidadDemanda(servicioIndex);
+            return tarifaNueva;
+        }
+
+        function inicializarDemandaServicio(servicioIndex) {
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            const contratada = document.getElementById(`demandaContratada_${servicioIndex}`);
+            const maxima = document.getElementById(`demandaMaxima_${servicioIndex}`);
+            const historialInput = document.getElementById(`historialDemanda_${servicioIndex}`);
+            if (tarifa && !tarifaTieneDemanda(tarifa) && (contratada?.value || maxima?.value)) {
+                const historial = leerHistorialDemanda(servicioIndex);
+                historial[`legacy:${tarifa}`] = {
+                    demandaContratada: contratada?.value || "",
+                    demandaMaxima: maxima?.value || ""
+                };
+                if (historialInput) historialInput.value = JSON.stringify(historial);
+                if (contratada) contratada.value = "";
+                if (maxima) maxima.value = "";
+            }
+            actualizarVisibilidadDemanda(servicioIndex);
         }
 
         function actualizarPeriodicidadServicio(servicioIndex) {
@@ -727,6 +798,15 @@
             const texto = document.getElementById(`periodicidad_${servicioIndex}`);
             const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
             const cantidad = Math.max(1, parseInt(contador?.value, 10) || 1);
+            const ejemploPeriodo = info.clave === "mensual"
+                ? "ej. enero 2026"
+                : info.clave === "bimestral"
+                    ? "ej. enero-febrero 2026"
+                    : "ej. periodo y año";
+            document.querySelectorAll(`#tabla-linea-base-${servicioIndex} input[id^="periodo_"]`)
+                .forEach(campo => {
+                    campo.placeholder = ejemploPeriodo;
+                });
 
             if (texto) {
                 if (info.clave === "pendiente") {
@@ -736,8 +816,8 @@
                 }
             }
 
-            if (contador && cantidad > info.maximo) {
-                contador.value = info.maximo;
+            if (contador && cantidad > info.maximo && texto) {
+                texto.textContent += ` Hay registros excedentes (${cantidad}); reduzca la cantidad de forma explícita para continuar.`;
             }
         }
 
@@ -750,6 +830,8 @@
             const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
             return Math.max(1, parseInt(contador?.value, 10) || 1);
         }
+
+        const tarifaVigentePorServicio = {};
 
         function generarServicios() {
 
@@ -766,11 +848,22 @@
 
             const contenedor = document.getElementById("contenedorServicios");
             const estadoGuardado = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
+            const identidadGuardada = window.AEEHState?.getModuleData(
+                "servicios_electricos.html",
+                "identidadesServicios"
+            ) || { version: 1, activeCount: 0, activeByIndex: {}, known: {} };
+            const cantidadAnterior = Math.max(0, Number.parseInt(identidadGuardada.activeCount, 10) || 0);
+            const redujoServicios = cantidad < cantidadAnterior;
 
             contenedor.innerHTML = "";
 
             for (let i = 1; i <= cantidad; i++) {
-                const valorInicial = Math.max(1, parseInt(estadoGuardado[`numeroFacturaciones_${i}`], 10) || 1);
+                const tarifaGuardada = estadoGuardado[`tarifa_${i}`] || "";
+                const periodicidadGuardada = detectarPeriodicidad(tarifaGuardada);
+                const valorInicial = Math.max(
+                    periodicidadGuardada.inicial,
+                    parseInt(estadoGuardado[`numeroFacturaciones_${i}`], 10) || 1
+                );
 
                 contenedor.innerHTML += `
 
@@ -797,6 +890,8 @@
     <div class="acordeon-body">
 
         <div class="card">
+
+            <input type="text" id="servicioIdentidad_${i}" data-app-state readonly style="display:none;">
 
             <div class="grid">
 
@@ -878,7 +973,7 @@
 
         </div>
 
-        <div class="card">
+        <div class="card" id="informacionDemanda_${i}">
 
             <h3>
 
@@ -913,6 +1008,7 @@
                 </div>
 
             </div>
+            <input type="text" hidden id="historialDemanda_${i}" data-app-state>
 
         </div>
 
@@ -1001,16 +1097,63 @@
             acordeones.forEach((acordeon, index) => asignarIdentificadoresServicio(acordeon, index + 1));
 
             window.AEEHState?.restore();
+            const identidadActualizada = {
+                version: 1,
+                activeCount: cantidad,
+                activeByIndex: { ...(identidadGuardada.activeByIndex || {}) },
+                known: { ...(identidadGuardada.known || {}) }
+            };
+            if (redujoServicios) {
+                for (let index = cantidad + 1; index <= cantidadAnterior; index++) {
+                    const identidadInactiva = identidadActualizada.activeByIndex[index];
+                    if (identidadInactiva && identidadActualizada.known[identidadInactiva]) {
+                        identidadActualizada.known[identidadInactiva].active = false;
+                    }
+                    delete identidadActualizada.activeByIndex[index];
+                }
+            }
+            acordeones.forEach((acordeon, index) => {
+                const servicioIndex = index + 1;
+                const controlIdentidad = document.getElementById(`servicioIdentidad_${servicioIndex}`);
+                if (!controlIdentidad) return;
+                const identidadPrevia = String(controlIdentidad.value || "");
+                const identidadArchivada = identidadActualizada.activeByIndex[servicioIndex];
+                const puedeReutilizarArchivada = !redujoServicios &&
+                    servicioIndex <= cantidadAnterior &&
+                    identidadArchivada;
+                const identidad = identidadPrevia || (puedeReutilizarArchivada ? identidadArchivada : "") ||
+                    (crypto.randomUUID ? crypto.randomUUID() : `servicio-${Date.now()}-${servicioIndex}-${Math.random().toString(36).slice(2)}`);
+                controlIdentidad.value = identidad;
+                identidadActualizada.activeByIndex[servicioIndex] = identidad;
+                identidadActualizada.known[identidad] = {
+                    index: servicioIndex,
+                    numeroCfe: String(document.getElementById(`servicio_${servicioIndex}`)?.value || "").trim(),
+                    active: true
+                };
+            });
+            if (window.AEEHState) {
+                const identidadesGuardadas = window.AEEHState.setModuleData(
+                    "servicios_electricos.html",
+                    "identidadesServicios",
+                    identidadActualizada
+                );
+                const estadoServiciosGuardado = window.AEEHState.save();
+                if (!identidadesGuardadas || !estadoServiciosGuardado) {
+                    document.getElementById("estadoGuardadoServicios").textContent =
+                        "No fue posible conservar la identidad de los servicios en esta sesión.";
+                }
+            }
             acordeones.forEach((acordeon, index) => {
                 const servicioIndex = index + 1;
                 const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
-                const valorGuardado = Math.max(1, parseInt(contador?.value, 10) || 1);
+                const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+                const cantidadGuardada = Math.max(1, parseInt(contador?.value, 10) || 1);
+                const valorGuardado = Math.max(cantidadGuardada, detectarPeriodicidad(tarifa).inicial);
                 if (contador) contador.value = valorGuardado;
                 generarFilasLineaBase(servicioIndex, valorGuardado);
             });
 
             window.AEEHState?.restore();
-            if (teniaEstado) window.AEEHState?.save();
 
             acordeones.forEach((acordeon, index) => {
                 const servicioIndex = index + 1;
@@ -1021,11 +1164,14 @@
                 actualizarDetallesServicio(servicioIndex);
                 actualizarPeriodicidadServicio(servicioIndex);
                 actualizarControlesFacturacion(servicioIndex, cantidadFacturaciones);
+                inicializarDemandaServicio(servicioIndex);
+                tarifaVigentePorServicio[servicioIndex] = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
 
                 acordeon.querySelectorAll("select").forEach(select => {
                     if (select.selectedIndex < 0) select.selectedIndex = 0;
                 });
             });
+            if (teniaEstado) window.AEEHState?.save();
 
             requestAnimationFrame(() => {
                 validarServicios();
@@ -1038,17 +1184,30 @@
             if (!tbody) return;
 
             const cantidad = Math.max(1, Math.floor(Number(numeroFacturaciones) || 1));
+            const camposAnteriores = {};
+            const servicios = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
+            tbody.querySelectorAll("input").forEach(campo => {
+                camposAnteriores[campo.id] = campo.value;
+            });
             tbody.innerHTML = "";
 
             for (let numeroPeriodo = 1; numeroPeriodo <= cantidad; numeroPeriodo++) {
                 const fila = document.createElement("tr");
                 fila.dataset.periodo = numeroPeriodo;
                 fila.innerHTML = `
-                        <td><input id="periodo_${servicioIndex}_${numeroPeriodo}" type="text" placeholder="ej. enero-febrero" aria-label="Periodo del registro ${numeroPeriodo}"></td>
+                        <td><input id="periodo_${servicioIndex}_${numeroPeriodo}" type="text" aria-label="Periodo del registro ${numeroPeriodo}"></td>
                         <td><input id="consumo_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Consumo del periodo ${numeroPeriodo} (kWh)"></td>
                         <td><input id="factura_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Facturación del periodo ${numeroPeriodo} ($)"></td>
                     `;
                 tbody.appendChild(fila);
+                ["periodo", "consumo", "factura"].forEach(tipo => {
+                    const campo = document.getElementById(`${tipo}_${servicioIndex}_${numeroPeriodo}`);
+                    if (!campo) return;
+                    const valorActual = camposAnteriores[campo.id];
+                    const valorPersistido = servicios[campo.id];
+                    if (valorActual !== undefined) campo.value = valorActual;
+                    else if (valorPersistido !== undefined && valorPersistido !== null) campo.value = valorPersistido;
+                });
             }
 
             const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
@@ -1134,7 +1293,8 @@
                 if (informacion.clave === "pendiente") {
                     estado.textContent = "Seleccione la tarifa para configurar el registro de facturaciones.";
                 } else if (excedentes > 0) {
-                    estado.textContent = `Hay ${excedentes} registros excedentes para el registro de facturaciones ${informacion.etiqueta.toLowerCase()}. Elimínelos hasta ${informacion.maximo} antes de continuar.`;
+                    const cantidadExcedente = excedentes === 1 ? "1 registro excedente" : `${excedentes} registros excedentes`;
+                    estado.textContent = `Hay ${cantidadExcedente} para el registro de facturaciones ${informacion.etiqueta.toLowerCase()}. Elimínelos hasta ${informacion.maximo} antes de continuar.`;
                 } else {
                     estado.textContent = `Registro de facturaciones ${informacion.etiqueta.toLowerCase()}. Registros capturados: ${cantidad}. Máximo permitido: ${informacion.maximo}.`;
                 }
@@ -1349,7 +1509,7 @@
 
         function regresar() {
             if (!guardar()) return;
-            window.location.href = 'informacion_tecnica.html';
+            window.location.href = 'sistema_generacion.html';
 
         }
 
@@ -1374,6 +1534,7 @@
                 const campos = Array.from(acordeon.querySelectorAll("input,select"))
                     .filter(campo => {
                         if (campo.matches(".selector-linea-base")) return false;
+                        if (campo.id.startsWith("historialDemanda_")) return false;
                         if (!tieneTipo && (campo.closest(".detalles-servicio") || campo.id === `tarifa_${servicioIndex}` || campo.id === `voltaje_${servicioIndex}`)) return false;
                         return true;
                     });
@@ -1403,8 +1564,48 @@
             actualizarResultados();
         }
 
+        function validarPeriodosUnicos() {
+            let primerDuplicado = null;
+            const tieneDuplicados = [];
+
+            document.querySelectorAll(".acordeon").forEach((acordeon, index) => {
+                const servicioIndex = index + 1;
+                const cantidad = obtenerCantidadRegistros(servicioIndex);
+                const campos = [];
+                for (let registro = 1; registro <= cantidad; registro++) {
+                    const campo = document.getElementById(`periodo_${servicioIndex}_${registro}`);
+                    if (campo) campos.push(campo);
+                }
+
+                const grupos = new Map();
+                campos.forEach(campo => {
+                    const periodo = campo.value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-MX");
+                    if (!periodo) return;
+                    if (!grupos.has(periodo)) grupos.set(periodo, []);
+                    grupos.get(periodo).push(campo);
+                });
+
+                const duplicados = Array.from(grupos.values()).filter(grupo => grupo.length > 1).flat();
+                campos.forEach(campo => campo.setCustomValidity(""));
+                duplicados.forEach(campo => {
+                    campo.setCustomValidity("El periodo debe ser único dentro del servicio.");
+                    if (!primerDuplicado) primerDuplicado = campo;
+                });
+                if (duplicados.length) tieneDuplicados.push(servicioIndex);
+            });
+
+            if (tieneDuplicados.length) {
+                const estado = document.getElementById("estadoGuardadoServicios");
+                if (estado) estado.textContent = `Hay periodos duplicados en ${tieneDuplicados.map(indice => `Servicio ${indice}`).join(", ")}. Corríjalos antes de guardar.`;
+                primerDuplicado?.focus();
+                return false;
+            }
+            return true;
+        }
+
         const contenedorServicios = document.getElementById("contenedorServicios");
-        contenedorServicios?.addEventListener("input", () => {
+        contenedorServicios?.addEventListener("input", event => {
+            if (event.target.id?.startsWith("periodo_")) validarPeriodosUnicos();
             validarServicios();
             actualizarResultados();
         });
@@ -1412,14 +1613,38 @@
             const campo = event.target;
             if (campo.classList.contains("tipo-servicio")) {
                 const servicioIndex = campo.id.match(/_(\d+)$/)?.[1];
-                if (servicioIndex) actualizarDetallesServicio(servicioIndex);
+                if (servicioIndex) {
+                    actualizarDetallesServicio(servicioIndex);
+                    actualizarVisibilidadDemanda(servicioIndex);
+                }
             }
             if (campo.classList.contains("tarifa-servicio")) {
                 const servicioIndex = campo.id.match(/_(\d+)$/)?.[1];
                 if (servicioIndex) {
+                    const tarifaAnterior = tarifaVigentePorServicio[servicioIndex] || "";
+                    tarifaVigentePorServicio[servicioIndex] = cambiarTarifaServicio(servicioIndex, tarifaAnterior);
                     actualizarPeriodicidadServicio(servicioIndex);
-                    actualizarControlesFacturacion(servicioIndex, obtenerCantidadRegistros(servicioIndex));
+                    const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
+                    const minimo = detectarPeriodicidad(campo.value).inicial;
+                    const cantidadActual = obtenerCantidadRegistros(servicioIndex);
+                    const cantidad = Math.max(cantidadActual, minimo);
+                    if (contador && cantidad > cantidadActual) {
+                        contador.value = cantidad;
+                        generarFilasLineaBase(servicioIndex, cantidad);
+                    }
+                    actualizarControlesFacturacion(servicioIndex, cantidad);
+                    const anterior = detectarPeriodicidad(tarifaAnterior);
+                    const actual = detectarPeriodicidad(campo.value);
+                    if (tarifaAnterior && anterior.clave !== actual.clave) {
+                        const texto = document.getElementById(`periodicidad_${servicioIndex}`);
+                        if (texto) texto.textContent += " Se conservaron los registros existentes; revise y ajuste sus periodos si es necesario.";
+                    }
+                    window.AEEHState?.save();
                 }
+            }
+            if (campo.classList.contains("tipo-servicio")) {
+                const servicioIndex = campo.id.match(/_(\d+)$/)?.[1];
+                if (servicioIndex) actualizarVisibilidadDemanda(servicioIndex);
             }
             if (campo.classList.contains("selector-linea-base")) {
                 const servicioIndex = campo.dataset.servicio;
@@ -1440,6 +1665,7 @@
         function guardar() {
             validarServicios();
             actualizarResultados();
+            if (!validarPeriodosUnicos()) return false;
             const guardado = window.AEEHState?.save() || false;
             const estadoGuardado = document.getElementById("estadoGuardadoServicios");
             if (estadoGuardado) {
@@ -1451,17 +1677,30 @@
         }
 
         function continuar() {
+            const excedidos = [];
+            document.querySelectorAll(".acordeon").forEach((_, index) => {
+                const servicioIndex = index + 1;
+                const cantidad = obtenerCantidadRegistros(servicioIndex);
+                const maximo = obtenerMaximoRegistros(servicioIndex);
+                if (cantidad > maximo) excedidos.push(`Servicio ${servicioIndex}`);
+            });
+            if (excedidos.length) {
+                const estado = document.getElementById("estadoGuardadoServicios");
+                if (estado) estado.textContent = `${excedidos.join(", ")} tiene registros excedentes para su tarifa. Elimínelos explícitamente antes de continuar; la captura actual se conserva al guardar.`;
+                return;
+            }
             if (!guardar()) {
+                if (document.getElementById("estadoGuardadoServicios")?.textContent.startsWith("Hay periodos duplicados")) return;
                 alert("No fue posible conservar la captura local; no se avanzó al siguiente módulo.");
                 return;
             }
-            window.location.href = "sistema_generacion.html";
+            window.location.href = "evaluacion_sitio.html";
 
         }
 
         const numeroPagina = document.getElementById("numeroPagina");
         if (numeroPagina) {
-            numeroPagina.textContent = "Página 5 de 9";
+            numeroPagina.textContent = "Página 6 de 9";
         }
 
         const nombre =
