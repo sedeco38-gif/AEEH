@@ -18,7 +18,7 @@
         },
         {
             id: "computo", sheet: "CÓMPUTO", headerRow: 7,
-            formulas: { I: "F{r}*H{r}", L: "-J{r}+K{r}", M: "I{r}*L{r}*52/1000" },
+            formulas: { I: "F{r}*H{r}", L: "J{r}+K{r}", M: "I{r}*L{r}*52/1000" },
             quantityKey: "cantidad", powerKey: "potenciaTotalW", annualKey: "consumoAnualKwh",
             columns: [
                 ["A", "edificio", "Edificio", "text"], ["B", "nivel", "Nivel", "text"], ["C", "dependencia", "Secretaría/Dependencia", "text"],
@@ -384,7 +384,7 @@
             }
             case "computo": {
                 const potenciaTotalW = n("cantidad") * n("potenciaW");
-                const horasSemana = -n("horasSemanaLaboral") + n("horasFinSemana");
+                const horasSemana = n("horasSemanaLaboral") + n("horasFinSemana");
                 return { potenciaTotalW, horasSemana, consumoAnualKwh: potenciaTotalW * horasSemana * 52 / 1000 };
             }
             case "fuerza": {
@@ -463,9 +463,40 @@
         card.className = "card censo-seccion";
         card.id = `seccionCenso_${section.id}`;
         card.dataset.section = section.id;
+        card.dataset.sectionPresent = censusStore.services[activeServiceId]?.sections?.[section.id]?.present ? "true" : "false";
 
         const title = document.createElement("h3");
         title.textContent = section.name;
+        const reviewFieldset = document.createElement("fieldset");
+        reviewFieldset.className = "censo-revision-categoria";
+        const reviewLegend = document.createElement("legend");
+        reviewLegend.textContent = "Revisión de esta categoría";
+        reviewFieldset.appendChild(reviewLegend);
+        const savedReview = censusStore.services[activeServiceId]?.categoryReview?.[section.id];
+        const reviewOptions = [
+            { value: "true", label: "Hay equipos en esta categoría." },
+            { value: "false", label: "No hay equipos de esta categoría en el inmueble." }
+        ];
+        reviewOptions.forEach((option, index) => {
+            const label = document.createElement("label");
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = `revision-${activeServiceId}-${section.id}`;
+            input.value = option.value;
+            input.dataset.categoryReview = "true";
+            input.dataset.section = section.id;
+            input.id = `revision-${activeServiceId}-${section.id}-${index}`;
+            input.checked = savedReview?.reviewed === true &&
+                savedReview.equipmentPresent === (option.value === "true");
+            label.htmlFor = input.id;
+            label.append(input, document.createTextNode(` ${option.label}`));
+            reviewFieldset.appendChild(label);
+        });
+        const reviewStatus = document.createElement("p");
+        reviewStatus.id = `estadoRevision_${section.id}`;
+        reviewStatus.className = "app-photo-help";
+        reviewStatus.setAttribute("role", "status");
+        reviewStatus.setAttribute("aria-live", "polite");
         const status = document.createElement("p");
         status.id = `estadoSeccion_${section.id}`;
         status.className = "app-photo-help";
@@ -515,7 +546,7 @@
             resultFields.appendChild(field);
         });
 
-        card.append(title, status, addButton, tableWrap, resultFields);
+        card.append(title, reviewFieldset, reviewStatus, status, addButton, tableWrap, resultFields);
         const dataById = new Map((rows || []).map(row => [String(row.id), row.data || {}]));
         rowIds.forEach(rowId => {
             const data = dataById.get(String(rowId)) || {};
@@ -523,6 +554,32 @@
         });
         updateSection(section, card);
         return card;
+    }
+
+    function updateCategoryReviewStatus(section, card) {
+        const status = card.querySelector(`#estadoRevision_${section.id}`);
+        if (!status) return;
+        const review = censusStore.services[activeServiceId]?.categoryReview?.[section.id];
+        if (!review?.reviewed) {
+            status.textContent = "Pendiente de revisión.";
+            return;
+        }
+        const rows = Array.from(card.querySelectorAll("tbody tr[data-censo-row]"));
+        const rowsWithData = rows.filter(row => rowIsPopulated(section, row));
+        const incompleteRows = rowsWithData.filter(row => !rowIsComplete(section, row));
+        if (review.equipmentPresent === false) {
+            status.textContent = rowsWithData.length
+                ? "Revisión inconsistente: se declaró que no hay equipos, pero existen filas con datos. Corrija la declaración o elimine esas filas."
+                : "Revisada sin equipos.";
+            return;
+        }
+        if (!rowsWithData.length) {
+            status.textContent = "Hay equipos declarados, pero faltan registros. Agregue una fila o confirme «No hay equipos» si corresponde.";
+        } else if (incompleteRows.length) {
+            status.textContent = `Revisada con filas incompletas: ${incompleteRows.length} fila(s). Complete los datos o elimine las filas.`;
+        } else {
+            status.textContent = "Revisada con equipos; todas las filas capturadas están completas.";
+        }
     }
 
     function createDataRow(section, rowId, data = {}) {
@@ -574,7 +631,7 @@
         }
         if (section.id === "computo") {
             const potenciaTotalW = n("cantidad") * n("potenciaW");
-            const horasSemana = -n("horasSemanaLaboral") + n("horasFinSemana");
+            const horasSemana = n("horasSemanaLaboral") + n("horasFinSemana");
             return { potenciaTotalW, horasSemana, consumoAnualKwh: potenciaTotalW * horasSemana * 52 / 1000 };
         }
         if (section.id === "fuerza") {
@@ -842,7 +899,7 @@
             }
             case "computo": {
                 const potenciaTotalW = number("cantidad") * number("potenciaW");
-                const horasSemana = -number("horasSemanaLaboral") + number("horasFinSemana");
+                const horasSemana = number("horasSemanaLaboral") + number("horasFinSemana");
                 return { potenciaTotalW, horasSemana, consumoAnualKwh: potenciaTotalW * horasSemana * 52 / 1000 };
             }
             case "fuerza": {
@@ -967,10 +1024,11 @@
         const incompleteField = ensureResultField(section, "incompletos");
         incompleteField.value = String(incomplete.length);
         const presentField = document.getElementById(`censoPresent_${section.id}`);
-        if (presentField) presentField.value = "1";
+        if (presentField && (card.dataset.sectionPresent === "true" || rows.length)) presentField.value = "1";
         const rowIdsField = document.getElementById(`censoRows_${section.id}`);
         if (rowIdsField) rowIdsField.value = rows.map(row => row.dataset.rowId).join(",");
         updateResults(section, totals, incomplete.length);
+        updateCategoryReviewStatus(section, card);
     }
 
     function updateResults(section, totals, incompleteCount = 0) {
@@ -1316,10 +1374,9 @@
             resultsCard.hidden = true;
             return;
         }
-        Object.entries(census.sections || {}).forEach(([sectionId, sectionData]) => {
-            const section = sectionById.get(sectionId);
-            if (!section || !sectionData?.present) return;
-            const rows = sectionData.rows || [];
+        SECTIONS.forEach(section => {
+            const sectionData = census.sections?.[section.id];
+            const rows = sectionData?.present ? sectionData.rows || [] : [];
             const rowIds = rows.map(row => String(row.id));
             const card = createSectionCard(section, rowIds, rows);
             container.appendChild(card);
@@ -1387,12 +1444,14 @@
         document.querySelectorAll("#seccionesCenso .censo-seccion").forEach(card => {
             const section = sectionById.get(card.dataset.section);
             if (!section) return;
+            const rows = Array.from(card.querySelectorAll("tbody tr[data-censo-row]"), row => ({
+                id: String(row.dataset.rowId),
+                data: rowValues(section, row)
+            }));
+            if (card.dataset.sectionPresent !== "true" && !rows.length) return;
             sections[section.id] = {
                 present: true,
-                rows: Array.from(card.querySelectorAll("tbody tr[data-censo-row]"), row => ({
-                    id: String(row.dataset.rowId),
-                    data: rowValues(section, row)
-                }))
+                rows
             };
         });
         const census = {
@@ -1624,6 +1683,7 @@
         const nextId = String((numericIds.length ? Math.max(...numericIds) : section.dataStart - 1) + 1);
         const row = createRow(section, nextId);
         card.querySelector("tbody").appendChild(row);
+        card.dataset.sectionPresent = "true";
         updateSection(section, card);
         saveActiveCensus();
     }
@@ -1753,6 +1813,24 @@
                 saveActiveCensus();
             });
             sections.addEventListener("change", event => {
+                const reviewControl = event.target.closest("input[data-category-review='true']");
+                if (reviewControl) {
+                    const sectionId = reviewControl.dataset.section;
+                    const census = censusStore.services[activeServiceId];
+                    if (!census || !sectionById.has(sectionId)) return;
+                    census.categoryReview = {
+                        ...(census.categoryReview || {}),
+                        [sectionId]: {
+                            reviewed: true,
+                            equipmentPresent: reviewControl.value === "true"
+                        }
+                    };
+                    const section = sectionById.get(sectionId);
+                    const card = reviewControl.closest(".censo-seccion");
+                    if (section && card) updateCategoryReviewStatus(section, card);
+                    saveActiveCensus();
+                    return;
+                }
                 const row = event.target.closest("tr[data-censo-row]");
                 if (!row) return;
                 const section = sectionById.get(row.closest("section[data-section]")?.dataset.section);

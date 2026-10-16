@@ -1254,9 +1254,256 @@
             window.location.href = "plan_trabajo.html";
         }
 
+        function leerEstadoPersistidoParaFinalizar(modulePage) {
+            if (!window.AEEHState?.getModuleFields) {
+                throw new Error("La persistencia de módulos no está disponible.");
+            }
+
+            const targetPath = new URL(modulePage, window.location.href).pathname;
+            const targetPage = targetPath.split("/").pop() || "index.html";
+            const targetNamespace = /\/Resp\//i.test(targetPath) ? `Resp/${targetPage}` : targetPage;
+            const user = sessionStorage.getItem("usuario") || "anonimo";
+            const storageKey = `aeeh.ui.${encodeURIComponent(user)}.${targetNamespace.toLowerCase()}`;
+            const serialized = sessionStorage.getItem(storageKey);
+            if (serialized === null) return { fields: new Map(), moduleData: {} };
+
+            const state = JSON.parse(serialized);
+            if (!state || typeof state !== "object" ||
+                (state.fields !== undefined && !Array.isArray(state.fields)) ||
+                (state.moduleData !== undefined && (!state.moduleData || typeof state.moduleData !== "object" || Array.isArray(state.moduleData)))) {
+                throw new Error(`El estado guardado de ${modulePage} no tiene un formato válido.`);
+            }
+            const fields = state.fields || [];
+            if (fields.some(field => typeof field?.key !== "string")) {
+                throw new Error(`El estado guardado de ${modulePage} contiene campos inválidos.`);
+            }
+            return {
+                fields: new Map(fields.map(field => [field.key, field])),
+                moduleData: state.moduleData || {}
+            };
+        }
+
+        function validarCensosCapturados(censo, servicios) {
+            const pendientes = [];
+            const censosGuardados = censo.moduleData.censosPorServicio;
+            if (censosGuardados === undefined) return pendientes;
+            const censos = censosGuardados;
+            if (!censos || typeof censos !== "object" || Array.isArray(censos) || censos.version !== 1 ||
+                !censos.services || typeof censos.services !== "object" || Array.isArray(censos.services) ||
+                !Array.isArray(censos.unassigned)) {
+                throw new Error("Los censos por servicio tienen un formato inválido.");
+            }
+
+            const identidades = servicios.moduleData.identidadesServicios || {};
+            if (identidades !== null && (typeof identidades !== "object" || Array.isArray(identidades))) {
+                throw new Error("Las identidades de los servicios no se pueden verificar.");
+            }
+            const cantidad = Number(servicios.fields.get("id:cantidadMedidores")?.value);
+            if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 50) return pendientes;
+
+            const censosPorId = censos.services || {};
+            const calculados = new Set(["totalLamparas", "potenciaTotalW", "horasSemana", "consumoAnualKwh"]);
+            const seccionesConocidas = new Set([
+                "iluminacion", "computo", "fuerza", "aire_ac", "electrodomesticos",
+                "voz_datos", "equipos_personales", "otros"
+            ]);
+            const etiquetas = {
+                cantidad: "cantidad", cantidadLuminarios: "cantidad de luminarios",
+                lamparasPorLuminario: "lámparas por luminario", potenciaW: "potencia",
+                potenciaLamparaW: "potencia por lámpara", horasSemanaLaboral: "horas de lunes a viernes",
+                horasFinSemana: "horas de sábado y domingo"
+            };
+
+            const serviciosVerificados = new Set();
+            for (let index = 1; index <= cantidad; index++) {
+                const serviceId = String(
+                    servicios.fields.get(`id:servicioIdentidad_${index}`)?.value ||
+                    identidades.activeByIndex?.[index] || ""
+                );
+                if (!serviceId || serviciosVerificados.has(serviceId) || !Object.prototype.hasOwnProperty.call(censosPorId, serviceId)) continue;
+                serviciosVerificados.add(serviceId);
+                const census = censosPorId[serviceId];
+                if (!census || typeof census !== "object" || !census.sections || typeof census.sections !== "object") {
+                    throw new Error(`El Censo asociado al Servicio ${index} no se puede verificar.`);
+                }
+
+                Object.entries(census.sections).forEach(([sectionId, section]) => {
+                    if (!seccionesConocidas.has(sectionId)) {
+                        throw new Error(`El apartado ${sectionId} del Servicio ${index} no se puede verificar.`);
+                    }
+                    if (!section || typeof section !== "object" || !Array.isArray(section.rows)) {
+                        throw new Error(`Las filas del apartado ${sectionId} del Servicio ${index} no se pueden verificar.`);
+                    }
+                    section.rows.forEach((row, rowIndex) => {
+                        if (!row || typeof row !== "object" || !row.data || typeof row.data !== "object") {
+                            throw new Error(`La fila ${rowIndex + 1} del apartado ${sectionId}, Servicio ${index}, no se puede verificar.`);
+                        }
+                        const data = row.data;
+                        const tieneCaptura = Object.entries(data).some(([key, value]) =>
+                            !calculados.has(key) && String(value ?? "").trim() !== ""
+                        );
+                        if (!tieneCaptura) return;
+
+                        const claves = sectionId === "iluminacion"
+                            ? ["cantidadLuminarios", "lamparasPorLuminario", "potenciaLamparaW", "horasSemanaLaboral", "horasFinSemana"]
+                            : ["cantidad", "potenciaW", "horasSemanaLaboral", "horasFinSemana"];
+                        const faltantes = claves.filter(key =>
+                            String(data[key] ?? "").trim() === "" || !Number.isFinite(Number(data[key]))
+                        );
+                        if (faltantes.length) {
+                            pendientes.push({
+                                modulo: "Censo de Carga",
+                                pagina: "censo_carga.html",
+                                campo: `Servicio ${index}, ${sectionId}, fila ${rowIndex + 1}: complete ${faltantes.map(key => etiquetas[key] || key).join(", ")}.`
+                            });
+                        }
+                    });
+                });
+            }
+            return pendientes;
+        }
+
+        function validarReglasExplicitasDeFinalizacion(estados) {
+            const pendientes = [];
+            const servicios = estados.get("servicios_electricos.html");
+            const generacion = estados.get("sistema_generacion.html");
+            const cantidadRaw = servicios.fields.get("id:cantidadMedidores")?.value;
+            const cantidad = Number(cantidadRaw);
+            const cantidadValida = Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= 50;
+
+            if (!cantidadValida) {
+                pendientes.push({
+                    modulo: "Servicios Eléctricos",
+                    pagina: "servicios_electricos.html",
+                    campo: "Registre entre 1 y 50 medidores eléctricos."
+                });
+            }
+
+            if (cantidadValida) {
+                for (let servicio = 1; servicio <= cantidad; servicio++) {
+                    const tarifa = String(servicios.fields.get(`id:tarifa_${servicio}`)?.value || "").trim().toUpperCase();
+                    const maximo = ["GDBT", "GDMTO", "GDMTH", "DIST", "DIT", "DAC"].includes(tarifa) ? 12 : 24;
+                    const registrosRaw = servicios.fields.get(`id:numeroFacturaciones_${servicio}`)?.value;
+                    const registros = registrosRaw === undefined || registrosRaw === ""
+                        ? 1
+                        : Number(registrosRaw);
+
+                    if (!Number.isInteger(registros) || registros < 1 || registros > maximo) {
+                        pendientes.push({
+                            modulo: "Servicios Eléctricos",
+                            pagina: "servicios_electricos.html",
+                            campo: `Servicio ${servicio}: ajuste la cantidad de registros de facturación al máximo permitido (${maximo}).`
+                        });
+                        continue;
+                    }
+
+                    const periodos = new Map();
+                    for (let registro = 1; registro <= registros; registro++) {
+                        const periodo = String(servicios.fields.get(`id:periodo_${servicio}_${registro}`)?.value || "")
+                            .trim().replace(/\s+/g, " ").toLocaleLowerCase("es-MX");
+                        if (!periodo) continue;
+                        periodos.set(periodo, (periodos.get(periodo) || 0) + 1);
+                    }
+                    if (Array.from(periodos.values()).some(total => total > 1)) {
+                        pendientes.push({
+                            modulo: "Servicios Eléctricos",
+                            pagina: "servicios_electricos.html",
+                            campo: `Servicio ${servicio}: los periodos de facturación deben ser únicos.`
+                        });
+                    }
+                }
+            }
+
+            if (generacion.fields.get("id:tieneGeneracion")?.value === "si" && cantidadValida) {
+                const servicioGuardado = String(generacion.fields.get("id:servicioGeneracion")?.value || "");
+                const servicioGeneracion = servicioGuardado === "" && cantidad === 1
+                    ? 1
+                    : Number(servicioGuardado);
+                if (!Number.isInteger(servicioGeneracion) || servicioGeneracion < 1 || servicioGeneracion > cantidad) {
+                    pendientes.push({
+                        modulo: "Sistema de Generación",
+                        pagina: "sistema_generacion.html",
+                        campo: "Asocie el sistema de generación con uno de los servicios eléctricos registrados."
+                    });
+                }
+            }
+
+            pendientes.push(...validarCensosCapturados(estados.get("censo_carga.html"), servicios));
+            return pendientes;
+        }
+
+        function mostrarPendientesFinalizacion(pendientes) {
+            const estado = document.getElementById("estadoGuardadoLineaBase");
+            if (!estado) return;
+
+            estado.replaceChildren(document.createTextNode("No se finalizó el expediente. Corrija estos pendientes y vuelva a intentarlo: "));
+            const lista = document.createElement("ul");
+            pendientes.forEach(pendiente => {
+                const elemento = document.createElement("li");
+                elemento.appendChild(document.createTextNode(`${pendiente.modulo}: ${pendiente.campo} `));
+                const enlace = document.createElement("a");
+                enlace.href = pendiente.pagina;
+                enlace.textContent = `Abrir ${pendiente.modulo}`;
+                elemento.appendChild(enlace);
+                lista.appendChild(elemento);
+            });
+            estado.appendChild(lista);
+        }
+
         function finalizar() {
-            guardar();
-            window.location.href = "resumen_inmueble.html";
+            if (!guardar()) {
+                document.getElementById("estadoGuardadoLineaBase").textContent =
+                    "No fue posible guardar la Línea Base; no se pudo verificar el expediente. Sus datos se conservan y puede reintentar.";
+                return;
+            }
+
+            let estados;
+            try {
+                const modulos = [
+                    "perfil_usuario.html", "datos_generales.html", "geolocalizacion.html",
+                    "informacion_tecnica.html", "sistema_generacion.html", "servicios_electricos.html",
+                    "evaluacion_sitio.html", "censo_carga.html", "linea_base.html"
+                ];
+                estados = new Map(modulos.map(modulo => [modulo, leerEstadoPersistidoParaFinalizar(modulo)]));
+
+                // Estos módulos también mantienen compatibilidad con claves de sesión directas.
+                ["direccionDependencia", "municipioDatosGenerales", "codigoPostal", "calleNumero", "colonia",
+                    "estadoInmueble", "municipioInmueble", "direccionCompletaInmueble", "latitudInmueble", "longitudInmueble"]
+                    .forEach(clave => sessionStorage.getItem(clave));
+            } catch (error) {
+                console.error("No se pudo verificar el estado persistido del expediente.", error);
+                document.getElementById("estadoGuardadoLineaBase").textContent =
+                    "No fue posible consultar los datos guardados; el expediente no se finalizó. Sus datos se conservan y puede reintentar.";
+                return;
+            }
+
+            let pendientes;
+            try {
+                pendientes = validarReglasExplicitasDeFinalizacion(estados);
+            } catch (error) {
+                console.error("No se pudieron validar los datos guardados del expediente.", error);
+                document.getElementById("estadoGuardadoLineaBase").textContent =
+                    "No fue posible validar los datos guardados; el expediente no se finalizó. Sus datos se conservan y puede reintentar.";
+                return;
+            }
+            if (pendientes.length) {
+                try {
+                    mostrarPendientesFinalizacion(pendientes);
+                } catch (error) {
+                    console.error("No fue posible mostrar los pendientes del expediente.", error);
+                    document.getElementById("estadoGuardadoLineaBase").textContent =
+                        "No fue posible mostrar los datos pendientes; el expediente no se finalizó. Sus datos se conservan y puede reintentar.";
+                }
+                return;
+            }
+
+            try {
+                window.location.href = new URL("resumen_inmueble.html", window.location.href).href;
+            } catch (error) {
+                console.error("No fue posible abrir el resumen del expediente.", error);
+                document.getElementById("estadoGuardadoLineaBase").textContent =
+                    "No fue posible abrir el resumen; el expediente no se finalizó. Sus datos se conservan y puede reintentar.";
+            }
         }
 
         document.addEventListener("DOMContentLoaded", actualizarLineaBase);
