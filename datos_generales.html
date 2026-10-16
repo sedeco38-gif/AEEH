@@ -520,7 +520,7 @@
 
                 <div class="card">
                     <h3>Fotografías generales del inmueble</h3>
-                    <p class="app-photo-help">Seleccione fotografías que muestren el inmueble en general. Se preparan vistas previas en este navegador para la sesión actual; no se envían ni se almacenan permanentemente.</p>
+                    <p class="app-photo-help">Seleccione fotografías del inmueble o dependencia evaluado y de sus instalaciones pertinentes; evite imágenes ajenas. Las vistas previas se conservan en el almacenamiento de sesión (sessionStorage) durante esta sesión y no se envían a un servidor.</p>
                     <div class="campo app-photo-picker">
                         <label for="fotografiasInmueble">Seleccionar fotografías</label>
                         <input id="fotografiasInmueble" type="file" accept="image/*" multiple data-app-state-file-preview aria-describedby="estadoFotografias" aria-label="Seleccionar hasta ocho fotografías generales del inmueble">
@@ -760,7 +760,7 @@
                     estado.textContent = `${cantidad} fotografía(s) con vista previa disponible solo mientras esta página permanezca abierta. El navegador no pudo conservarlas para volver al módulo.`;
                 } else {
                     const origen = restauradas ? "restaurada(s) desde el estado temporal de esta sesión" : "preparada(s) para vista previa";
-                    estado.textContent = `${cantidad} fotografía(s) ${origen}. No se han enviado ni almacenado permanentemente.`;
+                    estado.textContent = `${cantidad} fotografía(s) ${origen}. Se conservan en sessionStorage durante esta sesión y no se han enviado a un servidor.`;
                 }
             }
 

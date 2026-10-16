@@ -109,7 +109,7 @@
 
     function saveState() {
         const previousFields = readState();
-        const fields = controls().map((control, index) => {
+        const currentFields = controls().map((control, index) => {
             const field = {
                 key: controlKey(control, index),
                 type: control.type || control.tagName.toLowerCase()
@@ -130,7 +130,13 @@
             return field;
         });
 
-        const saved = writeFields(new Map(fields.map(field => [field.key, field])));
+        const fields = new Map(currentFields.map(field => [field.key, field]));
+        const legacyLogoField = previousFields.get("id:logotipoDependencia");
+        if (Array.isArray(legacyLogoField?.previewFiles) && !fields.has("id:logotipoDependencia")) {
+            fields.set("id:logotipoDependencia", legacyLogoField);
+        }
+
+        const saved = writeFields(fields);
         updateStageNavigation();
         return saved;
     }

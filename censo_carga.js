@@ -866,10 +866,17 @@
     function recalculateRow(section, row) {
         const values = rowValues(section, row);
         const results = calculateRow(section, values);
+        const complete = requiredKeysForSection(section).every(key =>
+            values[key] !== "" && Number.isFinite(Number(values[key]))
+        );
         section.columns.filter(field => field[3] === "calculated").forEach(field => {
             const input = row.querySelector(`[data-field="${field[1]}"]`);
             const value = results[field[1]];
-            if (input) input.value = Number.isFinite(value) ? String(Number(value.toFixed(6))) : "0";
+            if (input) {
+                input.value = !complete
+                    ? ""
+                    : Number.isFinite(value) ? String(Number(value.toFixed(6))) : "0";
+            }
         });
     }
 
@@ -1050,6 +1057,7 @@
     let availableServices = [];
     let activeServiceId = "";
     let suppressServiceChange = false;
+    let serviceIdentitiesReady = true;
 
     function newStableId(prefix) {
         return `${prefix}-${crypto.randomUUID
@@ -1122,7 +1130,12 @@
         };
         if (count !== previousCount ||
             JSON.stringify(activeByIndex) !== JSON.stringify(identityState.activeByIndex || {})) {
-            if (!window.AEEHState?.setModuleData("servicios_electricos.html", "identidadesServicios", nextIdentityState)) {
+            serviceIdentitiesReady = Boolean(window.AEEHState?.setModuleData(
+                "servicios_electricos.html",
+                "identidadesServicios",
+                nextIdentityState
+            ));
+            if (!serviceIdentitiesReady) {
                 document.getElementById("estadoServicioCenso").textContent =
                     "No fue posible conservar la identidad de los servicios. No importe el Censo hasta resolver el almacenamiento.";
             }
@@ -1256,12 +1269,18 @@
         selector.value = activeServiceId;
         suppressServiceChange = false;
         const noServices = availableServices.length === 0;
-        selector.disabled = noServices;
-        document.getElementById("archivoExcel").disabled = noServices;
-        document.getElementById("procesarArchivoBtn").disabled = noServices;
+        const canUseServices = !noServices && serviceIdentitiesReady;
+        selector.disabled = !canUseServices;
+        document.getElementById("archivoExcel").disabled = !canUseServices;
+        document.getElementById("procesarArchivoBtn").disabled = !canUseServices;
         if (noServices) {
             document.getElementById("estadoServicioCenso").textContent =
                 "Primero registre al menos un servicio eléctrico en el módulo Servicios Eléctricos.";
+            document.getElementById("seccionesCenso").replaceChildren();
+            document.getElementById("resultadosCenso").hidden = true;
+        } else if (!serviceIdentitiesReady) {
+            document.getElementById("estadoServicioCenso").textContent =
+                "No se pudo conservar una identidad estable para los servicios; resuelva el almacenamiento antes de capturar.";
             document.getElementById("seccionesCenso").replaceChildren();
             document.getElementById("resultadosCenso").hidden = true;
         } else if (availableServices.length > 1 && !activeServiceId) {
@@ -1273,7 +1292,10 @@
             renderCensusForService();
         }
         renderPendingAssignments();
-        window.AEEHState?.save();
+        if (window.AEEHState && !window.AEEHState.save()) {
+            document.getElementById("estadoServicioCenso").textContent =
+                "No se pudo guardar la selección del servicio en el estado del módulo.";
+        }
     }
 
     function renderCensusForService() {
@@ -1308,7 +1330,7 @@
             `Censo de ${service.label}${census.fileName ? ` · ${census.fileName}` : ""}.`;
         document.getElementById("detalleCenso").textContent =
             `${summary.records} registro(s) completo(s); ${summary.incomplete} fila(s) incompleta(s) excluida(s). El archivo original debe seleccionarse de nuevo para reprocesarlo.`;
-        resultsCard.hidden = !results.querySelector("[data-result-section]");
+        resultsCard.hidden = false;
     }
 
     function renderPendingAssignments() {
@@ -1385,7 +1407,7 @@
             ...censusStore,
             services: { ...censusStore.services, [service.id]: census }
         };
-        if (!persistCensusStore(nextStore) || !window.AEEHState?.save()) {
+        if (!window.AEEHState?.save() || !persistCensusStore(nextStore)) {
             document.getElementById("estadoCenso").textContent =
                 "No se pudo guardar el Censo en el almacenamiento de esta sesión. Los cambios actuales solo permanecen en pantalla.";
             return false;
@@ -1421,7 +1443,8 @@
             ...sourceCensus,
             serviceId: service.id,
             serviceIndex: service.index,
-            serviceNumber: service.serviceNumber
+            serviceNumber: service.serviceNumber,
+            summary: summarizeCensus(sourceCensus)
         };
         if (pendingItem) next.unassigned.splice(pendingIndex, 1);
         else delete next.services[pendingId];
@@ -1515,49 +1538,6 @@
         return new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 }).format(value);
     }
 
-    function updateLogoPreview() {
-        const selector = document.getElementById("logotipoDependencia");
-        const status = document.getElementById("estadoLogotipoDependencia");
-        const image = document.getElementById("vistaLogotipoDependencia");
-        const remove = document.getElementById("eliminarLogotipoDependencia");
-
-        if (!selector || !status || !image || !remove) {
-            return;
-        }
-
-        const preview = window.AEEHState?.getFilePreviews(selector.id)[0];
-        if (!preview) {
-            image.hidden = true;
-            image.removeAttribute("src");
-            remove.hidden = true;
-            status.textContent = "Sin logotipo de dependencia seleccionado.";
-            return;
-        }
-        image.src = preview.dataUrl;
-        image.hidden = false;
-        remove.hidden = false;
-        status.textContent = `Vista previa temporal: ${preview.name}. No se inserta en el XLSX original.`;
-    }
-
-    async function logoPreview(file) {
-        if (typeof createImageBitmap !== "function") throw new Error("El navegador no permite preparar una vista previa de imagen.");
-        const bitmap = await createImageBitmap(file);
-        const scale = Math.min(1, 640 / Math.max(bitmap.width, bitmap.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-        canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-        bitmap.close();
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-        if (!blob) throw new Error("No se pudo preparar la imagen.");
-        const reader = new FileReader();
-        return new Promise((resolve, reject) => {
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(reader.error);
-            reader.readAsDataURL(blob);
-        });
-    }
-
     async function processFile() {
         const selector = document.getElementById("archivoExcel");
         const status = document.getElementById("estadoCenso");
@@ -1587,10 +1567,6 @@
                 status.textContent = "Importación cancelada; se conservó el Censo existente.";
                 return;
             }
-            const previews = window.AEEHState.getFilePreviews("logotipoDependencia");
-            if (previews.length && !window.AEEHState.setFilePreviews("logotipoDependencia", previews)) {
-                throw new Error("No se pudo conservar el logotipo de la dependencia.");
-            }
             const importedSections = {};
             workbook.sections.forEach(({ section, rows }) => {
                 importedSections[section.id] = { present: true, rows };
@@ -1608,7 +1584,7 @@
                 ...censusStore,
                 services: { ...censusStore.services, [activeServiceId]: importedCensus }
             };
-            if (!persistCensusStore(nextStore)) {
+            if (!window.AEEHState?.save() || !persistCensusStore(nextStore)) {
                 throw new Error("No fue posible guardar el Censo importado en el almacenamiento de esta sesión.");
             }
             censusStore = nextStore;
@@ -1624,13 +1600,14 @@
             const summary = summarizeCensus(importedCensus);
             detail.textContent = `${recordCount} filas con datos; ${summary.records} registro(s) completo(s) y ${summary.incomplete} incompleto(s). Las filas vacías y los valores ColumnaN se ignoraron; las fórmulas se recalculan en la plataforma.${extraMessage}`;
             const saved = window.AEEHState.save();
-            if (!saved) status.textContent = "El libro se procesó, pero no fue posible guardar toda la información del módulo.";
+            if (!saved) {
+                status.textContent = "El Censo quedó guardado, pero no se pudieron conservar algunos campos generales del módulo.";
+            }
         } catch (error) {
             status.textContent = "No se pudo procesar el archivo.";
             detail.textContent = error.message;
         } finally {
             button.disabled = false;
-            updateLogoPreview();
         }
     }
 
@@ -1700,20 +1677,6 @@
         }
     }
 
-    async function selectLogo(event) {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        try {
-            const dataUrl = await logoPreview(file);
-            const saved = window.AEEHState.setFilePreviews("logotipoDependencia", [{ name: file.name, dataUrl }]);
-            window.AEEHState.save();
-            updateLogoPreview();
-            if (!saved) document.getElementById("estadoLogotipoDependencia").textContent = "Vista previa disponible solo mientras la página permanezca abierta; no cupo en el estado de sesión.";
-        } catch (error) {
-            document.getElementById("estadoLogotipoDependencia").textContent = `No se pudo leer el logotipo: ${error.message}`;
-        }
-    }
-
     function initialize() {
         const pageNumber = document.getElementById("numeroPagina");
         if (pageNumber) pageNumber.textContent = "Página 8 de 9";
@@ -1737,7 +1700,10 @@
                 return;
             }
             activeServiceId = nextServiceId;
-            window.AEEHState?.save();
+            if (window.AEEHState && !window.AEEHState.save()) {
+                document.getElementById("estadoServicioCenso").textContent =
+                    "No se pudo guardar la selección del servicio en el estado del módulo.";
+            }
             renderCensusForService();
             renderPendingAssignments();
             if (activeServiceId) {
@@ -1775,18 +1741,6 @@
             });
         }
 
-        const logoSelector = document.getElementById("logotipoDependencia");
-        const logoRemove = document.getElementById("eliminarLogotipoDependencia");
-        if (logoSelector) logoSelector.addEventListener("change", selectLogo);
-        if (logoRemove) {
-            logoRemove.addEventListener("click", () => {
-                if (logoSelector) logoSelector.value = "";
-                window.AEEHState?.setFilePreviews("logotipoDependencia", []);
-                window.AEEHState?.save();
-                updateLogoPreview();
-            });
-        }
-
         const sections = document.getElementById("seccionesCenso");
         if (sections) {
             sections.addEventListener("input", event => {
@@ -1813,7 +1767,6 @@
         }
 
         restoreProcessedData();
-        updateLogoPreview();
     }
 
     window.descargarFormato = downloadTemplate;

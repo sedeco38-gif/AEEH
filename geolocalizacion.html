@@ -351,6 +351,57 @@
             }
         }
 
+        .card-domicilio-referencia {
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            background: #f8f8f8;
+            border: 1px solid #dedede;
+            box-shadow: none;
+        }
+
+        .card-domicilio-referencia h3 {
+            margin-bottom: 6px;
+            padding-bottom: 0;
+            border-bottom: 0;
+            color: #555;
+            font-size: 16px;
+        }
+
+        .nota-domicilio-referencia {
+            margin: 0 0 12px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .domicilio-referencia-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px 16px;
+        }
+
+        .domicilio-referencia-grid .campo-completo {
+            grid-column: 1 / -1;
+        }
+
+        .domicilio-referencia-grid .campo label {
+            margin-bottom: 4px;
+            color: #555;
+            font-size: 13px;
+        }
+
+        .domicilio-referencia-grid .campo input {
+            padding: 9px 10px;
+        }
+
+        @media(max-width:520px) {
+            .domicilio-referencia-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .domicilio-referencia-grid .campo-completo {
+                grid-column: auto;
+            }
+        }
+
         #mapa {
             height: 450px;
             width: 100%;
@@ -453,11 +504,12 @@
 
                 <!-- UBICACIÓN -->
 
-                <div class="card">
+                <div class="card card-domicilio-referencia">
 
-                    <h3>Ubicación del Inmueble</h3>
+                    <h3>Domicilio de referencia</h3>
+                    <p class="nota-domicilio-referencia">Datos capturados en Datos Generales y mostrados aquí como referencia para ubicar el inmueble.</p>
 
-                    <div class="grid">
+                    <div class="grid domicilio-referencia-grid">
 
                         <div class="campo">
                             <label for="estadoInmueble">Estado</label>
@@ -521,7 +573,7 @@
 
                     <h3>Evidencia fotográfica de ubicación</h3>
 
-                    <p class="app-photo-help">Adjunte una imagen de referencia del edificio/dependencia para apoyar la ubicación.</p>
+                    <p class="app-photo-help">Adjunte una fotografía que muestre el edificio o dependencia cuya ubicación registra; servirá como referencia visual para identificarlo.</p>
 
                     <div class="grid">
 
