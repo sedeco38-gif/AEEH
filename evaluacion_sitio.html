@@ -466,6 +466,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="app.css">
     <script src="app_state.js" defer></script>
+    <script src="app_header.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -565,14 +566,14 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label for="areaTotalAzotea">Área total de cubierta (m²)</label>
+                            <label for="areaTotalAzotea">Área total de azotea (m²)</label>
                             <input id="areaTotalAzotea" type="number" min="0" step="any">
                         </div>
 
                         <div class="campo">
                             <label for="areaDisponible">Área disponible destinada a la generación (m²)</label>
                             <input type="number" id="areaDisponible" min="0" step="any">
-                            <small class="app-photo-help">Se registra una sola vez para el inmueble; no implica que cada servicio eléctrico tenga una cubierta independiente.</small>
+                            <small class="app-photo-help">Se registra una sola vez para el inmueble; no implica que cada servicio eléctrico tenga una azotea independiente.</small>
                         </div>
 
                     </div>
@@ -588,7 +589,7 @@
                     <div class="grid">
 
                         <div class="campo">
-                            <label for="tipoCubierta">¿Qué tipo de cubierta tiene el inmueble?</label>
+                            <label for="tipoCubierta">¿Qué tipo de azotea tiene el inmueble?</label>
                             <select id="tipoCubierta" class="input-select">
                                 <option value="">Seleccione...</option>
                                 <option value="plana">Plana</option>
@@ -604,7 +605,7 @@
                                     <div class="tooltip">
                                         <img src="orientacion_azotea.png">
                                         <p>
-                                            Seleccione la orientación predominante de los faldones de la cubierta.
+                                            Seleccione la orientación predominante de los faldones de la azotea.
                                             La guía muestra direcciones cardinales y no mide inclinación ni pendiente.
                                         </p>
                                     </div>
@@ -620,7 +621,7 @@
                         </div>
 
                         <div class="campo">
-                            <label for="tipoAzotea">Material de la cubierta</label>
+                            <label for="tipoAzotea">Material de la azotea</label>
 
                             <select id="tipoAzotea" class="input-select">
                                 <option value="">Seleccione...</option>
@@ -633,7 +634,7 @@
                         </div>
 
                         <div class="campo">
-                            <label for="estadoAzotea">Estado de la cubierta</label>
+                            <label for="estadoAzotea">Estado de la azotea</label>
 
                             <select id="estadoAzotea" class="input-select">
                                 <option value="">Seleccione...</option>
@@ -678,10 +679,10 @@
 
                 <div class="card">
 
-                    <h3>Fotografías de referencia de la cubierta</h3>
+                    <h3>Fotografías de referencia de la azotea</h3>
 
-                    <p class="app-photo-help">Esta evidencia es exclusiva de la cubierta del inmueble o dependencia evaluado; no sustituye las fotografías generales del inmueble ni la evidencia de ubicación.</p>
-                    <p class="app-photo-help">Con extrema precaución, posiciónese en un lugar seguro desde el que pueda observar la cubierta. Procure capturar imágenes que permitan apreciar la mayor parte de la superficie disponible y sus condiciones. Si no existe un punto de observación seguro, tome las imágenes desde otro lugar adecuado; no es necesario subir a la cubierta.</p>
+                    <p class="app-photo-help">Esta evidencia es exclusiva de la azotea del inmueble o dependencia evaluado; no sustituye las fotografías generales del inmueble ni la evidencia de ubicación.</p>
+                    <p class="app-photo-help">Con extrema precaución, posiciónese en un lugar seguro desde el que pueda observar la azotea. Procure capturar imágenes que permitan apreciar la mayor parte de la superficie disponible y sus condiciones. Si no existe un punto de observación seguro, tome las imágenes desde otro lugar adecuado; no es necesario subir a la azotea.</p>
 
                     <div class="orientacion-fotos" aria-label="Direcciones de referencia">
                         <span>Dirección sur</span>
@@ -691,13 +692,13 @@
 
                     <div class="grid">
                         <div class="campo">
-                            <label for="fotoAzotea">Agregar hasta cinco fotografías de la cubierta</label>
-                            <input id="fotoAzotea" type="file" accept="image/*" multiple data-app-state-file-preview aria-describedby="estadoFotosCubierta" aria-label="Seleccionar hasta cinco fotografías de referencia de la cubierta">
+                            <label for="fotoAzotea">Agregar hasta cinco fotografías de la azotea</label>
+                            <input id="fotoAzotea" type="file" accept="image/*" multiple data-app-state-file-preview aria-describedby="estadoFotosCubierta" aria-label="Seleccionar hasta cinco fotografías de referencia de la azotea">
                         </div>
                     </div>
-                    <p id="estadoFotosCubierta" class="app-photo-status" role="status" aria-live="polite">No hay fotografías de cubierta seleccionadas.</p>
+                    <p id="estadoFotosCubierta" class="app-photo-status" role="status" aria-live="polite">No hay fotografías de azotea seleccionadas.</p>
                     <div id="galeriaFotosCubierta" class="app-photo-grid"></div>
-                    <dialog id="modalFotoCubierta" class="modal-foto-cubierta" aria-label="Vista ampliada de la fotografía de cubierta">
+                    <dialog id="modalFotoCubierta" class="modal-foto-cubierta" aria-label="Vista ampliada de la fotografía de azotea">
                         <div class="modal-foto-cubierta-contenido">
                             <button id="cerrarModalFotoCubierta" type="button" class="btn-cerrar-foto">Cerrar imagen ampliada</button>
                             <img id="imagenAmpliadaCubierta" alt="">
@@ -801,8 +802,8 @@
             campoOrientacion.style.display = tipo === "dosAguas" ? "flex" : "none";
             const aviso = document.getElementById("estadoTipoCubierta");
             if (aviso) {
-                aviso.textContent = tipo === "plana" && document.getElementById("orientacionPredominante").value
-                    ? "La orientación capturada se conserva, aunque no aplica a una cubierta plana."
+                    aviso.textContent = tipo === "plana" && document.getElementById("orientacionPredominante").value
+                    ? "La orientación capturada se conserva, aunque no aplica a una azotea plana."
                     : "";
             }
         }
@@ -863,7 +864,7 @@
                     const modal = document.getElementById("modalFotoCubierta");
                     const imagenAmpliada = document.getElementById("imagenAmpliadaCubierta");
                     imagenAmpliada.src = foto.dataUrl;
-                    imagenAmpliada.alt = `Fotografía ampliada de la cubierta: ${foto.name}`;
+                    imagenAmpliada.alt = `Fotografía ampliada de la azotea: ${foto.name}`;
                     modal.showModal();
                 });
 
@@ -877,7 +878,7 @@
                     const guardado = guardarFotosCubierta();
                     renderizarGaleriaCubierta();
                     actualizarEstadoFotosCubierta(guardado
-                        ? `${fotosCubierta.length} de 5 fotografías de cubierta guardadas en esta sesión.`
+                        ? `${fotosCubierta.length} de 5 fotografías de azotea guardadas en esta sesión.`
                         : "No fue posible guardar los cambios de las fotografías en esta sesión.");
                 });
 
@@ -887,11 +888,11 @@
             });
 
             if (!fotosCubierta.length) {
-                actualizarEstadoFotosCubierta("No hay fotografías de cubierta seleccionadas.");
+                actualizarEstadoFotosCubierta("No hay fotografías de azotea seleccionadas.");
             } else if (fotosCubierta.length >= 5) {
-                actualizarEstadoFotosCubierta("Se alcanzó el máximo de cinco fotografías de cubierta.");
+                actualizarEstadoFotosCubierta("Se alcanzó el máximo de cinco fotografías de azotea.");
             } else {
-                actualizarEstadoFotosCubierta(`${fotosCubierta.length} de 5 fotografías de cubierta guardadas en esta sesión.`);
+                actualizarEstadoFotosCubierta(`${fotosCubierta.length} de 5 fotografías de azotea guardadas en esta sesión.`);
             }
         }
 
@@ -929,7 +930,7 @@
             const espaciosDisponibles = Math.max(0, 5 - fotosCubierta.length);
             if (!espaciosDisponibles) {
                 selector.value = "";
-                actualizarEstadoFotosCubierta("Se alcanzó el máximo de cinco fotografías de cubierta.");
+                actualizarEstadoFotosCubierta("Se alcanzó el máximo de cinco fotografías de azotea.");
                 return;
             }
             const archivosPermitidos = archivos.slice(0, espaciosDisponibles);
@@ -942,7 +943,7 @@
                     fotosCubierta.push({ name: archivo.name, dataUrl: await comprimirFotoCubierta(archivo) });
                 } catch (error) {
                     fallidas++;
-                    console.error(`No se pudo preparar la fotografía de cubierta "${archivo.name}".`, error);
+                    console.error(`No se pudo preparar la fotografía de azotea "${archivo.name}".`, error);
                 }
             }
             selector.value = "";

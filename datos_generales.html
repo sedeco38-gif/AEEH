@@ -341,6 +341,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="app.css">
     <script src="app_state.js" defer></script>
+    <script src="app_header.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -484,7 +485,7 @@
                         <div class="campo">
                             <label for="tipoInmueble">Tipo de inmueble</label>
 
-                            <select id="tipoInmueble" class="input-select">
+                            <select id="tipoInmueble" class="input-select" aria-describedby="ayudaTipoInmueble">
                                 <option value="">Seleccione...</option>
                                 <option>Oficina Administrativa</option>
                                 <option>Centro Educativo</option>
@@ -495,6 +496,9 @@
                                 <option>Protección civil</option>
                                 <option>Otro</option>
                             </select>
+                            <small id="ayudaTipoInmueble" class="app-photo-help">
+                                Seleccione la categoría que mejor describa el inmueble evaluado, considerando su uso o función principal. Si ninguna corresponde, seleccione «Otro».
+                            </small>
 
                         </div>
 

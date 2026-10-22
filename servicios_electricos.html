@@ -179,13 +179,15 @@
             border-collapse: collapse;
             margin-top: 10px;
             font-size: 14px;
+            table-layout: fixed;
         }
 
         .tabla-linea-base th,
         .tabla-linea-base td {
             border: 1px solid #d8d8d8;
-            padding: 10px 8px;
+            padding: 4px 6px;
             text-align: center;
+            vertical-align: middle;
         }
 
         .tabla-linea-base th {
@@ -196,7 +198,9 @@
 
         .tabla-linea-base td input {
             width: 100%;
-            min-width: 90px;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
             padding: 8px 10px;
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -209,6 +213,43 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             background: white;
+        }
+
+        .tabla-linea-base th:nth-child(1), .tabla-linea-base td:nth-child(1) { width: 34%; }
+        .tabla-linea-base th:nth-child(2), .tabla-linea-base td:nth-child(2),
+        .tabla-linea-base th:nth-child(3), .tabla-linea-base td:nth-child(3) { width: 33%; }
+        .tabla-linea-base td:nth-child(2), .tabla-linea-base td:nth-child(3) { vertical-align: middle; }
+        .tabla-linea-base td:nth-child(2) input, .tabla-linea-base td:nth-child(3) input { height: 32px; padding: 5px 7px; }
+        .periodo-captura { min-width: 0; text-align: left; vertical-align: top !important; }
+        .periodo-fechas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; }
+        .periodo-fechas label, .periodo-historico-label { display: block; color: #555; font-size: 10px; line-height: 1.1; margin-bottom: 1px; }
+        .periodo-fechas input { min-width: 0 !important; height: 30px; padding: 4px 5px !important; font-size: 11px; }
+        .periodo-calendario { position: relative; margin-top: 3px; }
+        .periodo-calendario summary { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; list-style: none; color: #701F2F; background: #fff8f8; border: 1px solid #c9a5ad; border-radius: 7px; padding: 4px 7px; font-size: 11px; font-weight: 600; line-height: 1.1; transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+        .periodo-calendario summary::-webkit-details-marker { display: none; }
+        .periodo-calendario summary::before { content: "📅"; font-size: 13px; line-height: 1; }
+        .periodo-calendario summary:hover { background: #f5e7ea; border-color: #701F2F; }
+        .periodo-calendario summary:active { background: #ead1d7; }
+        .periodo-calendario summary:focus-visible { outline: 3px solid rgba(21, 101, 192, .35); outline-offset: 2px; }
+        .periodo-calendario-panel { position: absolute; z-index: 20; left: 0; top: 34px; width: min(540px, calc(100vw - 32px)); padding: 12px; background: #fff; border: 1px solid #d8c6ca; border-radius: 10px; box-shadow: 0 8px 20px rgba(55, 25, 32, .16); }
+        .calendario-controles { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; color: #4b3439; font-size: 12px; font-weight: 600; }
+        .calendario-controles .btn { min-width: 32px; padding: 5px 8px; border: 1px solid #c9a5ad; border-radius: 6px; background: #fff8f8; color: #701F2F; }
+        .calendario-controles .btn:hover { background: #f5e7ea; }
+        .calendario-controles .btn:focus-visible { outline: 3px solid rgba(21, 101, 192, .35); outline-offset: 2px; }
+        .calendario-meses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .calendario-mes h4 { margin: 0 0 7px; color: #701F2F; text-align: center; font-size: 13px; }
+        .calendario-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+        .calendario-grid span { min-height: 28px; display: grid; place-items: center; color: #777; font-size: 11px; font-weight: 600; }
+        .calendario-grid button { min-height: 28px; padding: 3px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #33272a; cursor: pointer; font-size: 12px; }
+        .calendario-grid button:hover { background: #f5e7ea; border-color: #c9a5ad; }
+        .calendario-grid button:focus-visible { outline: 3px solid rgba(21, 101, 192, .35); outline-offset: 1px; }
+        .calendario-grid button.dia-seleccionado, .calendario-grid button.dia-en-intervalo { background: #ead1d7; color: #531624; }
+        .calendario-grid button.dia-seleccionado { background: #701F2F; color: white; font-weight: 700; }
+        .periodo-advertencia { display: block; min-height: 0; margin-top: 2px; color: #8a4b00; font-size: 11px; line-height: 1.15; }
+        .periodo-historico { margin-top: 6px; padding: 6px; background: #f7f7f7; border-radius: 5px; font-size: 12px; }
+        @media (max-width: 700px) {
+            .periodo-fechas, .calendario-meses { grid-template-columns: 1fr; }
+            .periodo-calendario-panel { position: fixed; left: 16px; right: 16px; top: 20vh; width: auto; max-height: 70vh; overflow: auto; }
         }
 
         .texto-ayuda {
@@ -358,6 +399,48 @@
             color: white;
         }
 
+        .asociacion-generacion {
+            margin: 0 0 18px;
+            padding: 12px 14px;
+            border: 1px solid #d8c6ca;
+            border-radius: 8px;
+            background: #fff8f8;
+        }
+
+        .asociacion-generacion label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 0;
+            color: #4b3439;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .asociacion-generacion input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #701F2F;
+            flex: 0 0 auto;
+        }
+
+        .asociacion-generacion small {
+            display: block;
+            margin-top: 6px;
+            color: #6b555b;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .asociacion-generacion[data-estado="advertencia"] small,
+        .asociacion-generacion[data-estado="conflicto"] small {
+            color: #8a4b00;
+        }
+
+        .asociacion-generacion[data-estado="valida"] small {
+            color: #2E7D32;
+        }
+
         /* PIE */
 
         footer {
@@ -424,6 +507,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="app.css">
     <script src="app_state.js" defer></script>
+    <script src="app_header.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -718,7 +802,7 @@
                 return { clave: "bimestral", etiqueta: "Bimestral", inicial: 6, maximo: 12 };
             }
 
-            return { clave: "mensual", etiqueta: "Mensual", inicial: 12, maximo: 24 };
+            return { clave: "desconocida", etiqueta: "No determinada", inicial: 1, maximo: 24 };
         }
 
         function tarifaTieneDemanda(tarifa) {
@@ -811,6 +895,8 @@
             if (texto) {
                 if (info.clave === "pendiente") {
                     texto.textContent = "Seleccione la tarifa para configurar el registro de facturaciones.";
+                } else if (info.clave === "desconocida") {
+                    texto.textContent = "Periodicidad no determinada para esta tarifa; capture las fechas reales del recibo y revise el caso.";
                 } else {
                     texto.textContent = `Registro de facturaciones ${info.etiqueta.toLowerCase()}. Máximo permitido: ${info.maximo} registros.`;
                 }
@@ -831,7 +917,251 @@
             return Math.max(1, parseInt(contador?.value, 10) || 1);
         }
 
+        function normalizarPeriodoRegistro(registro) {
+            const inicio = String(registro.fechaInicio || "").trim();
+            const fin = String(registro.fechaFin || "").trim();
+            if (inicio && fin && fin >= inicio) return `fecha:${inicio}|${fin}`;
+            const historico = String(registro.periodo || "")
+                .trim().replace(/\s+/g, " ").toLocaleLowerCase("es-MX");
+            return historico ? `historico:${historico}` : "";
+        }
+
+        function analizarRegistrosMinimos(servicioIndex) {
+            const tarifa = document.getElementById(`tarifa_${servicioIndex}`)?.value || "";
+            const periodicidad = detectarPeriodicidad(tarifa);
+            const registros = obtenerRegistrosServicio(servicioIndex);
+            const incompletos = [];
+            const gruposPeriodos = new Map();
+
+            registros.forEach((registro, indice) => {
+                const tieneHistorico = Boolean(registro.periodo);
+                const tieneInicio = Boolean(registro.fechaInicio);
+                const tieneFin = Boolean(registro.fechaFin);
+                const fechasParciales = tieneInicio !== tieneFin;
+                const fechasValidas = !fechasParciales &&
+                    (!tieneInicio || registro.fechaFin >= registro.fechaInicio);
+                const periodoIdentificable = tieneHistorico || (tieneInicio && tieneFin);
+                const consumoCapturado = registro.consumo !== null;
+                const vacia = !tieneHistorico && !tieneInicio && !tieneFin &&
+                    registro.consumo === null && registro.factura === null;
+                const esValido = !vacia && periodoIdentificable && consumoCapturado && fechasValidas;
+
+                if (esValido) {
+                    const clave = normalizarPeriodoRegistro(registro);
+                    if (!gruposPeriodos.has(clave)) gruposPeriodos.set(clave, []);
+                    gruposPeriodos.get(clave).push(indice + 1);
+                } else {
+                    incompletos.push({ indice: indice + 1, vacia });
+                }
+            });
+
+            const duplicados = Array.from(gruposPeriodos.values()).filter(grupo => grupo.length > 1).flat();
+            const periodosUnicos = Array.from(gruposPeriodos.values()).map(grupo => grupo[0]);
+            return {
+                periodicidad,
+                registros,
+                validosUnicos: periodosUnicos,
+                duplicados,
+                incompletos
+            };
+        }
+
+        function validarMinimosRegistros() {
+            const pendientes = [];
+            let primerError = null;
+
+            document.querySelectorAll(".acordeon").forEach((_, index) => {
+                const servicio = index + 1;
+                const analisis = analizarRegistrosMinimos(servicio);
+                const { periodicidad, validosUnicos, duplicados, incompletos } = analisis;
+                const estado = document.getElementById(`estadoFacturacion_${servicio}`);
+
+                if (!["mensual", "bimestral"].includes(periodicidad.clave)) {
+                    const mensaje = periodicidad.clave === "pendiente"
+                        ? "Seleccione una tarifa para determinar el mínimo de registros."
+                        : "No se pudo determinar la periodicidad de esta tarifa; el mínimo no puede darse por satisfecho.";
+                    if (estado) estado.textContent = `Servicio ${servicio}: ${mensaje}`;
+                    pendientes.push(`Servicio ${servicio}: ${mensaje}`);
+                    return;
+                }
+
+                const faltantes = Math.max(0, periodicidad.inicial - validosUnicos.length);
+                const detalleIncompletos = incompletos.length
+                    ? ` Registros vacíos o incompletos: ${incompletos.map(registro => registro.indice).join(", ")}.`
+                    : "";
+                const detalleDuplicados = duplicados.length
+                    ? ` Registros duplicados: ${duplicados.join(", ")}.`
+                    : "";
+                if (faltantes > 0 || incompletos.length || duplicados.length) {
+                    const mensaje = `Servicio ${servicio}: ${validosUnicos.length} registros únicos válidos de ${periodicidad.inicial} requeridos; faltan ${faltantes}.${detalleIncompletos}${detalleDuplicados}`;
+                    if (estado) estado.textContent = mensaje;
+                    pendientes.push(mensaje);
+                    if (!primerError) {
+                        primerError = document.getElementById(`fechaInicio_${servicio}_${incompletos[0]?.indice || 1}`) ||
+                            document.getElementById(`consumo_${servicio}_${incompletos[0]?.indice || 1}`);
+                    }
+                } else if (estado) {
+                    estado.textContent = `Registro de facturaciones ${periodicidad.etiqueta.toLowerCase()}. Registros únicos válidos: ${validosUnicos.length} de ${periodicidad.inicial} requeridos.`;
+                }
+            });
+
+            if (pendientes.length) {
+                const estado = document.getElementById("estadoGuardadoServicios");
+                if (estado) estado.textContent = pendientes.join(" ");
+                primerError?.focus();
+                return false;
+            }
+            return true;
+        }
+
         const tarifaVigentePorServicio = {};
+
+        function obtenerDirectorioServiciosGeneracion() {
+            const campos = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
+            const identidades = window.AEEHState?.getModuleData(
+                "servicios_electricos.html",
+                "identidadesServicios"
+            ) || {};
+            const cantidad = Math.max(0, Number.parseInt(campos.cantidadMedidores, 10) || 0);
+            return Array.from({ length: cantidad }, (_, indice) => {
+                const index = indice + 1;
+                return {
+                    index,
+                    serviceId: String(campos[`servicioIdentidad_${index}`] || identidades.activeByIndex?.[index] || "").trim(),
+                    numero: String(campos[`servicio_${index}`] || "").trim()
+                };
+            }).filter(servicio => servicio.serviceId);
+        }
+
+        function leerAsociacionGeneracion() {
+            return window.AEEHState?.getModuleData(
+                "servicios_electricos.html",
+                "asociacionGeneracion"
+            ) || {};
+        }
+
+        function resolverAsociacionGeneracion() {
+            const generacion = window.AEEHState?.getModuleFields("sistema_generacion.html") || {};
+            const servicios = obtenerDirectorioServiciosGeneracion();
+            const asociacion = leerAsociacionGeneracion();
+            const serviceIdNuevo = String(asociacion.serviceId || "").trim();
+            const indiceHistorico = Number.parseInt(generacion.servicioGeneracion, 10);
+            const servicioHistorico = Number.isInteger(indiceHistorico)
+                ? servicios.find(servicio => servicio.index === indiceHistorico) || null
+                : null;
+            const tieneHistorico = String(generacion.servicioGeneracion || "").trim() !== "";
+
+            if (generacion.tieneGeneracion !== "si") {
+                return { estado: "sin-generacion", serviceId: "", servicio: null, servicios };
+            }
+            if (!serviceIdNuevo && !tieneHistorico) {
+                return { estado: "ausente", serviceId: "", servicio: null, servicios };
+            }
+            if (serviceIdNuevo) {
+                const servicioNuevo = servicios.find(servicio => servicio.serviceId === serviceIdNuevo) || null;
+                if (!servicioNuevo) {
+                    return { estado: "inactiva", serviceId: serviceIdNuevo, servicio: null, servicios };
+                }
+                const conflicto = servicioHistorico && servicioHistorico.serviceId !== serviceIdNuevo;
+                if (conflicto && asociacion.resolucionHistorica !== "nueva") {
+                    return { estado: "conflicto", serviceId: serviceIdNuevo, servicio: servicioNuevo, servicioHistorico, servicios };
+                }
+                return {
+                    estado: conflicto ? "valida-confirmada" : "valida",
+                    serviceId: serviceIdNuevo,
+                    servicio: servicioNuevo,
+                    servicioHistorico,
+                    servicios
+                };
+            }
+            if (servicios.length === 1 && indiceHistorico === 1 && servicioHistorico) {
+                return {
+                    estado: "historica-segura",
+                    serviceId: servicioHistorico.serviceId,
+                    servicio: servicioHistorico,
+                    servicios
+                };
+            }
+            return {
+                estado: "historica-ambigua",
+                serviceId: "",
+                servicio: null,
+                indiceHistorico: Number.isInteger(indiceHistorico) ? indiceHistorico : null,
+                servicios
+            };
+        }
+
+        function textoEstadoAsociacionGeneracion(resolucion, servicio) {
+            if (resolucion.estado === "sin-generacion") return "";
+            if (resolucion.estado === "ausente") return "Seleccione este servicio si corresponde al sistema de generación.";
+            if (resolucion.estado === "inactiva") return "La asociación guardada apunta a un servicio que ya no está activo. Revise y seleccione un servicio; no se reasignó automáticamente.";
+            if (resolucion.estado === "conflicto") return "Existe una asociación nueva y otra histórica diferente. Seleccione este servicio nuevamente para confirmar la asociación nueva; el valor histórico se conservará.";
+            if (resolucion.estado === "historica-ambigua") return `La asociación histórica al Servicio ${resolucion.indiceHistorico ?? "desconocido"} no puede resolverse con seguridad. Seleccione este servicio para confirmar una asociación nueva.`;
+            if (resolucion.estado === "historica-segura") return "Asociación histórica compatible con el único servicio actual. Seleccione este control para confirmarla como asociación nueva.";
+            if (resolucion.servicio?.serviceId === servicio.serviceId) return resolucion.estado === "valida-confirmada"
+                ? "Asociación nueva confirmada; el valor histórico se conserva."
+                : "Este es el servicio asociado al sistema de generación.";
+            return "";
+        }
+
+        function renderizarAsociacionGeneracion() {
+            const controles = Array.from(document.querySelectorAll("[data-service-association]"));
+            const bloques = Array.from(document.querySelectorAll(".asociacion-generacion"));
+            const resolucion = resolverAsociacionGeneracion();
+            const mostrar = resolucion.estado !== "sin-generacion" && resolucion.servicios.length > 0;
+
+            bloques.forEach(bloque => {
+                const servicio = resolucion.servicios.find(item => item.serviceId === bloque.querySelector("[data-service-association]")?.dataset.serviceId);
+                const small = bloque.querySelector("small");
+                bloque.hidden = !mostrar;
+                bloque.dataset.estado = resolucion.estado;
+                if (small) small.textContent = servicio ? textoEstadoAsociacionGeneracion(resolucion, servicio) : "";
+            });
+
+            controles.forEach(control => {
+                const serviceId = String(control.dataset.serviceId || "");
+                control.disabled = !mostrar;
+                control.checked = mostrar && resolucion.estado !== "conflicto" && resolucion.estado !== "historica-ambigua" && resolucion.estado !== "inactiva" && resolucion.serviceId === serviceId && resolucion.estado !== "historica-segura";
+            });
+
+            if (resolucion.estado === "sin-generacion") return;
+            if (!resolucion.servicios.length) {
+                document.querySelectorAll(".asociacion-generacion small").forEach(small => {
+                    small.textContent = "No hay servicios eléctricos activos para asociar la generación.";
+                });
+            }
+        }
+
+        function seleccionarAsociacionGeneracion(serviceId) {
+            if (!serviceId || resolverAsociacionGeneracion().estado === "sin-generacion") return;
+            const anterior = leerAsociacionGeneracion();
+            const historico = window.AEEHState?.getModuleFields("sistema_generacion.html") || {};
+            const indiceHistorico = Number.parseInt(historico.servicioGeneracion, 10);
+            const resolucion = resolverAsociacionGeneracion();
+            const servicioHistorico = resolucion.servicioHistorico;
+            const resolucionHistorica = servicioHistorico && servicioHistorico.serviceId !== serviceId ? "nueva" : anterior.resolucionHistorica;
+            window.AEEHState?.setModuleData("servicios_electricos.html", "asociacionGeneracion", {
+                version: 1,
+                serviceId,
+                resolucionHistorica: resolucionHistorica || undefined,
+                indiceHistorico: Number.isInteger(indiceHistorico) ? indiceHistorico : undefined
+            });
+            window.AEEHState?.save();
+            renderizarAsociacionGeneracion();
+            actualizarResultados();
+            validarServicios();
+        }
+
+        function inicializarAsociacionGeneracion() {
+            const controles = document.querySelectorAll("[data-service-association]");
+            controles.forEach(control => {
+                const servicioIndex = control.id.replace("asociarGeneracion_", "");
+                const identidad = document.getElementById(`servicioIdentidad_${servicioIndex}`);
+                control.dataset.serviceId = identidad?.value || "";
+                control.addEventListener("change", () => seleccionarAsociacionGeneracion(control.dataset.serviceId));
+            });
+            renderizarAsociacionGeneracion();
+        }
 
         function generarServicios() {
 
@@ -892,6 +1222,14 @@
         <div class="card">
 
             <input type="text" id="servicioIdentidad_${i}" data-app-state readonly style="display:none;">
+
+            <div class="asociacion-generacion" id="asociacionGeneracion_${i}" data-estado="" hidden>
+                <label for="asociarGeneracion_${i}">
+                    <input type="radio" id="asociarGeneracion_${i}" name="asociacionGeneracionServicio" value="" data-service-association data-app-state-ignore>
+                    ¿A cuál servicio eléctrico está conectado?
+                </label>
+                <small id="estadoAsociacionGeneracion_${i}" role="status" aria-live="polite"></small>
+            </div>
 
             <div class="grid">
 
@@ -999,7 +1337,7 @@
 
                     <label>
 
-                        Demanda Máxima Registrada (kW)
+                        Carga contratada
 
                     </label>
 
@@ -1067,6 +1405,11 @@
             </p>
 
             <table class="tabla-linea-base">
+                <colgroup>
+                    <col style="width:34%">
+                    <col style="width:33%">
+                    <col style="width:33%">
+                </colgroup>
                 <thead>
                     <tr>
                         <th>Periodo</th>
@@ -1097,6 +1440,7 @@
             acordeones.forEach((acordeon, index) => asignarIdentificadoresServicio(acordeon, index + 1));
 
             window.AEEHState?.restore();
+
             const identidadActualizada = {
                 version: 1,
                 activeCount: cantidad,
@@ -1155,6 +1499,8 @@
 
             window.AEEHState?.restore();
 
+            inicializarAsociacionGeneracion();
+
             acordeones.forEach((acordeon, index) => {
                 const servicioIndex = index + 1;
                 const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
@@ -1195,19 +1541,37 @@
                 const fila = document.createElement("tr");
                 fila.dataset.periodo = numeroPeriodo;
                 fila.innerHTML = `
-                        <td><input id="periodo_${servicioIndex}_${numeroPeriodo}" type="text" aria-label="Periodo del registro ${numeroPeriodo}"></td>
+                        <td class="periodo-captura">
+                            <div class="periodo-fechas">
+                        <div><label for="fechaInicio_${servicioIndex}_${numeroPeriodo}">Fecha inicial</label><input id="fechaInicio_${servicioIndex}_${numeroPeriodo}" type="date" data-fecha-periodo="inicio" aria-label="Fecha inicial del registro ${numeroPeriodo}" max="${fechaMaximaCalendario()}"></div>
+                        <div><label for="fechaFin_${servicioIndex}_${numeroPeriodo}">Fecha final</label><input id="fechaFin_${servicioIndex}_${numeroPeriodo}" type="date" data-fecha-periodo="fin" aria-label="Fecha final del registro ${numeroPeriodo}" max="${fechaMaximaCalendario()}"></div>
+                            </div>
+                            <details class="periodo-calendario">
+                                <summary aria-label="Seleccionar fechas del periodo de facturación">Seleccionar fechas</summary>
+                                <div class="periodo-calendario-panel" data-calendario-panel></div>
+                            </details>
+                            <span class="periodo-advertencia" data-periodo-advertencia role="status" aria-live="polite"></span>
+                            <div class="periodo-historico" data-periodo-historico hidden>
+                                <span class="periodo-historico-label">Periodo histórico conservado</span>
+                                <input id="periodo_${servicioIndex}_${numeroPeriodo}" type="text" data-historico-periodo data-app-state aria-label="Periodo histórico del registro ${numeroPeriodo}" readonly>
+                                <button type="button" class="btn btn-historico" data-editar-historico>Capturar fechas nuevas</button>
+                            </div>
+                        </td>
                         <td><input id="consumo_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Consumo del periodo ${numeroPeriodo} (kWh)"></td>
                         <td><input id="factura_${servicioIndex}_${numeroPeriodo}" type="number" min="0" step="any" aria-label="Facturación del periodo ${numeroPeriodo} ($)"></td>
                     `;
                 tbody.appendChild(fila);
-                ["periodo", "consumo", "factura"].forEach(tipo => {
-                    const campo = document.getElementById(`${tipo}_${servicioIndex}_${numeroPeriodo}`);
+                ["fechaInicio", "fechaFin", "periodo", "consumo", "factura"].forEach(tipo => {
+                    const campo = tipo === "periodo"
+                        ? fila.querySelector("[data-historico-periodo]")
+                        : document.getElementById(`${tipo}_${servicioIndex}_${numeroPeriodo}`);
                     if (!campo) return;
                     const valorActual = camposAnteriores[campo.id];
                     const valorPersistido = servicios[campo.id];
                     if (valorActual !== undefined) campo.value = valorActual;
                     else if (valorPersistido !== undefined && valorPersistido !== null) campo.value = valorPersistido;
                 });
+                actualizarPresentacionHistorica(servicioIndex, numeroPeriodo);
             }
 
             const contador = document.getElementById(`numeroFacturaciones_${servicioIndex}`);
@@ -1347,6 +1711,8 @@
 
             for (let registro = 1; registro <= cantidad; registro++) {
                 const periodo = document.getElementById(`periodo_${servicioIndex}_${registro}`)?.value?.trim() || "";
+                const fechaInicio = document.getElementById(`fechaInicio_${servicioIndex}_${registro}`)?.value || "";
+                const fechaFin = document.getElementById(`fechaFin_${servicioIndex}_${registro}`)?.value || "";
                 const consumoRaw = document.getElementById(`consumo_${servicioIndex}_${registro}`)?.value;
                 const facturaRaw = document.getElementById(`factura_${servicioIndex}_${registro}`)?.value;
                 const consumo = consumoRaw === "" || consumoRaw === undefined || consumoRaw === null ? null : Number(consumoRaw);
@@ -1354,6 +1720,8 @@
 
                 registros.push({
                     periodo,
+                    fechaInicio,
+                    fechaFin,
                     consumo: Number.isFinite(consumo) ? consumo : null,
                     factura: Number.isFinite(factura) ? factura : null
                 });
@@ -1379,15 +1747,8 @@
                 generacion.potenciaAerogenerador,
                 generacion.capacidadInversores
             ].filter(valor => valor !== undefined && valor !== null && String(valor).trim() !== "");
-            const cantidadServicios = document.querySelectorAll(".acordeon").length;
-            const servicioCapturado = Number.parseInt(generacion.servicioGeneracion, 10);
-            const servicio = Number.isInteger(servicioCapturado) &&
-                servicioCapturado >= 1 &&
-                servicioCapturado <= cantidadServicios
-                ? servicioCapturado
-                : cantidadServicios === 1
-                    ? 1
-                    : null;
+            const asociacion = resolverAsociacionGeneracion();
+            const servicio = asociacion.servicio?.index || null;
             const tipoSistema = {
                 fotovoltaico: "Fotovoltaico",
                 eolico: "Eólico",
@@ -1404,9 +1765,13 @@
 
             return {
                 tieneGeneracion: "si",
-                texto: servicio === null
-                    ? `Generación capturada (${detalle}); falta asociarla a un servicio eléctrico.`
-                    : `Servicio eléctrico ${servicio}: ${detalle}.`
+                texto: asociacion.estado === "conflicto"
+                    ? `Generación capturada (${detalle}); existe un conflicto de asociación histórica que requiere confirmación.`
+                    : asociacion.estado === "inactiva"
+                        ? `Generación capturada (${detalle}); la asociación guardada apunta a un servicio inactivo.`
+                        : servicio === null
+                            ? `Generación capturada (${detalle}); falta asociarla a un servicio eléctrico.`
+                            : `Servicio eléctrico ${servicio}: ${detalle}.`
             };
         }
 
@@ -1573,21 +1938,26 @@
                 const cantidad = obtenerCantidadRegistros(servicioIndex);
                 const campos = [];
                 for (let registro = 1; registro <= cantidad; registro++) {
-                    const campo = document.getElementById(`periodo_${servicioIndex}_${registro}`);
-                    if (campo) campos.push(campo);
+                    const inicio = document.getElementById(`fechaInicio_${servicioIndex}_${registro}`);
+                    const fin = document.getElementById(`fechaFin_${servicioIndex}_${registro}`);
+                    if (inicio && fin) campos.push({ inicio, fin });
                 }
 
                 const grupos = new Map();
-                campos.forEach(campo => {
-                    const periodo = campo.value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-MX");
-                    if (!periodo) return;
+                campos.forEach(({ inicio, fin }) => {
+                    if (!inicio.value || !fin.value) return;
+                    const periodo = `${inicio.value}|${fin.value}`;
                     if (!grupos.has(periodo)) grupos.set(periodo, []);
-                    grupos.get(periodo).push(campo);
+                    grupos.get(periodo).push({ inicio, fin });
                 });
 
                 const duplicados = Array.from(grupos.values()).filter(grupo => grupo.length > 1).flat();
-                campos.forEach(campo => campo.setCustomValidity(""));
-                duplicados.forEach(campo => {
+                campos.forEach(({ inicio, fin }) => {
+                    inicio.setCustomValidity("");
+                    fin.setCustomValidity("");
+                });
+                duplicados.forEach(({ inicio, fin }) => {
+                    const campo = inicio;
                     campo.setCustomValidity("El periodo debe ser único dentro del servicio.");
                     if (!primerDuplicado) primerDuplicado = campo;
                 });
@@ -1603,9 +1973,238 @@
             return true;
         }
 
+        function validarPeriodosUnicosConsistente() {
+            let primerDuplicado = null;
+            const tieneDuplicados = [];
+
+            document.querySelectorAll(".acordeon").forEach((_, index) => {
+                const servicioIndex = index + 1;
+                const analisis = analizarRegistrosMinimos(servicioIndex);
+                const filasPorClave = new Map();
+                analisis.registros.forEach((fila, indice) => {
+                    const registro = indice + 1;
+                    const campos = [
+                        document.getElementById(`fechaInicio_${servicioIndex}_${registro}`),
+                        document.getElementById(`fechaFin_${servicioIndex}_${registro}`),
+                        document.getElementById(`periodo_${servicioIndex}_${registro}`)
+                    ];
+                    campos.forEach(campo => {
+                        if (campo?.validationMessage === "El periodo debe ser único dentro del servicio.") {
+                            campo.setCustomValidity("");
+                        }
+                    });
+                    if (fila.consumo === null) return;
+                    const clave = normalizarPeriodoRegistro(fila);
+                    if (!clave) return;
+                    if (!filasPorClave.has(clave)) filasPorClave.set(clave, []);
+                    filasPorClave.get(clave).push(indice + 1);
+                });
+
+                const duplicados = Array.from(filasPorClave.values()).filter(grupo => grupo.length > 1);
+                duplicados.flat().forEach(registro => {
+                    const inicio = document.getElementById(`fechaInicio_${servicioIndex}_${registro}`);
+                    const fin = document.getElementById(`fechaFin_${servicioIndex}_${registro}`);
+                    const historico = document.getElementById(`periodo_${servicioIndex}_${registro}`);
+                    const campo = inicio?.value ? inicio : historico || fin;
+                    campo?.setCustomValidity("El periodo debe ser único dentro del servicio.");
+                    if (!primerDuplicado) primerDuplicado = campo;
+                });
+                if (duplicados.length) {
+                    tieneDuplicados.push({ servicioIndex, filas: duplicados.flat() });
+                }
+            });
+
+            if (tieneDuplicados.length) {
+                const estado = document.getElementById("estadoGuardadoServicios");
+                const detalle = tieneDuplicados
+                    .map(item => `Servicio ${item.servicioIndex}: filas ${item.filas.join(", ")}`)
+                    .join("; ");
+                if (estado) estado.textContent = `Hay periodos duplicados (${detalle}). Corríjalos antes de guardar.`;
+                primerDuplicado?.focus();
+                return false;
+            }
+            return true;
+        }
+
+        function actualizarPresentacionHistorica(servicioIndex, registro) {
+            const fila = document.querySelector(`#tabla-linea-base-${servicioIndex} tr[data-periodo="${registro}"]`);
+            const historico = fila?.querySelector("[data-historico-periodo]");
+            const contenedor = fila?.querySelector("[data-periodo-historico]");
+            if (historico && contenedor) contenedor.hidden = !historico.value;
+        }
+
+        function validarFechasPeriodos() {
+            let primerError = null;
+            let valido = true;
+            const fechaMaxima = fechaMaximaCalendario();
+            document.querySelectorAll(".acordeon").forEach((_, index) => {
+                const servicio = index + 1;
+                const cantidad = obtenerCantidadRegistros(servicio);
+                for (let registro = 1; registro <= cantidad; registro++) {
+                    const inicio = document.getElementById(`fechaInicio_${servicio}_${registro}`);
+                    const fin = document.getElementById(`fechaFin_${servicio}_${registro}`);
+                    if (!inicio || !fin) continue;
+                    inicio.max = fechaMaxima;
+                    fin.max = fechaMaxima;
+                    inicio.setCustomValidity("");
+                    fin.setCustomValidity("");
+                    if (inicio.value && inicio.value > fechaMaxima) {
+                        inicio.setCustomValidity(`La fecha no puede ser posterior al ${fechaMaxima}.`);
+                        valido = false;
+                    }
+                    if (fin.value && fin.value > fechaMaxima) {
+                        fin.setCustomValidity(`La fecha no puede ser posterior al ${fechaMaxima}.`);
+                        valido = false;
+                    }
+                    if ((inicio.value && !fin.value) || (!inicio.value && fin.value)) {
+                        inicio.setCustomValidity("Complete ambas fechas del intervalo.");
+                        fin.setCustomValidity("Complete ambas fechas del intervalo.");
+                        valido = false;
+                    } else if (inicio.value && fin.value && fin.value < inicio.value) {
+                        inicio.setCustomValidity("La fecha final no puede ser anterior a la inicial.");
+                        fin.setCustomValidity("La fecha final no puede ser anterior a la inicial.");
+                        valido = false;
+                    }
+                    if (inicio.value && inicio.value > fechaMaxima) {
+                        inicio.setCustomValidity(`La fecha no puede ser posterior al ${fechaMaxima}.`);
+                    }
+                    if (fin.value && fin.value > fechaMaxima) {
+                        fin.setCustomValidity(`La fecha no puede ser posterior al ${fechaMaxima}.`);
+                    }
+                    if (!valido && !primerError) primerError = inicio;
+                }
+            });
+            if (!valido) primerError?.focus();
+            return valido;
+        }
+
+        function actualizarAdvertenciasSolapamiento() {
+            document.querySelectorAll(".acordeon").forEach((_, index) => {
+                const servicio = index + 1;
+                const registros = obtenerRegistrosServicio(servicio);
+                registros.forEach((registro, registroIndex) => {
+                    const fila = document.querySelector(`#tabla-linea-base-${servicio} tr[data-periodo="${registroIndex + 1}"]`);
+                    const advertencia = fila?.querySelector("[data-periodo-advertencia]");
+                    if (!advertencia || !registro.fechaInicio || !registro.fechaFin) return;
+                    const solapa = registros.some((otro, otroIndex) => otroIndex !== registroIndex && otro.fechaInicio && otro.fechaFin && registro.fechaInicio <= otro.fechaFin && otro.fechaInicio <= registro.fechaFin);
+                    advertencia.textContent = solapa ? "Advertencia: este intervalo se superpone con otro del mismo servicio." : "";
+                });
+            });
+        }
+
+        function fechaISO(fecha) {
+            return `${fecha.getUTCFullYear()}-${String(fecha.getUTCMonth() + 1).padStart(2, "0")}-${String(fecha.getUTCDate()).padStart(2, "0")}`;
+        }
+
+        function fechaMaximaCalendario() {
+            const hoy = new Date();
+            const limite = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            limite.setFullYear(limite.getFullYear() + 1);
+            return `${limite.getFullYear()}-${String(limite.getMonth() + 1).padStart(2, "0")}-${String(limite.getDate()).padStart(2, "0")}`;
+        }
+
+        function mesCalendarioDesdeISO(valor) {
+            const [anio, mes] = valor.split("-").map(Number);
+            return new Date(Date.UTC(anio, mes - 1, 1));
+        }
+
+        function renderizarCalendario(fila, mesBase) {
+            const panel = fila?.querySelector("[data-calendario-panel]");
+            if (!panel) return;
+            const inicio = fila.querySelector('[data-fecha-periodo="inicio"]');
+            const fin = fila.querySelector('[data-fecha-periodo="fin"]');
+            const fechaMaxima = fechaMaximaCalendario();
+            const limiteMes = mesCalendarioDesdeISO(fechaMaxima.slice(0, 7));
+            let base = new Date(Date.UTC(mesBase.getUTCFullYear(), mesBase.getUTCMonth(), 1));
+            if (base > limiteMes) base = limiteMes;
+            fila.querySelectorAll('[data-fecha-periodo]').forEach(input => input.max = fechaMaxima);
+            const nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const dias = ["L", "M", "M", "J", "V", "S", "D"];
+            const meses = [0, 1].map(offset => new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + offset, 1)));
+            const grids = meses.map(mes => {
+                const primerDia = (mes.getUTCDay() + 6) % 7;
+                const ultimo = new Date(Date.UTC(mes.getUTCFullYear(), mes.getUTCMonth() + 1, 0)).getUTCDate();
+                const encabezados = dias.map(dia => `<span aria-hidden="true">${dia}</span>`).join("");
+                const botones = Array.from({ length: primerDia + ultimo }, (_, indice) => {
+                    if (indice < primerDia) return "<span></span>";
+                    const dia = indice - primerDia + 1;
+                    const fecha = new Date(Date.UTC(mes.getUTCFullYear(), mes.getUTCMonth(), dia));
+                    const valor = fechaISO(fecha);
+                    const seleccionado = valor === inicio.value || valor === fin.value;
+                    const enIntervalo = inicio.value && fin.value && valor > inicio.value && valor < fin.value;
+                    const fueraDeLimite = valor > fechaMaxima;
+                    return `<button type="button" data-calendario-dia="${valor}" class="${seleccionado ? "dia-seleccionado" : ""} ${enIntervalo ? "dia-en-intervalo" : ""}" aria-label="${dia} de ${nombres[mes.getUTCMonth()]} de ${mes.getUTCFullYear()}"${fueraDeLimite ? " disabled aria-disabled=\"true\"" : ""}>${dia}</button>`;
+                }).join("");
+                return `<section class="calendario-mes" aria-label="${nombres[mes.getUTCMonth()]} ${mes.getUTCFullYear()}"><h4>${nombres[mes.getUTCMonth()]} ${mes.getUTCFullYear()}</h4><div class="calendario-grid">${encabezados}${botones}</div></section>`;
+            }).join("");
+            panel.innerHTML = `<div class="calendario-controles"><button type="button" class="btn" data-calendario-anterior aria-label="Meses anteriores">‹</button><span>Seleccione inicio y final</span><button type="button" class="btn" data-calendario-siguiente aria-label="Meses siguientes">›</button></div><div class="calendario-meses">${grids}</div>`;
+            const siguiente = panel.querySelector("[data-calendario-siguiente]");
+            const puedeAvanzar = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 1)) <= limiteMes;
+            if (siguiente && !puedeAvanzar) {
+                siguiente.disabled = true;
+                siguiente.setAttribute("aria-disabled", "true");
+            }
+            panel.dataset.mesBase = fechaISO(base).slice(0, 7);
+        }
+
+        function mesBaseDeFila(fila) {
+            const valor = fila?.querySelector('[data-fecha-periodo="inicio"]')?.value || fila?.querySelector('[data-fecha-periodo="fin"]')?.value || "";
+            const [anio, mes] = valor ? valor.split("-").map(Number) : [new Date().getFullYear(), new Date().getMonth() + 1];
+            return new Date(Date.UTC(anio, mes - 1, 1));
+        }
+
         const contenedorServicios = document.getElementById("contenedorServicios");
+        contenedorServicios?.addEventListener("toggle", event => {
+            if (!event.target.matches(".periodo-calendario[open]")) return;
+            const fila = event.target.closest("tr");
+            renderizarCalendario(fila, mesBaseDeFila(fila));
+        }, true);
+        contenedorServicios?.addEventListener("click", event => {
+            const dia = event.target.closest("[data-calendario-dia]");
+            const fila = event.target.closest("tr");
+            if (dia && fila) {
+                if (dia.disabled || dia.dataset.calendarioDia > fechaMaximaCalendario()) return;
+                const inicio = fila.querySelector('[data-fecha-periodo="inicio"]');
+                const fin = fila.querySelector('[data-fecha-periodo="fin"]');
+                if (!inicio.value || (inicio.value && fin.value)) {
+                    inicio.value = dia.dataset.calendarioDia;
+                    fin.value = "";
+                } else {
+                    fin.value = dia.dataset.calendarioDia;
+                    if (fin.value < inicio.value) [inicio.value, fin.value] = [fin.value, inicio.value];
+                    event.target.closest("details")?.removeAttribute("open");
+                }
+                renderizarCalendario(fila, mesBaseDeFila(fila));
+                validarFechasPeriodos();
+                validarPeriodosUnicosConsistente();
+                actualizarAdvertenciasSolapamiento();
+                actualizarResultados();
+                window.AEEHState?.save();
+                return;
+            }
+            if (event.target.closest("[data-calendario-anterior], [data-calendario-siguiente]")) {
+                const panel = event.target.closest("[data-calendario-panel]");
+                if (!panel || !fila) return;
+                const [anio, mes] = panel.dataset.mesBase.split("-").map(Number);
+                const delta = event.target.closest("[data-calendario-anterior]") ? -1 : 1;
+                renderizarCalendario(fila, new Date(Date.UTC(anio, mes - 1 + delta, 1)));
+                return;
+            }
+            const editar = event.target.closest("[data-editar-historico]");
+            if (editar) {
+                const historico = editar.closest("[data-periodo-historico]")?.querySelector("[data-historico-periodo]");
+                if (historico) {
+                    historico.readOnly = false;
+                    historico.focus();
+                }
+            }
+        });
         contenedorServicios?.addEventListener("input", event => {
-            if (event.target.id?.startsWith("periodo_")) validarPeriodosUnicos();
+            if (event.target.id?.startsWith("periodo_") || event.target.id?.startsWith("fechaInicio_") || event.target.id?.startsWith("fechaFin_")) {
+                validarFechasPeriodos();
+                validarPeriodosUnicosConsistente();
+                actualizarAdvertenciasSolapamiento();
+            }
             validarServicios();
             actualizarResultados();
         });
@@ -1665,7 +2264,9 @@
         function guardar() {
             validarServicios();
             actualizarResultados();
-            if (!validarPeriodosUnicos()) return false;
+            if (!validarFechasPeriodos()) return false;
+            if (!validarPeriodosUnicosConsistente()) return false;
+            actualizarAdvertenciasSolapamiento();
             const guardado = window.AEEHState?.save() || false;
             const estadoGuardado = document.getElementById("estadoGuardadoServicios");
             if (estadoGuardado) {
@@ -1689,6 +2290,9 @@
                 if (estado) estado.textContent = `${excedidos.join(", ")} tiene registros excedentes para su tarifa. Elimínelos explícitamente antes de continuar; la captura actual se conserva al guardar.`;
                 return;
             }
+            if (!validarFechasPeriodos()) return;
+            if (!validarMinimosRegistros()) return;
+            if (!validarPeriodosUnicosConsistente()) return;
             if (!guardar()) {
                 if (document.getElementById("estadoGuardadoServicios")?.textContent.startsWith("Hay periodos duplicados")) return;
                 alert("No fue posible conservar la captura local; no se avanzó al siguiente módulo.");

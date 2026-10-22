@@ -464,6 +464,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="app.css">
     <script src="app_state.js" defer></script>
+    <script src="app_header.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -825,14 +826,58 @@
 
         function detectarPeriodicidadBase(tarifa) {
             const valor = String(tarifa || "").trim().toUpperCase();
-            if (!valor) return { clave: "pendiente", etiqueta: "Pendiente", maximo: 24 };
+            if (!valor) return { clave: "pendiente", etiqueta: "Pendiente", inicial: 1, maximo: 24 };
             if (["1", "1A", "1B", "PDBT"].includes(valor)) {
-                return { clave: "mensual", etiqueta: "Mensual", maximo: 24 };
+                return { clave: "mensual", etiqueta: "Mensual", inicial: 12, maximo: 24 };
             }
             if (["GDBT", "GDMTO", "GDMTH", "DIST", "DIT", "DAC"].includes(valor)) {
-                return { clave: "bimestral", etiqueta: "Bimestral", maximo: 12 };
+                return { clave: "bimestral", etiqueta: "Bimestral", inicial: 6, maximo: 12 };
             }
-            return { clave: "mensual", etiqueta: "Mensual", maximo: 24 };
+            return { clave: "desconocida", etiqueta: "No determinada", inicial: 1, maximo: 24 };
+        }
+
+        function normalizarPeriodoBase(periodo, inicio, fin) {
+            const fechaInicio = String(inicio || "").trim();
+            const fechaFin = String(fin || "").trim();
+            if (fechaInicio && fechaFin && fechaFin >= fechaInicio) {
+                return `fecha:${fechaInicio}|${fechaFin}`;
+            }
+            const historico = String(periodo || "")
+                .trim().replace(/\s+/g, " ").toLocaleLowerCase("es-MX");
+            return historico ? `historico:${historico}` : "";
+        }
+
+        function analizarRegistrosMinimosBase(servicios, servicio, registros) {
+            const valor = clave => servicios.fields?.get(`id:${clave}`)?.value ?? servicios[clave];
+            const periodicidad = detectarPeriodicidadBase(valor(`tarifa_${servicio}`));
+            const incompletos = [];
+            const gruposPeriodos = new Map();
+
+            for (let indice = 1; indice <= registros; indice++) {
+                const historico = String(valor(`periodo_${servicio}_${indice}`) || "").trim();
+                const inicio = String(valor(`fechaInicio_${servicio}_${indice}`) || "").trim();
+                const fin = String(valor(`fechaFin_${servicio}_${indice}`) || "").trim();
+                const consumo = numeroCapturado(valor(`consumo_${servicio}_${indice}`));
+                const factura = numeroCapturado(valor(`factura_${servicio}_${indice}`));
+                const vacia = !historico && !inicio && !fin && consumo === null && factura === null;
+                const fechasParciales = Boolean(inicio) !== Boolean(fin);
+                const fechasValidas = !fechasParciales && (!inicio || fin >= inicio);
+                const periodoIdentificable = Boolean(historico) || Boolean(inicio && fin);
+                const valido = !vacia && periodoIdentificable && consumo !== null && fechasValidas;
+
+                if (valido) {
+                    const clave = normalizarPeriodoBase(historico, inicio, fin);
+                    if (!gruposPeriodos.has(clave)) gruposPeriodos.set(clave, []);
+                    gruposPeriodos.get(clave).push(indice);
+                } else {
+                    incompletos.push({ indice, vacia });
+                }
+            }
+
+            const gruposUnicos = Array.from(gruposPeriodos.values());
+            const duplicados = gruposUnicos.filter(grupo => grupo.length > 1).flat();
+            const validosUnicos = gruposUnicos.map(grupo => grupo[0]);
+            return { periodicidad, validosUnicos, duplicados, incompletos };
         }
 
         function obtenerFacturaciones(servicios) {
@@ -844,13 +889,25 @@
 
                 for (let periodo = 1; periodo <= periodos; periodo++) {
                     const nombrePeriodo = String(servicios[`periodo_${servicio}_${periodo}`] || "").trim();
+                    const fechaInicio = String(servicios[`fechaInicio_${servicio}_${periodo}`] || "").trim();
+                    const fechaFin = String(servicios[`fechaFin_${servicio}_${periodo}`] || "").trim();
                     const consumo = numeroCapturado(servicios[`consumo_${servicio}_${periodo}`]);
                     const importe = numeroCapturado(servicios[`factura_${servicio}_${periodo}`]);
-                    if (nombrePeriodo === "" && consumo === null && importe === null) continue;
+                    if (nombrePeriodo === "" && !fechaInicio && !fechaFin && consumo === null && importe === null) continue;
                     registros.push({
                         servicio,
                         periodo,
-                        nombrePeriodo,
+                        nombrePeriodo: fechaInicio && fechaFin
+                            ? `${fechaInicio} – ${fechaFin}`
+                            : nombrePeriodo,
+                        periodoHistorico: nombrePeriodo,
+                        fechaInicio,
+                        fechaFin,
+                        etiquetaPeriodo: fechaInicio && fechaFin
+                            ? `${fechaInicio} – ${fechaFin}`
+                            : nombrePeriodo
+                                ? `${nombrePeriodo} (histórico)`
+                                : `Servicio ${servicio} · Periodo ${periodo}`,
                         consumo,
                         importe,
                         tarifa: String(servicios[`tarifa_${servicio}`] || "").trim(),
@@ -860,6 +917,65 @@
             }
 
             return { cantidadServicios, registros };
+        }
+
+        function obtenerDirectorioServiciosGeneracionBase(cantidadServicios, servicios) {
+            const identidades = servicios.moduleData?.identidadesServicios || {};
+            return Array.from({ length: cantidadServicios }, (_, indice) => {
+                const index = indice + 1;
+                return {
+                    index,
+                    serviceId: String(
+                        servicios.fields.get(`id:servicioIdentidad_${index}`)?.value ||
+                        identidades.activeByIndex?.[index] || ""
+                    ).trim()
+                };
+            }).filter(servicio => servicio.serviceId);
+        }
+
+        function resolverAsociacionGeneracionBase(cantidadServicios, servicios, generacion) {
+            const directorio = obtenerDirectorioServiciosGeneracionBase(cantidadServicios, servicios);
+            const asociacion = servicios.moduleData?.asociacionGeneracion || {};
+            const serviceIdNuevo = String(asociacion.serviceId || "").trim();
+            const indiceHistorico = Number.parseInt(generacion.fields.get("id:servicioGeneracion")?.value, 10);
+            const servicioHistorico = Number.isInteger(indiceHistorico)
+                ? directorio.find(servicio => servicio.index === indiceHistorico) || null
+                : null;
+            const tieneHistorico = String(generacion.fields.get("id:servicioGeneracion")?.value || "").trim() !== "";
+
+            if (generacion.fields.get("id:tieneGeneracion")?.value !== "si") {
+                return { estado: "sin-generacion", servicio: null, serviceId: "", directorio };
+            }
+            if (!serviceIdNuevo && !tieneHistorico) {
+                return { estado: "ausente", servicio: null, serviceId: "", directorio };
+            }
+            if (serviceIdNuevo) {
+                const servicioNuevo = directorio.find(servicio => servicio.serviceId === serviceIdNuevo) || null;
+                if (!servicioNuevo) {
+                    return { estado: "inactiva", servicio: null, serviceId: serviceIdNuevo, directorio };
+                }
+                const conflicto = servicioHistorico && servicioHistorico.serviceId !== serviceIdNuevo;
+                if (conflicto && asociacion.resolucionHistorica !== "nueva") {
+                    return { estado: "conflicto", servicio: null, serviceId: serviceIdNuevo, servicioNuevo, servicioHistorico, directorio };
+                }
+                return {
+                    estado: conflicto ? "valida-confirmada" : "valida",
+                    servicio: servicioNuevo,
+                    serviceId: serviceIdNuevo,
+                    servicioHistorico,
+                    directorio
+                };
+            }
+            if (directorio.length === 1 && indiceHistorico === 1 && servicioHistorico) {
+                return { estado: "historica-segura", servicio: servicioHistorico, serviceId: servicioHistorico.serviceId, directorio };
+            }
+            return {
+                estado: "historica-ambigua",
+                servicio: null,
+                serviceId: "",
+                indiceHistorico: Number.isInteger(indiceHistorico) ? indiceHistorico : null,
+                directorio
+            };
         }
 
         function obtenerGeneracionBase(cantidadServicios) {
@@ -881,14 +997,14 @@
                 ["capacidadInversores", generacion.capacidadInversores]
             ].map(([campo, valor]) => ({ campo, valor: numeroCapturado(valor) }))
                 .find(capacidad => capacidad.valor !== null) || null;
-            const servicioCapturado = Number.parseInt(generacion.servicioGeneracion, 10);
-            const servicio = Number.isInteger(servicioCapturado) &&
-                servicioCapturado >= 1 &&
-                servicioCapturado <= cantidadServicios
-                ? servicioCapturado
-                : cantidadServicios === 1
-                    ? 1
-                    : null;
+            const servicios = leerEstadoPersistidoParaFinalizar("servicios_electricos.html");
+            const resolucion = resolverAsociacionGeneracionBase(cantidadServicios, servicios, {
+                fields: new Map([
+                    ["id:tieneGeneracion", { value: generacion.tieneGeneracion }],
+                    ["id:servicioGeneracion", { value: generacion.servicioGeneracion }]
+                ])
+            });
+            const servicio = resolucion.servicio?.index || null;
             const nombresTipo = {
                 fotovoltaico: "Fotovoltaico",
                 eolico: "Eólico",
@@ -899,13 +1015,14 @@
             return {
                 existe: true,
                 servicio,
+                asociacionEstado: resolucion.estado,
                 tipo: nombresTipo[generacion.tipoSistema] || String(generacion.tipoSistema || "").trim(),
                 capacidad: capacidadCapturada?.valor ?? null,
                 capacidadInstalada: capacidadCapturada?.campo === "capacidadInstalada"
             };
         }
 
-        function resumirServicio(servicios, registros, servicio, generacion) {
+        function resumirServicio(servicios, registros, servicio, generacion, superficieConstruida) {
             const registrosServicio = registros.filter(registro => registro.servicio === servicio);
             const consumos = registrosServicio.filter(registro => registro.consumo !== null);
             const importes = registrosServicio.filter(registro => registro.importe !== null);
@@ -924,11 +1041,23 @@
                 : periodosBimestrales >= 6
                     ? 6
                     : null;
+            const consumoAnual = divisorAnual && consumoCapturado !== null ? consumoCapturado : null;
+            const superficieValida = superficieConstruida !== null && superficieConstruida > 0;
+            const consumoEspecifico = superficieValida && consumoAnual !== null
+                ? consumoAnual / superficieConstruida
+                : null;
+            const estadoConsumoEspecifico = !superficieValida
+                ? "Pendiente: complete una superficie construida mayor que cero."
+                : consumoAnual === null
+                    ? "Pendiente: falta un consumo anual válido."
+                    : `${formatearNumero(consumoEspecifico)} kWh/m²·año`;
             const demanda = numeroCapturado(servicios[`demandaMaxima_${servicio}`]);
             let textoGeneracion = "Este servicio no cuenta con un sistema de generación.";
 
             if (generacion.existe) {
-                if (generacion.servicio === null) {
+                if (["conflicto", "inactiva", "historica-ambigua"].includes(generacion.asociacionEstado)) {
+                    textoGeneracion = "Generación capturada; la asociación requiere confirmación.";
+                } else if (generacion.servicio === null) {
                     textoGeneracion = "Generación capturada; falta asociarla a un servicio eléctrico.";
                 } else if (generacion.servicio === servicio) {
                     const tipo = generacion.tipo || "Tipo pendiente";
@@ -937,7 +1066,7 @@
                         : generacion.capacidadInstalada
                             ? `capacidad instalada: ${formatearNumero(generacion.capacidad)} kW`
                             : `capacidad capturada: ${formatearNumero(generacion.capacidad)} kW`;
-                    textoGeneracion = `${tipo}: ${capacidad}. Sin historial de generación en kWh capturado.`;
+                    textoGeneracion = `${tipo}: ${capacidad}${generacion.asociacionEstado === "historica-segura" ? " · asociación histórica compatible" : ""}. Sin historial de generación en kWh capturado.`;
                 } else {
                     textoGeneracion = "Sin generación asociada.";
                 }
@@ -946,10 +1075,12 @@
             return {
                 servicio,
                 consumoCapturado,
-                consumoAnual: divisorAnual && consumoCapturado !== null ? consumoCapturado : null,
+                consumoAnual,
                 consumoPromedioAnual: divisorAnual && consumoCapturado !== null
                     ? consumoCapturado / divisorAnual
                     : null,
+                consumoEspecifico,
+                estadoConsumoEspecifico,
                 facturacionCapturada,
                 facturacionAnual: divisorAnual && facturacionCapturada !== null
                     ? facturacionCapturada
@@ -1045,6 +1176,7 @@
                 ["Consumo anual", servicio => servicio.consumoAnual === null
                     ? "No disponible: cobertura anual insuficiente."
                     : `${formatearNumero(servicio.consumoAnual)} kWh`],
+                ["Consumo específico", servicio => servicio.estadoConsumoEspecifico],
                 ["Consumo promedio anual", servicio => servicio.consumoPromedioAnual === null
                     ? "No disponible: cobertura anual insuficiente."
                     : `${formatearNumero(servicio.consumoPromedioAnual)} kWh/año`],
@@ -1113,13 +1245,14 @@
             if (!expediente) return;
 
             const { servicios } = expediente;
+            const superficieConstruida = numeroCapturado(expediente.general?.superficieConstruida);
             const censoBase = obtenerDatosCensoBase();
             const { cantidadServicios, registros } = obtenerFacturaciones(servicios || {});
             const consumos = registros.filter(registro => registro.consumo !== null);
             const totalConsumo = consumos.reduce((total, registro) => total + registro.consumo, 0);
             const generacion = obtenerGeneracionBase(cantidadServicios);
             const serviciosResumen = Array.from({ length: cantidadServicios }, (_, indice) =>
-                resumirServicio(servicios || {}, registros, indice + 1, generacion)
+                resumirServicio(servicios || {}, registros, indice + 1, generacion, superficieConstruida)
             );
             renderizarResumenEnergetico(serviciosResumen, cantidadServicios, generacion);
 
@@ -1397,14 +1530,42 @@
                         continue;
                     }
 
+                    const analisis = analizarRegistrosMinimosBase(servicios, servicio, registros);
+                    const periodicidad = analisis.periodicidad;
+                    if (!["mensual", "bimestral"].includes(periodicidad.clave)) {
+                        pendientes.push({
+                            modulo: "Servicios ElÃ©ctricos",
+                            pagina: "servicios_electricos.html",
+                            campo: periodicidad.clave === "pendiente"
+                                ? `Servicio ${servicio}: seleccione una tarifa para determinar el mínimo de registros.`
+                                : `Servicio ${servicio}: no se pudo determinar la periodicidad de la tarifa; el mínimo de registros no está satisfecho.`
+                        });
+                    } else if (analisis.validosUnicos.length < periodicidad.inicial || analisis.incompletos.length || analisis.duplicados.length) {
+                        const faltantes = Math.max(0, periodicidad.inicial - analisis.validosUnicos.length);
+                        const detalle = analisis.incompletos.length
+                            ? ` Registros vacíos o incompletos: ${analisis.incompletos.map(registro => registro.indice).join(", ")}.`
+                            : "";
+                        const detalleDuplicados = analisis.duplicados.length
+                            ? ` Registros duplicados: ${analisis.duplicados.join(", ")}.`
+                            : "";
+                        pendientes.push({
+                            modulo: "Servicios ElÃ©ctricos",
+                            pagina: "servicios_electricos.html",
+                            campo: `Servicio ${servicio}: ${analisis.validosUnicos.length} registros únicos válidos de ${periodicidad.inicial} requeridos; faltan ${faltantes}.${detalle}${detalleDuplicados}`
+                        });
+                    }
+
                     const periodos = new Map();
                     for (let registro = 1; registro <= registros; registro++) {
-                        const periodo = String(servicios.fields.get(`id:periodo_${servicio}_${registro}`)?.value || "")
+                        const inicio = String(servicios.fields.get(`id:fechaInicio_${servicio}_${registro}`)?.value || "").trim();
+                        const fin = String(servicios.fields.get(`id:fechaFin_${servicio}_${registro}`)?.value || "").trim();
+                        const periodoHistorico = String(servicios.fields.get(`id:periodo_${servicio}_${registro}`)?.value || "")
                             .trim().replace(/\s+/g, " ").toLocaleLowerCase("es-MX");
+                        const periodo = normalizarPeriodoBase(periodoHistorico, inicio, fin);
                         if (!periodo) continue;
                         periodos.set(periodo, (periodos.get(periodo) || 0) + 1);
                     }
-                    if (Array.from(periodos.values()).some(total => total > 1)) {
+                    if (!analisis.duplicados.length && Array.from(periodos.values()).some(total => total > 1)) {
                         pendientes.push({
                             modulo: "Servicios Eléctricos",
                             pagina: "servicios_electricos.html",
@@ -1414,16 +1575,33 @@
                 }
             }
 
+            if (cantidadValida) {
+                for (let servicio = 1; servicio <= cantidad; servicio++) {
+                    const registrosRaw = servicios.fields.get(`id:numeroFacturaciones_${servicio}`)?.value;
+                    const registros = registrosRaw === undefined || registrosRaw === "" ? 1 : Number(registrosRaw);
+                    for (let registro = 1; registro <= registros; registro++) {
+                        const inicio = String(servicios.fields.get(`id:fechaInicio_${servicio}_${registro}`)?.value || "").trim();
+                        const fin = String(servicios.fields.get(`id:fechaFin_${servicio}_${registro}`)?.value || "").trim();
+                        if ((inicio && !fin) || (!inicio && fin) || (inicio && fin && fin < inicio)) {
+                            pendientes.push({ modulo: "Servicios ElÃ©ctricos", pagina: "servicios_electricos.html", campo: `Servicio ${servicio}, registro ${registro}: complete un intervalo de fechas válido.` });
+                        }
+                    }
+                }
+            }
+
             if (generacion.fields.get("id:tieneGeneracion")?.value === "si" && cantidadValida) {
-                const servicioGuardado = String(generacion.fields.get("id:servicioGeneracion")?.value || "");
-                const servicioGeneracion = servicioGuardado === "" && cantidad === 1
-                    ? 1
-                    : Number(servicioGuardado);
-                if (!Number.isInteger(servicioGeneracion) || servicioGeneracion < 1 || servicioGeneracion > cantidad) {
+                const asociacion = resolverAsociacionGeneracionBase(cantidad, servicios, generacion);
+                if (!["valida", "valida-confirmada", "historica-segura"].includes(asociacion.estado)) {
                     pendientes.push({
-                        modulo: "Sistema de Generación",
-                        pagina: "sistema_generacion.html",
-                        campo: "Asocie el sistema de generación con uno de los servicios eléctricos registrados."
+                        modulo: "Servicios Eléctricos",
+                        pagina: "servicios_electricos.html",
+                        campo: asociacion.estado === "conflicto"
+                            ? "Confirme la asociación nueva del sistema de generación; el valor histórico difiere."
+                            : asociacion.estado === "historica-ambigua"
+                                ? "Confirme la asociación del sistema de generación; el valor histórico no puede resolverse con seguridad."
+                                : asociacion.estado === "inactiva"
+                                    ? "Revise la asociación del sistema de generación; el servicio asociado ya no está activo."
+                                    : "Asocie el sistema de generación con uno de los servicios eléctricos registrados."
                     });
                 }
             }

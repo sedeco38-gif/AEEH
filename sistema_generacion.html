@@ -350,6 +350,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="app.css">
     <script src="app_state.js" defer></script>
+    <script src="app_header.js" defer></script>
 </head>
 <meta charset="UTF-8">
 
@@ -459,14 +460,6 @@
 
                             </select>
                             <small id="estadoExistenciaGeneracion" class="app-photo-help" role="status" aria-live="polite"></small>
-                        </div>
-
-                        <div class="campo generacion-detalle" id="campoServicioGeneracion" style="display:none;">
-                            <label for="servicioGeneracion">¿A cuál servicio eléctrico está conectado?</label>
-                            <select class="input-select" id="servicioGeneracion">
-                                <option value="">Seleccione el servicio...</option>
-                            </select>
-                            <small id="estadoAsociacionGeneracion" class="app-photo-help" role="status" aria-live="polite"></small>
                         </div>
 
                     </div>
@@ -707,68 +700,6 @@
 
     <script>
 
-        function obtenerCantidadServiciosGeneracion() {
-            const servicios = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
-            const cantidad = Number.parseInt(servicios.cantidadMedidores, 10);
-            return Number.isInteger(cantidad) && cantidad > 0 ? cantidad : 0;
-        }
-
-        function actualizarServiciosGeneracion() {
-            const selector = document.getElementById("servicioGeneracion");
-            const camposGeneracion = window.AEEHState?.getModuleFields("sistema_generacion.html") || {};
-            const cantidad = obtenerCantidadServiciosGeneracion();
-            const servicioGuardado = String(camposGeneracion.servicioGeneracion || "");
-            const bloque = document.getElementById("campoServicioGeneracion");
-            const aviso = document.getElementById("estadoAsociacionGeneracion");
-
-            if (!cantidad) {
-                selector.innerHTML = '<option value="">Seleccione el servicio...</option>';
-                if (servicioGuardado) {
-                    const opcionAnterior = document.createElement("option");
-                    opcionAnterior.value = servicioGuardado;
-                    opcionAnterior.textContent = `Asociación anterior al Servicio ${servicioGuardado} · pendiente de verificar`;
-                    opcionAnterior.disabled = true;
-                    selector.appendChild(opcionAnterior);
-                    selector.value = servicioGuardado;
-                }
-                bloque.style.display = "none";
-                if (aviso) aviso.textContent = "La asociación estará disponible cuando se defina la cantidad de servicios eléctricos.";
-                return;
-            }
-
-            selector.innerHTML = '<option value="">Seleccione el servicio...</option>';
-            for (let servicio = 1; servicio <= cantidad; servicio++) {
-                const datosServicio = window.AEEHState?.getModuleFields("servicios_electricos.html") || {};
-                const numeroServicio = String(datosServicio[`servicio_${servicio}`] || "").trim();
-                const opcion = document.createElement("option");
-                opcion.value = String(servicio);
-                opcion.textContent = numeroServicio
-                    ? `Servicio ${servicio} · ${numeroServicio}`
-                    : `Servicio ${servicio}`;
-                selector.appendChild(opcion);
-            }
-
-            const asociacionInvalida = servicioGuardado &&
-                (!Number.isInteger(Number(servicioGuardado)) ||
-                    Number(servicioGuardado) < 1 ||
-                    Number(servicioGuardado) > cantidad);
-            if (asociacionInvalida) {
-                const opcionAnterior = document.createElement("option");
-                opcionAnterior.value = servicioGuardado;
-                opcionAnterior.textContent = `Asociación anterior al Servicio ${servicioGuardado} · requiere elegir un servicio válido`;
-                opcionAnterior.disabled = true;
-                selector.appendChild(opcionAnterior);
-                selector.value = servicioGuardado;
-                if (aviso) aviso.textContent = "La cantidad de servicios cambió. Confirme nuevamente la asociación; no se reasignó automáticamente.";
-            } else {
-                selector.value = servicioGuardado || (cantidad === 1 ? "1" : "");
-                if (aviso) aviso.textContent = !servicioGuardado && cantidad > 1
-                    ? "Seleccione el servicio correspondiente antes de finalizar."
-                    : "";
-            }
-            bloque.style.display = document.getElementById("tieneGeneracion").value === "si" ? "flex" : "none";
-        }
-
         function mostrarGeneracion() {
             const selector = document.getElementById("tieneGeneracion");
             const tieneGeneracion = selector.value === "si";
@@ -780,12 +711,11 @@
                         ? "Sistema existente; complete su estado y características."
                         : "Indique si existe un sistema de generación.";
             }
-            actualizarServiciosGeneracion();
             const bloques = document.querySelectorAll(".generacion-detalle:not(.card-caracteristicas-especificas)");
             const tarjetaEspecifica = document.getElementById("cardCaracteristicasEspecificas");
 
             bloques.forEach(function (bloque) {
-                if (bloque.id !== "campoServicioGeneracion") bloque.style.display = tieneGeneracion ? "block" : "none";
+                bloque.style.display = tieneGeneracion ? "block" : "none";
             });
 
             if (!tieneGeneracion) {
@@ -841,7 +771,6 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            actualizarServiciosGeneracion();
             mostrarGeneracion();
             mostrarCaracteristicasSistema();
         });
@@ -852,40 +781,18 @@
 
         }
 
-        function faltaAsociarServicioGeneracion() {
-            const cantidadServicios = obtenerCantidadServiciosGeneracion();
-            const selector = document.getElementById("servicioGeneracion");
-            const servicioSeleccionado = Number(selector.value);
-            const asociacionInvalida = selector.selectedOptions[0]?.disabled;
-            return (
-                document.getElementById("tieneGeneracion").value === "si" &&
-                cantidadServicios > 0 &&
-                (!Number.isInteger(servicioSeleccionado) ||
-                    servicioSeleccionado < 1 ||
-                    servicioSeleccionado > cantidadServicios ||
-                    asociacionInvalida)
-            );
-        }
-
         function guardar() {
             const guardado = window.AEEHState?.save() || false;
             const estado = document.getElementById("estadoGuardadoGeneracion");
             if (estado) {
                 estado.textContent = !guardado
                     ? "No fue posible conservar la información de generación en esta sesión."
-                    : faltaAsociarServicioGeneracion()
-                        ? "Información conservada. Seleccione el servicio eléctrico antes de continuar."
-                        : "Información de generación conservada temporalmente en esta sesión.";
+                    : "Información de generación conservada temporalmente en esta sesión.";
             }
             return guardado;
         }
 
         function continuar() {
-            if (faltaAsociarServicioGeneracion()) {
-                document.getElementById("estadoGuardadoGeneracion").textContent =
-                    "Seleccione el servicio eléctrico al que está conectado el sistema de generación antes de continuar.";
-                return;
-            }
             if (!guardar()) {
                 alert("No fue posible conservar la información; no se avanzó al siguiente módulo.");
                 return;

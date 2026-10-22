@@ -25,6 +25,10 @@ body > .contenedor {
 }
 
 body > .contenedor > header {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(280px, 1fr) minmax(300px, 360px);
+    align-items: center;
+    column-gap: 28px;
     min-width: 0;
     flex-wrap: wrap;
     gap: 12px;
@@ -39,11 +43,13 @@ body > .contenedor > header .usuario-panel {
 body > .contenedor > header .logos {
     flex: 0 1 auto;
     max-width: 100%;
+    justify-self: start;
 }
 
 body > .contenedor > header .logos img {
     width: auto;
-    height: 65px;
+    height: auto;
+    max-height: 65px;
     max-width: 100%;
     object-fit: contain;
 }
@@ -52,11 +58,151 @@ body > .contenedor > header .titulo {
     flex: 1 1 360px;
     line-height: 1.25;
     overflow-wrap: anywhere;
+    text-align: center;
 }
 
 body > .contenedor > header .usuario-panel {
-    flex: 0 1 190px;
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
     max-width: 100%;
+    justify-self: end;
+}
+
+.aeeh-header-session {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    min-width: 0;
+    padding-top: 8px;
+    border-top: 1px solid rgba(112, 31, 47, .16);
+}
+
+.aeeh-header-session .page-indicator,
+.aeeh-header-session .usuario-nombre {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.aeeh-header-session .btn-salir {
+    flex: 0 0 auto;
+}
+
+.aeeh-header-accesses {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+    padding: 0 2px;
+}
+
+.aeeh-header-access {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 34px;
+    padding: 6px 8px;
+    border: 1px solid rgba(112, 31, 47, .35);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--aeeh-vino);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.1;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.aeeh-header-access:hover {
+    background: #f8f0f2;
+    border-color: var(--aeeh-vino);
+}
+
+.aeeh-header-access:active {
+    background: #f1e1e5;
+}
+
+.aeeh-header-access:focus-visible {
+    outline: 3px solid rgba(212, 164, 74, .55);
+    outline-offset: 2px;
+}
+
+.aeeh-header-access-icon {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    line-height: 1;
+}
+
+@media (max-width: 900px) {
+    body > .contenedor > header {
+        grid-template-columns: minmax(160px, 190px) minmax(0, 1fr);
+        column-gap: 20px;
+    }
+
+    body > .contenedor > header .usuario-panel {
+        grid-column: 1 / -1;
+        justify-self: center;
+        width: min(100%, 520px);
+        max-width: 100%;
+    }
+
+    body > .contenedor > header .usuario-panel {
+        flex-basis: auto;
+        justify-content: center;
+    }
+
+    .aeeh-header-accesses {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    body > .contenedor > header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    body > .contenedor > header .logos,
+    body > .contenedor > header .titulo,
+    body > .contenedor > header .usuario-panel {
+        width: 100%;
+        max-width: 100%;
+        justify-self: auto;
+    }
+
+    body > .contenedor > header .logos {
+        justify-content: center;
+    }
+
+    body > .contenedor > header .titulo {
+        text-align: center;
+    }
+
+    .aeeh-header-session {
+        justify-content: center;
+    }
+
+    .aeeh-header-access {
+        min-height: 36px;
+        padding: 7px 8px;
+        font-size: 11px;
+    }
 }
 
 body > .contenedor .principal {
