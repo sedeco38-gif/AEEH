@@ -60,9 +60,28 @@
         });
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", mountHeaderAccesses, { once: true });
-    } else {
+    function mountAgencyContact() {
+        document.querySelectorAll("body > .contenedor footer").forEach(footer => {
+            const originalAddress = footer.querySelector(".footer-logo-der");
+            if (!originalAddress || originalAddress.dataset.aeehAgencyAddress === "true") return;
+
+            const contact = document.createElement("address");
+            contact.className = "footer-logo-der aeeh-footer-address";
+            contact.dataset.aeehAgencyAddress = "true";
+            contact.setAttribute("aria-label", "Domicilio y teléfono institucional");
+            contact.innerHTML = "<span>Camino Real de la Plata #222</span><span>1.º Piso, Local 2</span><span>Fraccionamiento Zona Plateada, C. P. 42084</span><span>Pachuca de Soto, Hidalgo, México</span><span>Teléfono: 771 688 61 89</span>";
+            originalAddress.replaceWith(contact);
+        });
+    }
+
+    function mountInstitutionalElements() {
         mountHeaderAccesses();
+        mountAgencyContact();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", mountInstitutionalElements, { once: true });
+    } else {
+        mountInstitutionalElements();
     }
 })();
